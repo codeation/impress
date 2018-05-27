@@ -21,6 +21,8 @@ Notes:
 
 Let's say hello:
 
+!["Hello, world!" screenshot](https://codeation.github.io/pages/images/helloworld.png)
+
 ```
 package main
 
@@ -60,6 +62,24 @@ func main() {
 }
 ```
 
+## Installation
+
+The dependency Go libraries can be installed with the following commands:
+
+```
+go get github.com/codeation/impress
+```
+
+Currently, the library uses [GTK+ 3](https://www.gtk.org) for rendering, event collecting, etc. You should install `libgtk+-3.0` and packages that depend on GTK.
+
+On Debian/ Ubuntu you can run:
+
+```
+sudo apt-get install libgtk-3-dev
+```
+
+Also [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) must be installed.
+
 ## Contributing
 
 First of all, welcome:
@@ -71,15 +91,5 @@ First of all, welcome:
 ## Using
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
-
-Currently, the library uses [GTK+ 3](https://www.gtk.org) for rendering, event collecting, etc. You should install `libgtk+-3.0` and packages that depend on GTK.
-
-On Debian/ Ubuntu you can run:
-
-```
-sudo apt-get install libgtk-3-dev
-```
-
-Also [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) must be installed.
 
 Stay tuned for more.
