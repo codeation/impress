@@ -17,6 +17,10 @@ func NewApplication() *Application {
 	}
 }
 
+func (a *Application) Title(title string) {
+	a.application.Title(title)
+}
+
 func (a *Application) Size(rect bitmap.Rect) {
 	a.application.Size(rect.Point.X, rect.Point.Y, rect.Size.Width, rect.Size.Height)
 }
@@ -63,6 +67,10 @@ func (a *Application) NewWindow(rect bitmap.Rect, background bitmap.Color) *Wind
 	}
 	w.window.Move(a.application, rect.Point.X, rect.Point.Y)
 	return w
+}
+
+func (w *Window) Close() {
+	w.window.Close()
 }
 
 func (w *Window) Clear() {

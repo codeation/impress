@@ -40,6 +40,12 @@ func (a *Application) Quit() {
 	readyChan <- true
 }
 
+func (a *Application) Title(title string) {
+	guiMutex.Lock()
+	defer guiMutex.Unlock()
+	C.application_title(a.window, C.CString(title))
+}
+
 func (a *Application) Size(x, y, width, height int) {
 	guiMutex.Lock()
 	defer guiMutex.Unlock()
@@ -56,6 +62,12 @@ func (a *Application) NewWindow() *Window {
 	return &Window{
 		window: C.window_create(a.layout),
 	}
+}
+
+func (w *Window) Close() {
+	guiMutex.Lock()
+	defer guiMutex.Unlock()
+	C.window_close(w.window)
 }
 
 func (w *Window) Move(a *Application, x, y int) {

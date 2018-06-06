@@ -35,6 +35,7 @@ import (
 
 func main() {
 	a := impress.NewApplication()
+	a.Title("Hello World Application")
 	a.Size(bitmap.NewRect(0, 0, 640, 480))
 
 	font, err := bitmap.NewFont(goregular.TTF, 15)
