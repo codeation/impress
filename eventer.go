@@ -27,16 +27,21 @@ var (
 )
 
 type KeyboardEvent struct {
-	Rune rune
-	Name string
+	Rune    rune
+	Name    string
+	Shift   bool
+	Control bool
+	Alt     bool
+	Meta    bool
 }
 
 var (
-	KeyLeft  = KeyboardEvent{Rune: 0, Name: "Left"}
-	KeyRight = KeyboardEvent{Rune: 0, Name: "Right"}
-	KeyUp    = KeyboardEvent{Rune: 0, Name: "Up"}
-	KeyDown  = KeyboardEvent{Rune: 0, Name: "Down"}
+	KeyLeft  = KeyboardEvent{Name: "Left"}
+	KeyRight = KeyboardEvent{Name: "Right"}
+	KeyUp    = KeyboardEvent{Name: "Up"}
+	KeyDown  = KeyboardEvent{Name: "Down"}
 	KeyEnter = KeyboardEvent{Rune: 13, Name: "Return"}
+	KeySave  = KeyboardEvent{Rune: 115, Name: "s", Meta: true}
 )
 
 func (e KeyboardEvent) Type() int {
@@ -52,8 +57,12 @@ func NewEventer(e interface{}) Eventer {
 	case low.KeyboardEvent:
 		{
 			return KeyboardEvent{
-				Rune: low.KeyRune(event),
-				Name: low.KeyName(event),
+				Rune:    low.KeyRune(event),
+				Name:    low.KeyName(event),
+				Shift:   low.KeyModifier(event, low.ShiftKeyModifier),
+				Control: low.KeyModifier(event, low.ControlKeyModifier),
+				Alt:     low.KeyModifier(event, low.AltKeyModifier),
+				Meta:    low.KeyModifier(event, low.MetaKeyModifier),
 			}
 		}
 	default:

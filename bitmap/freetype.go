@@ -13,7 +13,6 @@ type Font struct {
 	context *freetype.Context
 	face    font.Face
 	rect    Rect
-	data    []uint8
 }
 
 func OpenFont(name string, fontsize int) (*Font, error) {

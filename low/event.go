@@ -4,6 +4,14 @@ package low
 // #include "low.h"
 import "C"
 
+var (
+	ShiftKeyModifier   = C.GDK_SHIFT_MASK
+	LockKeyModifier    = C.GDK_LOCK_MASK
+	ControlKeyModifier = C.GDK_CONTROL_MASK
+	MetaKeyModifier    = C.GDK_META_MASK
+	AltKeyModifier     = C.GDK_MOD1_MASK
+)
+
 var eventChan = make(chan interface{}) // Event from GTK to golang
 var readyChan = make(chan bool)        // "Ready to GTK event" chan
 
@@ -47,6 +55,10 @@ func KeyRune(e KeyboardEvent) rune {
 
 func KeyName(e KeyboardEvent) string {
 	return C.GoString(C.gdk_keyval_name(e.Event.keyval))
+}
+
+func KeyModifier(e KeyboardEvent, modifier int) bool {
+	return int(e.Event.state)&modifier != 0
 }
 
 //export KeyboardCallBack
