@@ -27,27 +27,27 @@ Let's say hello:
 package main
 
 import (
-	"github.com/codeation/impress"
-	"github.com/codeation/impress/bitmap"
-	"golang.org/x/image/font/gofont/goregular"
 	"log"
+
+	"github.com/codeation/impress"
+	_ "github.com/codeation/impress/low"
 )
 
 func main() {
 	a := impress.NewApplication()
 	a.Title("Hello World Application")
-	a.Size(bitmap.NewRect(0, 0, 640, 480))
+	a.Size(impress.NewRect(0, 0, 640, 480))
 
-	font, err := bitmap.NewFont(goregular.TTF, 15)
+	font, err := impress.NewFont(`{"filename":"verdana.ttf"}`, 15)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer font.Close()
 
-	w := a.NewWindow(bitmap.NewRect(0, 0, 640, 480), bitmap.NewColor(255, 255, 255))
-	w.Text("Hello, world!", font, bitmap.NewPoint(280, 225), bitmap.NewColor(0, 0, 0))
-	w.Line(bitmap.NewPoint(270, 230), bitmap.NewPoint(380, 230), bitmap.NewColor(255, 0, 0))
+	w := a.NewWindow(impress.NewRect(0, 0, 640, 480), impress.NewColor(255, 255, 255))
+	w.Text("Hello, world!", font, impress.NewPoint(280, 210), impress.NewColor(0, 0, 0))
+	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
 	w.Show()
 
 	go func() {
