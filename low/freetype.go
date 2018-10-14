@@ -1,4 +1,4 @@
-package bitmap
+package low
 
 import (
 	"github.com/golang/freetype"
@@ -7,17 +7,19 @@ import (
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 	"io/ioutil"
+
+	"github.com/codeation/impress"
 )
 
 // Font is a selection of font face and size.
-type Font struct {
+type gofont struct {
 	context *freetype.Context
 	face    font.Face
-	rect    Rect
+	rect    impress.Rect
 }
 
 // OpenFont returns a new Font for given TTF file name and font size.
-func OpenFont(name string, fontsize int) (*Font, error) {
+func OpenFont(name string, fontsize int) (*gofont, error) {
 	data, err := ioutil.ReadFile(name)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFont")
@@ -26,7 +28,7 @@ func OpenFont(name string, fontsize int) (*Font, error) {
 }
 
 // NewFont returns a new Font for TrueType font data and font size.
-func NewFont(data []byte, fontsize int) (*Font, error) {
+func NewFont(data []byte, fontsize int) (*gofont, error) {
 	fnt, err := freetype.ParseFont(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFont")
@@ -41,7 +43,7 @@ func NewFont(data []byte, fontsize int) (*Font, error) {
 	face := truetype.NewFace(fnt, opts)
 
 	bounds := fnt.Bounds(fixed.I(fontsize))
-	rect := NewRect(bounds.Min.X.Floor(), bounds.Min.Y.Floor(),
+	rect := impress.NewRect(bounds.Min.X.Floor(), bounds.Min.Y.Floor(),
 		-bounds.Min.X.Floor(), bounds.Max.Y.Round()-bounds.Min.Y.Floor())
 
 	c := freetype.NewContext()
@@ -49,7 +51,7 @@ func NewFont(data []byte, fontsize int) (*Font, error) {
 	c.SetFontSize(float64(fontsize))
 	c.SetHinting(font.HintingFull)
 
-	return &Font{
+	return &gofont{
 		context: c,
 		face:    face,
 		rect:    rect,
@@ -57,12 +59,13 @@ func NewFont(data []byte, fontsize int) (*Font, error) {
 }
 
 // Close destroy Font.
-func (f *Font) Close() error {
-	return f.face.Close()
+func (f *gofont) Close() {
+	f.face.Close()
 }
 
 // DrawString draws text at the point.
-func (f *Font) DrawString(text string, point Point) (Rect, error) {
+func (f *gofont) DrawString(text string, point impress.Point) (impress.Rect, error) {
+	point.Y += f.Height()
 	pt, err := f.context.DrawString(text, freetype.Pt(point.X, point.Y))
 	rect := f.rect
 	rect.X += point.X
@@ -72,22 +75,22 @@ func (f *Font) DrawString(text string, point Point) (Rect, error) {
 }
 
 // Ascent is the distance from the top of a line to its baseline.
-func (f *Font) Ascent() int {
+func (f *gofont) Ascent() int {
 	return f.face.Metrics().Ascent.Round()
 }
 
 // Descent is the distance from the bottom of a line to its baseline.
-func (f *Font) Descent() int {
+func (f *gofont) Descent() int {
 	return f.face.Metrics().Descent.Round()
 }
 
 // Height is a original font size in general.
-func (f *Font) Height() int {
+func (f *gofont) Height() int {
 	return f.face.Metrics().Height.Round()
 }
 
 // Size is rectangular size for text drawing.
-func (f *Font) Size(text string) Size {
+func (f *gofont) Size(text string) impress.Size {
 	width := fixed.I(0)
 	var prevrune rune
 	for i, r := range text {
@@ -100,14 +103,14 @@ func (f *Font) Size(text string) Size {
 		}
 		prevrune = r
 	}
-	return Size{
+	return impress.Size{
 		Width:  width.Ceil(),
 		Height: f.face.Metrics().Height.Round(),
 	}
 }
 
 // Split slices text into substrings to match the given width.
-func (f *Font) Split(text string, edge int) []string {
+func (f *gofont) Split(text string, edge int) []string {
 	out := make([]string, 0)
 	edgeI := fixed.I(edge)
 	for len(text) > 0 {

@@ -4,6 +4,10 @@ package low
 // #include "low.h"
 import "C"
 
+import (
+	"github.com/codeation/impress"
+)
+
 var (
 	ShiftKeyModifier   = C.GDK_SHIFT_MASK
 	LockKeyModifier    = C.GDK_LOCK_MASK
@@ -12,23 +16,22 @@ var (
 	AltKeyModifier     = C.GDK_MOD1_MASK
 )
 
-var eventChan = make(chan interface{}) // Event from GTK to golang
-var readyChan = make(chan bool)        // "Ready to GTK event" chan
-
+var events = make(chan impress.Eventer)
+var readyChan = make(chan bool) // "Ready to GTK event" chan
 var readyOk = false
 
-func (a *Application) Event() interface{} {
+func EventDequeue() impress.Eventer {
 	if readyOk {
 		readyChan <- true
 	}
 	readyOk = true
-	return <-eventChan
+	return <-events
 }
 
-func queueEvent(event interface{}) {
+func queueEvent(event impress.Eventer) {
 	guiMutex.Unlock()
 	defer guiMutex.Lock()
-	eventChan <- event
+	events <- event
 	<-readyChan
 }
 
@@ -42,26 +45,33 @@ var (
 
 //export DestroyCallBack
 func DestroyCallBack() {
-	queueEvent(DestroyEevent)
+	queueEvent(impress.DestroyEvent)
 }
 
 type KeyboardEvent struct {
 	Event *C.GdkEventKey
 }
 
-func KeyRune(e KeyboardEvent) rune {
-	return rune(C.gdk_keyval_to_unicode(e.Event.keyval))
+func KeyRune(event *C.GdkEventKey) rune {
+	return rune(C.gdk_keyval_to_unicode(event.keyval))
 }
 
-func KeyName(e KeyboardEvent) string {
-	return C.GoString(C.gdk_keyval_name(e.Event.keyval))
+func KeyName(event *C.GdkEventKey) string {
+	return C.GoString(C.gdk_keyval_name(event.keyval))
 }
 
-func KeyModifier(e KeyboardEvent, modifier int) bool {
-	return int(e.Event.state)&modifier != 0
+func KeyModifier(event *C.GdkEventKey, modifier int) bool {
+	return int(event.state)&modifier != 0
 }
 
 //export KeyboardCallBack
 func KeyboardCallBack(event *C.GdkEventKey) {
-	queueEvent(KeyboardEvent{Event: event})
+	queueEvent(impress.KeyboardEvent{
+		Rune:    KeyRune(event),
+		Name:    KeyName(event),
+		Shift:   KeyModifier(event, ShiftKeyModifier),
+		Control: KeyModifier(event, ControlKeyModifier),
+		Alt:     KeyModifier(event, AltKeyModifier),
+		Meta:    KeyModifier(event, MetaKeyModifier),
+	})
 }

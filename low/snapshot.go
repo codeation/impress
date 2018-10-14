@@ -1,12 +1,28 @@
-package bitmap
+package low
 
 import (
 	"image"
 	"image/color"
 	"image/draw"
+
+	"github.com/codeation/impress"
 )
 
-func rgba(value Color) color.Color {
+func min(i1, i2 int) int {
+	if i1 < i2 {
+		return i1
+	}
+	return i2
+}
+
+func max(i1, i2 int) int {
+	if i1 > i2 {
+		return i1
+	}
+	return i2
+}
+
+func rgba(value impress.Color) color.Color {
 	return color.RGBA{
 		R: uint8(value.R),
 		G: uint8(value.G),
@@ -21,7 +37,7 @@ type Snapshot struct {
 }
 
 // NewSnapshot create buffer for given window size and background color.
-func NewSnapshot(size Size, background Color) *Snapshot {
+func NewSnapshot(size impress.Size, background impress.Color) *Snapshot {
 	r := image.Rect(0, 0, size.Width, size.Height)
 	s := &Snapshot{
 		picture: image.NewRGBA(r),
@@ -37,7 +53,7 @@ func (s *Snapshot) Picture() *image.RGBA {
 }
 
 // Fill paint the specified rectange with given color.
-func (s *Snapshot) Fill(rect Rect, foreground Color) {
+func (s *Snapshot) Fill(rect impress.Rect, foreground impress.Color) {
 	r := image.Rect(rect.X, rect.Y, rect.X+rect.Width, rect.Y+rect.Height)
 	fill := image.NewUniform(rgba(foreground))
 	draw.Draw(s.picture, r, fill, image.Pt(0, 0), draw.Over)
@@ -45,14 +61,15 @@ func (s *Snapshot) Fill(rect Rect, foreground Color) {
 
 // Line draw line between two points with given color.
 // Horizontal or vertical lines are possible.
-func (s *Snapshot) Line(from, to Point, foreground Color) {
+func (s *Snapshot) Line(from, to impress.Point, foreground impress.Color) {
 	r := image.Rect(min(from.X, to.X), min(from.Y, to.Y), max(from.X, to.X)+1, max(from.Y, to.Y)+1)
 	fill := image.NewUniform(rgba(foreground))
 	draw.Draw(s.picture, r, fill, image.Pt(0, 0), draw.Over)
 }
 
 // Text draws text at the point using given font and color. Text return a rectangle that could be changed.
-func (s *Snapshot) Text(text string, font *Font, point Point, foreground Color) (Rect, error) {
+func (s *Snapshot) Text(text string, f *impress.Font, point impress.Point, foreground impress.Color) (impress.Rect, error) {
+	font := f.Fonter.(*gofont)
 	font.context.SetDst(s.picture)
 	font.context.SetClip(s.picture.Bounds())
 	font.context.SetSrc(image.NewUniform(rgba(foreground)))

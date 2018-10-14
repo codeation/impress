@@ -1,40 +1,43 @@
 package impress
 
-import (
-	"github.com/codeation/impress/low"
-)
-
+// Event types
 const (
 	GeneralEventType  = 10
 	KeyboardEventType = 20
 )
 
+// Eventer is the interface that groups GUI events
 type Eventer interface {
 	Type() int
 }
 
+// GeneralEvent is a general purpose notification
 type GeneralEvent struct {
 	Event int
 }
 
+// Type returns event type
 func (e GeneralEvent) Type() int {
 	return GeneralEventType
 }
 
+// Signal events
 var (
 	UnknownEvent = GeneralEvent{Event: 0}
 	DestroyEvent = GeneralEvent{Event: 1}
 )
 
+// KeyboardEvent is a keyboard event
 type KeyboardEvent struct {
 	Rune    rune
-	Name    string
 	Shift   bool
 	Control bool
 	Alt     bool
 	Meta    bool
+	Name    string
 }
 
+// Keyboard events
 var (
 	KeyLeft  = KeyboardEvent{Name: "Left"}
 	KeyRight = KeyboardEvent{Name: "Right"}
@@ -44,28 +47,7 @@ var (
 	KeySave  = KeyboardEvent{Rune: 115, Name: "s", Meta: true}
 )
 
+// Type returns event type
 func (e KeyboardEvent) Type() int {
 	return KeyboardEventType
-}
-
-func NewEventer(e interface{}) Eventer {
-	switch e {
-	case low.DestroyEevent:
-		return DestroyEvent
-	}
-	switch event := e.(type) {
-	case low.KeyboardEvent:
-		{
-			return KeyboardEvent{
-				Rune:    low.KeyRune(event),
-				Name:    low.KeyName(event),
-				Shift:   low.KeyModifier(event, low.ShiftKeyModifier),
-				Control: low.KeyModifier(event, low.ControlKeyModifier),
-				Alt:     low.KeyModifier(event, low.AltKeyModifier),
-				Meta:    low.KeyModifier(event, low.MetaKeyModifier),
-			}
-		}
-	default:
-		return UnknownEvent
-	}
 }

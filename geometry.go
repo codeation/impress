@@ -1,20 +1,4 @@
-// Package bitmap implement 2-D image buffer as part of impress library.
-// See impress library for more details.
-package bitmap
-
-func min(i1, i2 int) int {
-	if i1 < i2 {
-		return i1
-	}
-	return i2
-}
-
-func max(i1, i2 int) int {
-	if i1 > i2 {
-		return i1
-	}
-	return i2
-}
+package impress
 
 // A Point is an X, Y coordinate pair. The axes increase right and down.
 type Point struct {

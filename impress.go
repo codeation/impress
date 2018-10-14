@@ -1,95 +1,35 @@
 package impress
 
-import (
-	"github.com/codeation/impress/bitmap"
-	"github.com/codeation/impress/low"
-)
-
-type Application struct {
-	application *low.Application
-	handlers    map[Eventer]func()
+// Driver is the interface to a application level functions
+type Driver interface {
+	Init()
+	Main()
+	Done()
+	Title(title string)
+	Size(rect Rect)
+	NewWindow(rect Rect, color Color) Painter
+	NewFont(font *Font) (Fonter, error)
+	Event() Eventer
 }
 
-func NewApplication() *Application {
-	return &Application{
-		application: low.NewApplication(),
-		handlers:    map[Eventer]func(){},
-	}
+// Painter is the interface to a window functions
+type Painter interface {
+	Clear()
+	Show()
+	Fill(rect Rect, color Color)
+	Line(from Point, to Point, color Color)
+	Text(text string, font *Font, from Point, color Color)
 }
 
-func (a *Application) Title(title string) {
-	a.application.Title(title)
+// Fonter is the interface to a font functions
+type Fonter interface {
+	Close()
+	Split(text string, edge int) []string
 }
 
-func (a *Application) Size(rect bitmap.Rect) {
-	a.application.Size(rect.Point.X, rect.Point.Y, rect.Size.Width, rect.Size.Height)
-}
+var driver Driver
 
-func (a *Application) Main() {
-	a.application.Main()
-}
-
-func (a *Application) Quit() {
-	a.application.Quit()
-}
-
-func (a *Application) OnEvent(event Eventer, handler func()) {
-	a.handlers[event] = handler
-}
-
-func (a *Application) Event() Eventer {
-	for {
-		e := NewEventer(a.application.Event())
-		handler, ok := a.handlers[e]
-		if !ok {
-			return e
-		}
-		handler()
-	}
-	return nil
-}
-
-type Window struct {
-	window      *low.Window
-	application *Application
-	Rect        bitmap.Rect
-	Background  bitmap.Color
-	plate       *bitmap.Snapshot
-}
-
-func (a *Application) NewWindow(rect bitmap.Rect, background bitmap.Color) *Window {
-	w := &Window{
-		window:      a.application.NewWindow(),
-		application: a,
-		Rect:        rect,
-		Background:  background,
-		plate:       bitmap.NewSnapshot(rect.Size, background),
-	}
-	w.window.Move(a.application, rect.Point.X, rect.Point.Y)
-	return w
-}
-
-func (w *Window) Close() {
-	w.window.Close()
-}
-
-func (w *Window) Clear() {
-	w.plate.Fill(w.Rect, w.Background)
-}
-
-func (w *Window) Fill(rect bitmap.Rect, foreground bitmap.Color) {
-	w.plate.Fill(rect, foreground)
-}
-
-func (w *Window) Line(from, to bitmap.Point, foreground bitmap.Color) {
-	w.plate.Line(from, to, foreground)
-}
-
-func (w *Window) Text(text string, font *bitmap.Font, point bitmap.Point,
-	foreground bitmap.Color) (bitmap.Rect, error) {
-	return w.plate.Text(text, font, point, foreground)
-}
-
-func (w *Window) Show() {
-	w.window.Set(w.plate.Picture())
+// Register makes a GUI driver available
+func Register(d Driver) {
+	driver = d
 }
