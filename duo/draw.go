@@ -31,7 +31,11 @@ func init() {
 }
 
 func (d *driver) runrpc() {
-	d.cmd = exec.Command("../impress/terminal/it")
+	path := os.Getenv("IMPRESS_TERMINAL_PATH")
+	if path == "" {
+		path = "./it"
+	}
+	d.cmd = exec.Command(path)
 	d.cmd.Stdout = os.Stdout
 	d.cmd.Stderr = os.Stderr
 	if err := d.cmd.Start(); err != nil {
@@ -51,6 +55,7 @@ func (d *driver) Init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Wait connection to event socket
 	for i := 0; i < 100; i++ {
 		if d.connEvent, err = net.Dial("tcp", "localhost:1102"); err == nil {
 			break
@@ -61,6 +66,13 @@ func (d *driver) Init() {
 		log.Fatal(err)
 	}
 	go d.readEvents()
+	// Version test
+	writeSequence(d.connDraw, 'V')
+	version := readString(d.connDraw)
+	if version != it_version {
+		log.Fatalf("./it version \"%s\", expected \"%s\"", version, it_version)
+	}
+	// Make Main eternal until Done
 	d.eternal.Lock()
 }
 
