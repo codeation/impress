@@ -13,7 +13,6 @@ Notes:
 
 - Performance of the application as well as native applications
 - A convenient functions interface to simplify application program structure
-- Using Go Project libraries to draw graphics ("image", "golang.org/x/image", etc)
 - Limited use of other libraries (graphic, low-level or native)
 - Creating a application without form designer or hard-coded widgets (it can be separate libraries)
 
@@ -30,7 +29,7 @@ import (
 	"log"
 
 	"github.com/codeation/impress"
-	_ "github.com/codeation/impress/low"
+	_ "github.com/codeation/impress/duo"
 )
 
 func main() {
@@ -38,7 +37,7 @@ func main() {
 	a.Title("Hello World Application")
 	a.Size(impress.NewRect(0, 0, 640, 480))
 
-	font, err := impress.NewFont(`{"filename":"verdana.ttf"}`, 15)
+	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
 	if err != nil {
 		log.Println(err)
 		return
@@ -71,15 +70,32 @@ The dependency Go libraries can be installed with the following commands:
 go get github.com/codeation/impress
 ```
 
-Currently, the library uses [GTK+ 3](https://www.gtk.org) for rendering, event collecting, etc. You should install `libgtk+-3.0` and packages that depend on GTK.
+Currently, the library uses [a separate application](https://github.com/codeation/it) as a GUI driver
+for rendering, event collecting, etc. You can [download](https://github.com/codeation/it/releases)
+the compiled binary file or make it again from [the source](https://github.com/codeation/it).
 
-On Debian/ Ubuntu you can run:
+You can specify the full path and name for the GUI driver via the environment variable, for example:
 
 ```
-sudo apt-get install libgtk-3-dev
+IMPRESS_TERMINAL_PATH=/path/it
 ```
 
-Also [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) must be installed.
+or just copy the downloaded GUI driver to the working directory.
+
+## GUI driver
+
+The library uses [a separate application](https://github.com/codeation/it) for drawing
+instead of binding low-level library to a Golang.
+
+Pros:
+- To compile the application, it is not necessary to install low-level libraries.
+- There are no additional restrictions on the application, such as GTK functions should only be called by the main thread.
+- It will be possible to run several applications for a low-level drawing from different devices, thereby using the screens of different devices for the same application.
+- Abnormal termination of low-level drawing application may not result in data loss.
+
+Cons:
+- Some loss of speed due to data transfer between applications.
+- Additional complexity due to state synchronization between applications.
 
 ## Contributing
 
