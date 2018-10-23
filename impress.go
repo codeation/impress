@@ -3,7 +3,6 @@ package impress
 // Driver is the interface to a application level functions
 type Driver interface {
 	Init()
-	Main()
 	Done()
 	Title(title string)
 	Size(rect Rect)

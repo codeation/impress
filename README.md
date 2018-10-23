@@ -39,8 +39,7 @@ func main() {
 
 	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatal(err)
 	}
 	defer font.Close()
 
@@ -49,16 +48,9 @@ func main() {
 	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
 	w.Show()
 
-	go func() {
-		for {
-			switch a.Event() {
-			case impress.DestroyEvent:
-				a.Quit()
-			}
-		}
-	}()
-
-	a.Main()
+	for a.Event() != impress.DestroyEvent {
+	}
+	a.Quit()
 }
 ```
 

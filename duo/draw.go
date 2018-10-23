@@ -15,11 +15,12 @@ import (
 
 type driver struct {
 	cmd          *exec.Cmd
-	eternal      sync.Mutex
 	lastWindowID int
 	lastFontID   int
 	events       chan impress.Eventer
+	onDraw       sync.Mutex
 	connDraw     net.Conn
+	onExit       bool
 	connEvent    net.Conn
 }
 
@@ -67,23 +68,20 @@ func (d *driver) Init() {
 	}
 	go d.readEvents()
 	// Version test
+	d.onDraw.Lock()
 	writeSequence(d.connDraw, 'V')
-	version := readString(d.connDraw)
+	version, _ := readString(d.connDraw)
+	d.onDraw.Unlock()
 	if version != it_version {
 		log.Fatalf("./it version \"%s\", expected \"%s\"", version, it_version)
 	}
-	// Make Main eternal until Done
-	d.eternal.Lock()
-}
-
-func (d *driver) Main() {
-	d.eternal.Lock()
-	d.eternal.Unlock()
 }
 
 func (d *driver) Done() {
-	d.eternal.Unlock()
+	d.onExit = true
+	d.onDraw.Lock()
 	writeSequence(d.connDraw, 'X')
+	d.onDraw.Unlock()
 	if err := d.connEvent.Close(); err != nil {
 		log.Fatal(err)
 	}
@@ -96,10 +94,14 @@ func (d *driver) Done() {
 }
 
 func (d *driver) Size(rect impress.Rect) {
+	d.onDraw.Lock()
+	defer d.onDraw.Unlock()
 	writeSequence(d.connDraw, 'S', rect.X, rect.Y, rect.Width, rect.Height)
 }
 
 func (d *driver) Title(title string) {
+	d.onDraw.Lock()
+	defer d.onDraw.Unlock()
 	writeSequence(d.connDraw, 'T', title)
 }
 
@@ -111,9 +113,12 @@ func (d *driver) NewWindow(rect impress.Rect, color impress.Color) impress.Paint
 		rect:       rect,
 		background: color,
 	}
+	d.onDraw.Lock()
+	defer d.onDraw.Unlock()
 	writeSequence(d.connDraw, 'D', w.id, w.rect.X, w.rect.Y, w.rect.Width, w.rect.Height,
 		color.R, color.G, color.B)
-	w.Fill(rect, color)
+	writeSequence(d.connDraw, 'F', w.id, w.rect.X, w.rect.Y, w.rect.Width, w.rect.Height,
+		w.background.R, w.background.G, w.background.B)
 	return w
 }
 
@@ -131,16 +136,23 @@ type painter struct {
 }
 
 func (p *painter) Clear() {
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'C', p.id)
-	p.Fill(p.rect, p.background)
+	writeSequence(p.driver.connDraw, 'F', p.id, p.rect.X, p.rect.Y, p.rect.Width, p.rect.Height,
+		p.background.R, p.background.G, p.background.B)
 }
 
 func (p *painter) Fill(rect impress.Rect, color impress.Color) {
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'F', p.id, rect.X, rect.Y, rect.Width, rect.Height,
 		color.R, color.G, color.B)
 }
 
 func (p *painter) Line(from impress.Point, to impress.Point, color impress.Color) {
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'L', p.id, from.X, from.Y, to.X, to.Y,
 		color.R, color.G, color.B)
 }
@@ -150,27 +162,37 @@ func (p *painter) Text(text string, font *impress.Font, from impress.Point, colo
 	if ok {
 		f.load()
 	}
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'U', p.id, from.X, from.Y, color.R, color.G, color.B,
 		f.ID, font.Height, text)
 }
 
 func (p *painter) Show() {
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'W', p.id)
 }
 
 // Event
 
 func (d *driver) readEvents() {
-	for {
-		command := readChar(d.connEvent)
+	for !d.onExit {
+		command, err := readChar(d.connEvent)
+		if d.onExit {
+			break
+		}
+		if err != nil {
+			log.Println(err)
+		}
 		switch command {
 		case 'k':
-			u := readUInt32(d.connEvent)
-			shift := readBool(d.connEvent)
-			control := readBool(d.connEvent)
-			alt := readBool(d.connEvent)
-			meta := readBool(d.connEvent)
-			name := readString(d.connEvent)
+			u, _ := readUInt32(d.connEvent)
+			shift, _ := readBool(d.connEvent)
+			control, _ := readBool(d.connEvent)
+			alt, _ := readBool(d.connEvent)
+			meta, _ := readBool(d.connEvent)
+			name, _ := readString(d.connEvent)
 			d.events <- impress.KeyboardEvent{
 				Rune:    rune(u),
 				Name:    name,
@@ -180,7 +202,7 @@ func (d *driver) readEvents() {
 				Meta:    meta,
 			}
 		case 'g':
-			u := readUInt32(d.connEvent)
+			u, _ := readUInt32(d.connEvent)
 			d.events <- impress.GeneralEvent{
 				Event: u,
 			}

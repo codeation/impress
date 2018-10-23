@@ -6,45 +6,38 @@ import (
 	"log"
 )
 
-func readBool(conn io.Reader) bool {
+func readBool(conn io.Reader) (bool, error) {
 	var value bool
-	if err := binary.Read(conn, binary.LittleEndian, &value); err != nil {
-		log.Fatal(err)
-	}
-	return value
+	err := binary.Read(conn, binary.LittleEndian, &value)
+	return value, err
 }
 
-func readChar(conn io.Reader) byte {
+func readChar(conn io.Reader) (byte, error) {
 	var value byte
-	if err := binary.Read(conn, binary.LittleEndian, &value); err != nil {
-		log.Fatal(err)
-	}
-	return value
+	err := binary.Read(conn, binary.LittleEndian, &value)
+	return value, err
 }
 
-func readInt16(conn io.Reader) int {
+func readInt16(conn io.Reader) (int, error) {
 	var value int16
-	if err := binary.Read(conn, binary.LittleEndian, &value); err != nil {
-		log.Fatal(err)
-	}
-	return int(value)
+	err := binary.Read(conn, binary.LittleEndian, &value)
+	return int(value), err
 }
 
-func readUInt32(conn io.Reader) int {
+func readUInt32(conn io.Reader) (int, error) {
 	var value uint32
-	if err := binary.Read(conn, binary.LittleEndian, &value); err != nil {
-		log.Fatal(err)
-	}
-	return int(value)
+	err := binary.Read(conn, binary.LittleEndian, &value)
+	return int(value), err
 }
 
-func readString(conn io.Reader) string {
-	length := readInt16(conn)
-	data := make([]byte, length)
-	if err := binary.Read(conn, binary.LittleEndian, &data); err != nil {
-		log.Fatal(err)
+func readString(conn io.Reader) (string, error) {
+	length, err := readInt16(conn)
+	if err != nil {
+		return "", err
 	}
-	return string(data)
+	data := make([]byte, length)
+	err = binary.Read(conn, binary.LittleEndian, &data)
+	return string(data), err
 }
 
 func writeSequence(conn io.Writer, values ...interface{}) {

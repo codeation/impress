@@ -81,6 +81,8 @@ func (f *ftfont) load() {
 	variant := f.defaultValue("variant", &tableVariant)
 	weight := f.defaultValue("weight", &tableWeight)
 	stretch := f.defaultValue("stretch", &tableStretch)
+	f.driver.onDraw.Lock()
+	defer f.driver.onDraw.Unlock()
 	writeSequence(f.driver.connDraw, 'N', f.ID, f.Font.Height, style, variant, weight, stretch, f.Font.Attr["family"])
 }
 
@@ -91,12 +93,14 @@ func (f *ftfont) Split(text string, edge int) []string {
 		return nil
 	}
 	f.load()
+	f.driver.onDraw.Lock()
+	defer f.driver.onDraw.Unlock()
 	writeSequence(f.driver.connDraw, 'P', f.ID, edge, text)
-	count := readInt16(f.driver.connDraw)
+	count, _ := readInt16(f.driver.connDraw)
 	pos := 0
 	out := make([]string, count)
 	for i := 0; i < count; i++ {
-		length := readInt16(f.driver.connDraw)
+		length, _ := readInt16(f.driver.connDraw)
 		out[i] = text[pos : pos+length]
 		pos += length
 	}

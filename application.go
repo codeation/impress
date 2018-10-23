@@ -14,11 +14,6 @@ func NewApplication() *Application {
 	return a
 }
 
-// Main runs the main GUI loop until Quit is called
-func (a *Application) Main() {
-	driver.Main()
-}
-
 // Quit makes invocation of the main loop return
 func (a *Application) Quit() {
 	driver.Done()
@@ -34,10 +29,11 @@ func (a *Application) Event() Eventer {
 	for {
 		e := driver.Event()
 		handler, ok := a.handlers[e]
-		if !ok {
-			return e
+		if ok {
+			handler()
+			continue
 		}
-		handler()
+		return e
 	}
 }
 
