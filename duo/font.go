@@ -1,6 +1,8 @@
 package duo
 
 import (
+	"log"
+
 	"github.com/codeation/impress"
 )
 
@@ -56,7 +58,6 @@ var tableStretch = map[string]int{
 type ftfont struct {
 	driver *driver
 	ID     int
-	loaded bool
 	Font   *impress.Font
 }
 
@@ -72,18 +73,28 @@ func (f *ftfont) defaultValue(fieldname string, maps *map[string]int) int {
 	return value
 }
 
-func (f *ftfont) load() {
-	if f.loaded {
-		return
+func (d *driver) NewFont(font *impress.Font) (impress.Fonter, error) {
+	if d == nil || d.connDraw == nil {
+		log.Fatal("GUI driver not initialized")
 	}
-	f.loaded = true
+	d.lastFontID++
+	f := &ftfont{
+		driver: d,
+		ID:     d.lastFontID,
+		Font:   font,
+	}
 	style := f.defaultValue("style", &tableStyle)
 	variant := f.defaultValue("variant", &tableVariant)
 	weight := f.defaultValue("weight", &tableWeight)
 	stretch := f.defaultValue("stretch", &tableStretch)
 	f.driver.onDraw.Lock()
 	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.connDraw, 'N', f.ID, f.Font.Height, style, variant, weight, stretch, f.Font.Attr["family"])
+	writeSequence(f.driver.connDraw, 'N', f.ID, f.Font.Height, style, variant, weight, stretch,
+		f.Font.Attr["family"])
+	font.Baseline, _ = readInt16(f.driver.connDraw)
+	font.Ascent, _ = readInt16(f.driver.connDraw)
+	font.Descent, _ = readInt16(f.driver.connDraw)
+	return f, nil
 }
 
 func (f *ftfont) Close() {}
@@ -92,7 +103,6 @@ func (f *ftfont) Split(text string, edge int) []string {
 	if len(text) == 0 {
 		return nil
 	}
-	f.load()
 	f.driver.onDraw.Lock()
 	defer f.driver.onDraw.Unlock()
 	writeSequence(f.driver.connDraw, 'P', f.ID, edge, text)
@@ -107,12 +117,14 @@ func (f *ftfont) Split(text string, edge int) []string {
 	return out
 }
 
-func (d *driver) NewFont(f *impress.Font) (impress.Fonter, error) {
-	d.lastFontID++
-	return &ftfont{
-		driver: d,
-		ID:     d.lastFontID,
-		loaded: false,
-		Font:   f,
-	}, nil
+func (f *ftfont) Size(text string) impress.Size {
+	if len(text) == 0 {
+		return impress.NewSize(0, f.Font.Height)
+	}
+	f.driver.onDraw.Lock()
+	defer f.driver.onDraw.Unlock()
+	writeSequence(f.driver.connDraw, 'R', f.ID, text)
+	width, _ := readInt16(f.driver.connDraw)
+	height, _ := readInt16(f.driver.connDraw)
+	return impress.NewSize(width, height)
 }

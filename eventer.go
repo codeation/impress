@@ -1,5 +1,9 @@
 package impress
 
+import (
+	"unicode"
+)
+
 // Event types
 const (
 	GeneralEventType  = 10
@@ -39,15 +43,20 @@ type KeyboardEvent struct {
 
 // Keyboard events
 var (
-	KeyLeft  = KeyboardEvent{Name: "Left"}
-	KeyRight = KeyboardEvent{Name: "Right"}
-	KeyUp    = KeyboardEvent{Name: "Up"}
-	KeyDown  = KeyboardEvent{Name: "Down"}
-	KeyEnter = KeyboardEvent{Rune: 13, Name: "Return"}
-	KeySave  = KeyboardEvent{Rune: 115, Name: "s", Meta: true}
+	KeyLeft      = KeyboardEvent{Name: "Left"}
+	KeyRight     = KeyboardEvent{Name: "Right"}
+	KeyUp        = KeyboardEvent{Name: "Up"}
+	KeyDown      = KeyboardEvent{Name: "Down"}
+	KeyEnter     = KeyboardEvent{Rune: 13, Name: "Return"}
+	KeyBackSpace = KeyboardEvent{Rune: 8, Name: "BackSpace"}
 )
 
 // Type returns event type
 func (e KeyboardEvent) Type() int {
 	return KeyboardEventType
+}
+
+// IsGraphic tests printable rune
+func (e KeyboardEvent) IsGraphic() bool {
+	return !e.Control && !e.Meta && unicode.IsGraphic(e.Rune)
 }

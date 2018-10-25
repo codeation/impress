@@ -1,3 +1,3 @@
 package duo
 
-var it_version = "0.1.2"
+var it_version = "0.1.3"

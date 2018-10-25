@@ -158,10 +158,7 @@ func (p *painter) Line(from impress.Point, to impress.Point, color impress.Color
 }
 
 func (p *painter) Text(text string, font *impress.Font, from impress.Point, color impress.Color) {
-	f, ok := font.Fonter.(*ftfont)
-	if ok {
-		f.load()
-	}
+	f := font.Fonter.(*ftfont)
 	p.driver.onDraw.Lock()
 	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'U', p.id, from.X, from.Y, color.R, color.G, color.B,

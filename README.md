@@ -99,6 +99,8 @@ First of all, welcome:
 
 ## Using
 
+See https://godoc.org/github.com/codeation/impress
+
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
 
 Stay tuned for more.

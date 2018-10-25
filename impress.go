@@ -24,6 +24,7 @@ type Painter interface {
 type Fonter interface {
 	Close()
 	Split(text string, edge int) []string
+	Size(text string) Size
 }
 
 var driver Driver
