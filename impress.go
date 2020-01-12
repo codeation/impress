@@ -13,6 +13,8 @@ type Driver interface {
 
 // Painter is the interface to a window functions
 type Painter interface {
+	Drop()
+	Size(rect Rect)
 	Clear()
 	Show()
 	Fill(rect Rect, color Color)

@@ -8,6 +8,8 @@ import (
 const (
 	GeneralEventType  = 10
 	KeyboardEventType = 20
+	ButtonEventType   = 30
+	MotionEventType   = 40
 )
 
 // Eventer is the interface that groups GUI events
@@ -59,4 +61,45 @@ func (e KeyboardEvent) Type() int {
 // IsGraphic tests printable rune
 func (e KeyboardEvent) IsGraphic() bool {
 	return !e.Control && !e.Meta && unicode.IsGraphic(e.Rune)
+}
+
+// ButtonEvent is mouse button event
+type ButtonEvent struct {
+	Action int
+	Button int
+	Point  Point
+}
+
+// Button action type
+const (
+	ButtonActionPress   = 4
+	ButtonActionDouble  = 5
+	ButtonActionTriple  = 6
+	ButtonActionRelease = 7
+)
+
+// Button number
+const (
+	ButtonLeft   = 1
+	ButtonMiddle = 2
+	ButtonRight  = 3
+)
+
+// Type returns event type
+func (e ButtonEvent) Type() int {
+	return ButtonEventType
+}
+
+// MotionEvent is mouse motion event
+type MotionEvent struct {
+	Point   Point
+	Shift   bool
+	Control bool
+	Alt     bool
+	Meta    bool
+}
+
+// Type returns event type
+func (e MotionEvent) Type() int {
+	return MotionEventType
 }

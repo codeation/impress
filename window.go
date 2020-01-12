@@ -14,6 +14,18 @@ func (a *Application) NewWindow(rect Rect, color Color) *Window {
 	}
 }
 
+// Drop deletes window
+// Note that a dropped window can no longer be used
+func (w *Window) Drop() {
+	w.paint.Drop()
+	w.paint = nil // TODO notice when the window is dropped
+}
+
+// Size changes window size and position
+func (w *Window) Size(rect Rect) {
+	w.paint.Size(rect)
+}
+
 // Clear clears current window
 func (w *Window) Clear() {
 	w.paint.Clear()

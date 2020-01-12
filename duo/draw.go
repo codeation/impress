@@ -135,6 +135,20 @@ type painter struct {
 	background impress.Color
 }
 
+func (p *painter) Drop() {
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
+	writeSequence(p.driver.connDraw, 'O', p.id)
+}
+
+func (p *painter) Size(rect impress.Rect) {
+	p.rect = rect
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
+	writeSequence(p.driver.connDraw, 'Z', p.id, p.rect.X, p.rect.Y, p.rect.Width, p.rect.Height,
+		p.background.R, p.background.G, p.background.B)
+}
+
 func (p *painter) Clear() {
 	p.driver.onDraw.Lock()
 	defer p.driver.onDraw.Unlock()
@@ -202,6 +216,30 @@ func (d *driver) readEvents() {
 			u, _ := readUInt32(d.connEvent)
 			d.events <- impress.GeneralEvent{
 				Event: u,
+			}
+		case 'b':
+			btype, _ := readChar(d.connEvent)
+			button, _ := readChar(d.connEvent)
+			x, _ := readInt16(d.connEvent)
+			y, _ := readInt16(d.connEvent)
+			d.events <- impress.ButtonEvent{
+				Action: int(btype),
+				Button: int(button),
+				Point:  impress.NewPoint(x, y),
+			}
+		case 'm':
+			x, _ := readInt16(d.connEvent)
+			y, _ := readInt16(d.connEvent)
+			shift, _ := readBool(d.connEvent)
+			control, _ := readBool(d.connEvent)
+			alt, _ := readBool(d.connEvent)
+			meta, _ := readBool(d.connEvent)
+			d.events <- impress.MotionEvent{
+				Point:   impress.NewPoint(x, y),
+				Shift:   shift,
+				Control: control,
+				Alt:     alt,
+				Meta:    meta,
 			}
 		}
 	}
