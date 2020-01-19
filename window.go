@@ -6,7 +6,7 @@ type Window struct {
 }
 
 // NewWindow creates new inner window with a specified size and background color
-func (a *Application) NewWindow(rect Rect, color Color) *Window {
+func (app *Application) NewWindow(rect Rect, color Color) *Window {
 	return &Window{
 		paint: driver.NewWindow(rect, color),
 	}

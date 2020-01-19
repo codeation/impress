@@ -25,8 +25,8 @@ func NewApplication() *Application {
 	return app
 }
 
-// Quit makes invocation of the main loop return
-func (app *Application) Quit() {
+// Close makes invocation of the main loop return
+func (app *Application) Close() {
 	driver.Done()
 }
 
@@ -47,27 +47,31 @@ func (app *Application) Event() Eventer {
 	}
 }
 
-// Redirect drivers events to active window or app itself
+// Redirect drivers events to active Actor or Application itself
 func (app *Application) eventLoop() {
 	for {
-		e := <-driver.Chan()
-		if e == DestroyEvent {
-			close(app.destroyed)
-			break
+		select {
+		case e := <-driver.Chan():
+			if e == DestroyEvent {
+				close(app.destroyed)
+				return
+			}
+			if handler, ok := app.handlers[e]; ok {
+				handler()
+				continue
+			}
+			if app.active != nil {
+				app.active.Chan() <- e
+				continue
+			}
+			app.events <- e
+		case <-app.destroyed:
+			return
 		}
-		if handler, ok := app.handlers[e]; ok {
-			handler()
-			continue
-		}
-		if app.active != nil {
-			app.active.Chan() <- e
-			continue
-		}
-		app.events <- e
 	}
 }
 
-// SetActive sets the event receiver
+// Activate sets the active event receiver
 func (app *Application) Activate(act Actor) {
 	if app.active != nil {
 		app.active.Chan() <- DeactivatedEvent
@@ -102,7 +106,7 @@ func (app *Application) Start(f func()) {
 	}()
 }
 
-// Wait waits for the functions to complete
+// Wait waits for main application loop to complete
 func (app *Application) Wait() {
 	app.wg.Wait()
 }

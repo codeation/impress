@@ -33,9 +33,10 @@ import (
 )
 
 func main() {
-	a := impress.NewApplication()
-	a.Title("Hello World Application")
-	a.Size(impress.NewRect(0, 0, 640, 480))
+	app := impress.NewApplication()
+	defer app.Close()
+	app.Title("Hello World Application")
+	app.Size(impress.NewRect(0, 0, 640, 480))
 
 	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
 	if err != nil {
@@ -43,20 +44,20 @@ func main() {
 	}
 	defer font.Close()
 
-	w := a.NewWindow(impress.NewRect(0, 0, 640, 480), impress.NewColor(255, 255, 255))
+	w := app.NewWindow(impress.NewRect(0, 0, 640, 480), impress.NewColor(255, 255, 255))
 	w.Text("Hello, world!", font, impress.NewPoint(280, 210), impress.NewColor(0, 0, 0))
 	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
 	w.Show()
 
-	for a.Event() != impress.DoneEvent {
-	}
-	a.Quit()
+	app.Wait()
 }
 ```
 
+Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
+
 ## Installation
 
-Currently, the library uses [a separate application](https://github.com/codeation/it) as a GUI driver
+The library uses [a separate application](https://github.com/codeation/it) as a GUI driver
 for rendering, event collecting, etc. You can [download](https://github.com/codeation/it/releases)
 the compiled binary file or make it again from [the source](https://github.com/codeation/it).
 
@@ -96,8 +97,6 @@ First of all, welcome:
 - contribution in the near future
 
 ## Using
-
-Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
 

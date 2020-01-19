@@ -46,7 +46,7 @@ func action(act *impress.Action, w *impress.Window, font *impress.Font) {
 
 func main() {
 	app := impress.NewApplication()
-	defer app.Quit()
+	defer app.Close()
 	app.Title("Example")
 	app.Size(impress.NewRect(0, 0, 640, 480))
 
