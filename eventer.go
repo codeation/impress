@@ -29,8 +29,11 @@ func (e GeneralEvent) Type() int {
 
 // Signal events
 var (
-	UnknownEvent = GeneralEvent{Event: 0}
-	DestroyEvent = GeneralEvent{Event: 1}
+	UnknownEvent     = GeneralEvent{Event: 0}
+	DestroyEvent     = GeneralEvent{Event: 1}
+	DoneEvent        = GeneralEvent{Event: 2}
+	ActivatedEvent   = GeneralEvent{Event: 3}
+	DeactivatedEvent = GeneralEvent{Event: 4}
 )
 
 // KeyboardEvent is a keyboard event

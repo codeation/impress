@@ -1,20 +1,20 @@
 # impress
 
-**Cross platform GUI Library for Go**
+**Cross platform GUI Library for Go** [![GoDoc](https://godoc.org/github.com/codeation/impress?status.png)](https://godoc.org/github.com/codeation/impress)
 
 ## Proof of Concept Version
 
 Notes:
 
 - This project is still in the early stages of development and is not yet in a usable state.
-- The project tested on Debian 9 and MacOS 10.13.
+- The project tested on Debian 9, 10 and MacOS 10.13, 10.14.
 
 ## Basic Principles of Library Building Design
 
 - Performance of the application as well as native applications
-- A convenient functions interface to simplify application program structure
+- Simple and clean application code for using GUI
 - Limited use of other libraries (graphic, low-level or native)
-- Creating a application without form designer or hard-coded widgets (it can be separate libraries)
+- Creating a GUI application without form designer or hard-coded widgets (it can be separate libraries)
 
 ## Examples
 
@@ -48,19 +48,13 @@ func main() {
 	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
 	w.Show()
 
-	for a.Event() != impress.DestroyEvent {
+	for a.Event() != impress.DoneEvent {
 	}
 	a.Quit()
 }
 ```
 
 ## Installation
-
-The dependency Go libraries can be installed with the following commands:
-
-```
-go get github.com/codeation/impress
-```
 
 Currently, the library uses [a separate application](https://github.com/codeation/it) as a GUI driver
 for rendering, event collecting, etc. You can [download](https://github.com/codeation/it/releases)
@@ -69,10 +63,14 @@ the compiled binary file or make it again from [the source](https://github.com/c
 You can specify the full path and name for the GUI driver via the environment variable, for example:
 
 ```
-IMPRESS_TERMINAL_PATH=/path/it
+IMPRESS_TERMINAL_PATH=/path/it go run ./examples/simple/simple.go
 ```
 
-or just copy the downloaded GUI driver to the working directory.
+or just copy the downloaded GUI driver to the working directory and launch examples.
+
+```
+go run ./exmaples/simple/simple.go
+```
 
 ## GUI driver
 
@@ -99,7 +97,7 @@ First of all, welcome:
 
 ## Using
 
-See https://godoc.org/github.com/codeation/impress
+Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
 

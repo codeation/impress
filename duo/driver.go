@@ -27,7 +27,7 @@ type driver struct {
 func init() {
 	d := &driver{}
 	d.runrpc()
-	d.events = make(chan impress.Eventer)
+	d.events = make(chan impress.Eventer, 1024)
 	impress.Register(d)
 }
 
@@ -83,13 +83,13 @@ func (d *driver) Done() {
 	writeSequence(d.connDraw, 'X')
 	d.onDraw.Unlock()
 	if err := d.connEvent.Close(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Close(e) %s", err)
 	}
 	if err := d.connDraw.Close(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Close(d) %s", err)
 	}
 	if err := d.cmd.Wait(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Wait %s", err)
 	}
 }
 
@@ -117,84 +117,25 @@ func (d *driver) NewWindow(rect impress.Rect, color impress.Color) impress.Paint
 	defer d.onDraw.Unlock()
 	writeSequence(d.connDraw, 'D', w.id, w.rect.X, w.rect.Y, w.rect.Width, w.rect.Height,
 		color.R, color.G, color.B)
-	writeSequence(d.connDraw, 'F', w.id, w.rect.X, w.rect.Y, w.rect.Width, w.rect.Height,
+	writeSequence(d.connDraw, 'F', w.id, 0, 0, w.rect.Width, w.rect.Height,
 		w.background.R, w.background.G, w.background.B)
 	return w
 }
 
-func (d *driver) Event() impress.Eventer {
-	return <-d.events
-}
-
-// Paint
-
-type painter struct {
-	driver     *driver
-	id         int
-	rect       impress.Rect
-	background impress.Color
-}
-
-func (p *painter) Drop() {
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'O', p.id)
-}
-
-func (p *painter) Size(rect impress.Rect) {
-	p.rect = rect
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'Z', p.id, p.rect.X, p.rect.Y, p.rect.Width, p.rect.Height,
-		p.background.R, p.background.G, p.background.B)
-}
-
-func (p *painter) Clear() {
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'C', p.id)
-	writeSequence(p.driver.connDraw, 'F', p.id, p.rect.X, p.rect.Y, p.rect.Width, p.rect.Height,
-		p.background.R, p.background.G, p.background.B)
-}
-
-func (p *painter) Fill(rect impress.Rect, color impress.Color) {
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'F', p.id, rect.X, rect.Y, rect.Width, rect.Height,
-		color.R, color.G, color.B)
-}
-
-func (p *painter) Line(from impress.Point, to impress.Point, color impress.Color) {
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'L', p.id, from.X, from.Y, to.X, to.Y,
-		color.R, color.G, color.B)
-}
-
-func (p *painter) Text(text string, font *impress.Font, from impress.Point, color impress.Color) {
-	f := font.Fonter.(*ftfont)
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'U', p.id, from.X, from.Y, color.R, color.G, color.B,
-		f.ID, font.Height, text)
-}
-
-func (p *painter) Show() {
-	p.driver.onDraw.Lock()
-	defer p.driver.onDraw.Unlock()
-	writeSequence(p.driver.connDraw, 'W', p.id)
+func (d *driver) Chan() <-chan impress.Eventer {
+	return d.events
 }
 
 // Event
 
 func (d *driver) readEvents() {
-	for !d.onExit {
+	for {
 		command, err := readChar(d.connEvent)
-		if d.onExit {
-			break
-		}
 		if err != nil {
-			log.Println(err)
+			if d.onExit {
+				break
+			}
+			log.Fatalf("readEvents %s", err)
 		}
 		switch command {
 		case 'k':
@@ -241,6 +182,8 @@ func (d *driver) readEvents() {
 				Alt:     alt,
 				Meta:    meta,
 			}
+		default:
+			d.events <- impress.UnknownEvent
 		}
 	}
 }

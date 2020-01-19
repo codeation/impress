@@ -8,7 +8,7 @@ type Driver interface {
 	Size(rect Rect)
 	NewWindow(rect Rect, color Color) Painter
 	NewFont(font *Font) (Fonter, error)
-	Event() Eventer
+	Chan() <-chan Eventer
 }
 
 // Painter is the interface to a window functions
@@ -27,6 +27,11 @@ type Fonter interface {
 	Close()
 	Split(text string, edge int) []string
 	Size(text string) Size
+}
+
+// Actor is an event receiver interface
+type Actor interface {
+	Chan() chan Eventer
 }
 
 var driver Driver

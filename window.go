@@ -2,15 +2,13 @@ package impress
 
 // Window represents inner window
 type Window struct {
-	paint      Painter
-	background Color
+	paint Painter
 }
 
 // NewWindow creates new inner window with a specified size and background color
 func (a *Application) NewWindow(rect Rect, color Color) *Window {
 	return &Window{
-		paint:      driver.NewWindow(rect, color),
-		background: NewColor(255, 255, 255),
+		paint: driver.NewWindow(rect, color),
 	}
 }
 
