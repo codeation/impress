@@ -1,6 +1,7 @@
 # impress
 
-**Cross platform GUI Library for Go** [![GoDoc](https://godoc.org/github.com/codeation/impress?status.png)](https://godoc.org/github.com/codeation/impress)
+**Cross platform GUI Library for Go**
+[![GoDoc](https://godoc.org/github.com/codeation/impress?status.svg)](https://godoc.org/github.com/codeation/impress)
 
 ## Proof of Concept Version
 
@@ -97,6 +98,8 @@ First of all, welcome:
 - contribution in the near future
 
 ## Using
+
+See https://godoc.org/github.com/codeation/impress
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
 
