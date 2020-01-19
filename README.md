@@ -66,10 +66,10 @@ You can specify the full path and name for the GUI driver via the environment va
 IMPRESS_TERMINAL_PATH=/path/it go run ./examples/simple/simple.go
 ```
 
-or just copy the downloaded GUI driver to the working directory and launch examples.
+or just copy the downloaded GUI driver to the working directory and launch example:
 
 ```
-go run ./exmaples/simple/simple.go
+go run ./examples/simple/simple.go
 ```
 
 ## GUI driver
