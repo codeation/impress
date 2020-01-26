@@ -12,9 +12,12 @@ var (
 	white  = impress.NewColor(255, 255, 255)
 	silver = impress.NewColor(224, 224, 224)
 	red    = impress.NewColor(255, 0, 0)
+
+	leftRect  = impress.NewRect(0, 0, 320, 480)
+	rightRect = impress.NewRect(320, 0, 320, 480)
 )
 
-// Action loop for any window
+// Action loop for both windows
 func action(act *impress.Action, w *impress.Window, font *impress.Font) {
 	var pos int
 	for {
@@ -56,27 +59,28 @@ func main() {
 	}
 	defer font.Close()
 
-	// First window
-	act1 := app.NewAction()
-	w1 := app.NewWindow(impress.NewRect(0, 0, 320, 480), white)
+	// Left window and actor
+	w1 := app.NewWindow(leftRect, white)
 	defer w1.Drop()
+	act1 := app.NewAction()
+	app.AddActor(act1, leftRect)
 	app.Start(func() {
 		action(act1, w1, font)
 	})
 
-	// Second window
-	act2 := app.NewAction()
-	w2 := app.NewWindow(impress.NewRect(320, 0, 320, 480), silver)
+	// Right window and actor
+	w2 := app.NewWindow(rightRect, silver)
 	defer w2.Drop()
+	act2 := app.NewAction()
+	app.AddActor(act2, rightRect)
 	app.Start(func() {
 		action(act2, w2, font)
 	})
 
-	// Toggle windows
+	// Start with left window
 	act1.Activate()
 	app.OnEvent(impress.KeyLeft, act1.Activate)
 	app.OnEvent(impress.KeyRight, act2.Activate)
 
-	// Wait for the actions to complete
 	app.Wait()
 }

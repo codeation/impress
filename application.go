@@ -4,9 +4,15 @@ import (
 	"sync"
 )
 
+type region struct {
+	actor Actor
+	rect  Rect
+}
+
 // Application represents application top level window
 type Application struct {
 	handlers  map[Eventer]func()
+	regions   []*region
 	events    chan Eventer
 	destroyed chan struct{}
 	wg        sync.WaitGroup
@@ -35,6 +41,23 @@ func (app *Application) OnEvent(event Eventer, handler func()) {
 	app.handlers[event] = handler
 }
 
+// AddActor adds actor for rect
+func (app *Application) AddActor(actor Actor, rect Rect) {
+	app.regions = append(app.regions, &region{actor, rect})
+}
+
+// RemoveActor removes actor from actor list
+func (app *Application) RemoveActor(actor Actor) {
+	regions := []*region{}
+	for _, r := range app.regions {
+		if r.actor == actor {
+			continue
+		}
+		regions = append(regions, r)
+	}
+	app.regions = regions
+}
+
 // Event returns next application event
 func (app *Application) Event() Eventer {
 	for {
@@ -59,6 +82,15 @@ func (app *Application) eventLoop() {
 			if handler, ok := app.handlers[e]; ok {
 				handler()
 				continue
+			}
+			if ev, ok := e.(ButtonEvent); ok &&
+				ev.Action == ButtonActionPress && ev.Button == ButtonLeft {
+				for _, r := range app.regions {
+					if ev.Point.In(r.rect) && !app.Activated(r.actor) {
+						app.Activate(r.actor)
+						break
+					}
+				}
 			}
 			if app.active != nil {
 				app.active.Chan() <- e

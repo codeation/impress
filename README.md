@@ -1,6 +1,7 @@
 # impress
 
 **Cross platform GUI Library for Go**
+
 [![GoDoc](https://godoc.org/github.com/codeation/impress?status.svg)](https://godoc.org/github.com/codeation/impress)
 
 ## Proof of Concept Version
@@ -12,10 +13,14 @@ Notes:
 
 ## Basic Principles of Library Building Design
 
-- Performance of the application as well as native applications
-- Simple and clean application code for using GUI
-- Limited use of other libraries (graphic, low-level or native)
-- Creating a GUI application without form designer or hard-coded widgets (it can be separate libraries)
+- Performance of the application as well as native applications.
+- Simple and clean application code for using GUI.
+- Limited use of other libraries (graphic, low-level or native).
+- Creating a GUI application without form designer or hard-coded widgets.
+
+The basic idea is to avoid the event-driven programming paradigm. See
+["Whats wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
+page.
 
 ## Examples
 
@@ -99,7 +104,8 @@ First of all, welcome:
 
 ## Using
 
-See https://godoc.org/github.com/codeation/impress
+See [documentation](https://godoc.org/github.com/codeation/impress) and
+[examples folder](https://github.com/codeation/impress/tree/master/examples).
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
 

@@ -40,6 +40,11 @@ func NewRect(x, y, width, height int) Rect {
 	}
 }
 
+// In returns true when point is inside rect
+func (p *Point) In(rect Rect) bool {
+	return p.X >= rect.X && p.X < rect.X+rect.Width && p.Y >= rect.Y && p.Y < rect.Y+rect.Height
+}
+
 // Color represents a 24-bit color, having 8 bits for each of red, green, blue.
 type Color struct {
 	R, G, B int
