@@ -57,6 +57,8 @@ func main() {
 }
 ```
 
+See project wiki for [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
+
 Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
 ## Installation
