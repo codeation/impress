@@ -4,6 +4,8 @@ import (
 	"log"
 
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/action"
+
 	_ "github.com/codeation/impress/duo"
 )
 
@@ -17,8 +19,8 @@ var (
 	rightRect = impress.NewRect(320, 0, 320, 480)
 )
 
-// Action loop for both windows
-func action(act *impress.Action, w *impress.Window, font *impress.Font) {
+// loop is endless func for any window
+func loop(act *action.Action, w *impress.Window, font *impress.Font) {
 	var pos int
 	for {
 		// Draw line
@@ -48,10 +50,8 @@ func action(act *impress.Action, w *impress.Window, font *impress.Font) {
 }
 
 func main() {
-	app := impress.NewApplication()
+	app := impress.NewApplication(impress.NewRect(0, 0, 640, 480), "Example")
 	defer app.Close()
-	app.Title("Example")
-	app.Size(impress.NewRect(0, 0, 640, 480))
 
 	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
 	if err != nil {
@@ -62,24 +62,13 @@ func main() {
 	// Left window and actor
 	w1 := app.NewWindow(leftRect, white)
 	defer w1.Drop()
-	act1 := app.NewAction()
-	app.AddActor(act1, leftRect)
-	app.Start(func() {
-		action(act1, w1, font)
-	})
+	act1 := action.NewAction(app, leftRect, func(act *action.Action) { loop(act, w1, font) })
+	app.OnEvent(impress.KeyLeft, act1.Activate)
 
 	// Right window and actor
 	w2 := app.NewWindow(rightRect, silver)
 	defer w2.Drop()
-	act2 := app.NewAction()
-	app.AddActor(act2, rightRect)
-	app.Start(func() {
-		action(act2, w2, font)
-	})
-
-	// Start with left window
-	act1.Activate()
-	app.OnEvent(impress.KeyLeft, act1.Activate)
+	act2 := action.NewAction(app, rightRect, func(act *action.Action) { loop(act, w2, font) })
 	app.OnEvent(impress.KeyRight, act2.Activate)
 
 	app.Wait()

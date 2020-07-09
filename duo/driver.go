@@ -17,6 +17,7 @@ type driver struct {
 	cmd          *exec.Cmd
 	lastWindowID int
 	lastFontID   int
+	lastImageID  int
 	events       chan impress.Eventer
 	onDraw       sync.Mutex
 	connDraw     net.Conn
@@ -103,23 +104,6 @@ func (d *driver) Title(title string) {
 	d.onDraw.Lock()
 	defer d.onDraw.Unlock()
 	writeSequence(d.connDraw, 'T', title)
-}
-
-func (d *driver) NewWindow(rect impress.Rect, color impress.Color) impress.Painter {
-	d.lastWindowID++
-	w := &painter{
-		driver:     d,
-		id:         d.lastWindowID,
-		rect:       rect,
-		background: color,
-	}
-	d.onDraw.Lock()
-	defer d.onDraw.Unlock()
-	writeSequence(d.connDraw, 'D', w.id, w.rect.X, w.rect.Y, w.rect.Width, w.rect.Height,
-		color.R, color.G, color.B)
-	writeSequence(d.connDraw, 'F', w.id, 0, 0, w.rect.Width, w.rect.Height,
-		w.background.R, w.background.G, w.background.B)
-	return w
 }
 
 func (d *driver) Chan() <-chan impress.Eventer {

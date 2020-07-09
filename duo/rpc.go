@@ -63,10 +63,20 @@ func writeSequence(conn io.Writer, values ...interface{}) {
 			if len(value) > 32767 {
 				log.Fatalf("writeSequence, string too big (%d)", len(value))
 			}
-			if err := binary.Write(conn, binary.LittleEndian, int16(len(value))); err != nil {
+			if err := binary.Write(conn, binary.LittleEndian, int32(len(value))); err != nil {
 				log.Fatal(err)
 			}
 			if err := binary.Write(conn, binary.LittleEndian, []byte(value)); err != nil {
+				log.Fatal(err)
+			}
+		case []byte:
+			if len(value) > 8388607 {
+				log.Fatalf("writeSequence, string too big (%d)", len(value))
+			}
+			if err := binary.Write(conn, binary.LittleEndian, int32(len(value))); err != nil {
+				log.Fatal(err)
+			}
+			if err := binary.Write(conn, binary.LittleEndian, value); err != nil {
 				log.Fatal(err)
 			}
 		default:

@@ -39,10 +39,8 @@ import (
 )
 
 func main() {
-	app := impress.NewApplication()
+	app := impress.NewApplication(impress.NewRect(0, 0, 640, 480), "Hello World Application")
 	defer app.Close()
-	app.Title("Hello World Application")
-	app.Size(impress.NewRect(0, 0, 640, 480))
 
 	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
 	if err != nil {

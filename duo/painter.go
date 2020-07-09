@@ -13,6 +13,23 @@ type painter struct {
 	background impress.Color
 }
 
+func (d *driver) NewWindow(rect impress.Rect, color impress.Color) impress.Painter {
+	d.lastWindowID++
+	w := &painter{
+		driver:     d,
+		id:         d.lastWindowID,
+		rect:       rect,
+		background: color,
+	}
+	d.onDraw.Lock()
+	defer d.onDraw.Unlock()
+	writeSequence(d.connDraw, 'D', w.id, w.rect.X, w.rect.Y, w.rect.Width, w.rect.Height,
+		color.R, color.G, color.B)
+	writeSequence(d.connDraw, 'F', w.id, 0, 0, w.rect.Width, w.rect.Height,
+		w.background.R, w.background.G, w.background.B)
+	return w
+}
+
 func (p *painter) Drop() {
 	p.driver.onDraw.Lock()
 	defer p.driver.onDraw.Unlock()
@@ -47,6 +64,13 @@ func (p *painter) Line(from impress.Point, to impress.Point, color impress.Color
 	defer p.driver.onDraw.Unlock()
 	writeSequence(p.driver.connDraw, 'L', p.id, from.X, from.Y, to.X, to.Y,
 		color.R, color.G, color.B)
+}
+
+func (p *painter) Image(from impress.Point, img *impress.Image) {
+	b := img.Imager.(*bitmap)
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
+	writeSequence(p.driver.connDraw, 'I', p.id, from.X, from.Y, b.ID)
 }
 
 func (p *painter) Text(text string, font *impress.Font, from impress.Point, color impress.Color) {

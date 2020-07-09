@@ -39,6 +39,11 @@ func (w *Window) Line(from Point, to Point, color Color) {
 	w.paint.Line(from, to, color)
 }
 
+// Image draw a CAIRO_FORMAT_RGB24 data
+func (w *Window) Image(from Point, img *Image) {
+	w.paint.Image(from, img)
+}
+
 // Text draws a text at specified location using a specified font and foreground color
 func (w *Window) Text(text string, font *Font, from Point, color Color) {
 	w.paint.Text(text, font, from, color)

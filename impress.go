@@ -8,6 +8,7 @@ type Driver interface {
 	Size(rect Rect)
 	NewWindow(rect Rect, color Color) Painter
 	NewFont(font *Font) (Fonter, error)
+	NewImage(img *Image) (Imager, error)
 	Chan() <-chan Eventer
 }
 
@@ -19,6 +20,7 @@ type Painter interface {
 	Show()
 	Fill(rect Rect, color Color)
 	Line(from Point, to Point, color Color)
+	Image(from Point, img *Image)
 	Text(text string, font *Font, from Point, color Color)
 }
 
@@ -27,6 +29,11 @@ type Fonter interface {
 	Close()
 	Split(text string, edge int) []string
 	Size(text string) Size
+}
+
+// Imager is the interface to a image functions
+type Imager interface {
+	Close()
 }
 
 // Actor is an event receiver interface

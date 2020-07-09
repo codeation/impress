@@ -13,20 +13,22 @@ type region struct {
 type Application struct {
 	handlers  map[Eventer]func()
 	regions   []*region
+	active    Actor
 	events    chan Eventer
 	destroyed chan struct{}
 	wg        sync.WaitGroup
-	active    Actor
 }
 
 // NewApplication creates main application window
-func NewApplication() *Application {
+func NewApplication(rect Rect, title string) *Application {
 	app := &Application{
 		handlers:  map[Eventer]func(){},
 		events:    make(chan Eventer, 10),
 		destroyed: make(chan struct{}),
 	}
 	driver.Init()
+	driver.Size(rect)
+	driver.Title(title)
 	app.Start(app.eventLoop)
 	return app
 }
@@ -34,6 +36,11 @@ func NewApplication() *Application {
 // Close makes invocation of the main loop return
 func (app *Application) Close() {
 	driver.Done()
+}
+
+// Done returns a channel that's closed when the application is stopped
+func (app *Application) Done() <-chan struct{} {
+	return app.destroyed
 }
 
 // OnEvent connects function call back to an event
@@ -56,6 +63,13 @@ func (app *Application) RemoveActor(actor Actor) {
 		regions = append(regions, r)
 	}
 	app.regions = regions
+	if app.active == actor {
+		if len(regions) > 1 {
+			app.active = regions[0].actor
+		} else {
+			app.active = nil
+		}
+	}
 }
 
 // Event returns next application event
@@ -68,6 +82,9 @@ func (app *Application) Event() Eventer {
 			return DoneEvent
 		}
 	}
+}
+
+func (app *Application) singleEvent(e Eventer) {
 }
 
 // Redirect drivers events to active Actor or Application itself
@@ -86,42 +103,46 @@ func (app *Application) eventLoop() {
 			if ev, ok := e.(ButtonEvent); ok &&
 				ev.Action == ButtonActionPress && ev.Button == ButtonLeft {
 				for _, r := range app.regions {
-					if ev.Point.In(r.rect) && !app.Activated(r.actor) {
+					if ev.Point.In(r.rect) && app.active != r.actor {
 						app.Activate(r.actor)
 						break
 					}
 				}
-			}
-			if app.active != nil {
-				app.active.Chan() <- e
 				continue
 			}
-			app.events <- e
+			if a := app.active; a != nil {
+				a.Chan() <- e
+				continue
+			}
+			select {
+			case app.events <- e:
+			default:
+			}
 		case <-app.destroyed:
 			return
 		}
 	}
 }
 
-// Activate sets the active event receiver
-func (app *Application) Activate(act Actor) {
-	if app.active != nil {
-		app.active.Chan() <- DeactivatedEvent
+// Activate sets the active event receiver under mutex protection
+func (app *Application) Activate(actor Actor) {
+	if a := app.active; a != nil {
+		a.Chan() <- DeactivatedEvent
 	}
-	app.active = act
-	if app.active != nil {
-		app.active.Chan() <- ActivatedEvent
+	app.active = actor
+	if actor != nil {
+		actor.Chan() <- ActivatedEvent
 	}
 }
 
 // Activated returns true when the actor is an active recipient
-func (app *Application) Activated(act Actor) bool {
-	return app.active == act
+func (app *Application) Activated(actor Actor) bool {
+	return app.active == actor
 }
 
 // Title sets application window title
-func (app *Application) Title(s string) {
-	driver.Title(s)
+func (app *Application) Title(title string) {
+	driver.Title(title)
 }
 
 // Size sets application window size
