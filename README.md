@@ -2,7 +2,7 @@
 
 **Cross platform GUI Library for Go**
 
-[![GoDoc](https://godoc.org/github.com/codeation/impress?status.svg)](https://godoc.org/github.com/codeation/impress)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
 ## Proof of Concept Version
 
@@ -104,8 +104,9 @@ First of all, welcome:
 
 ## Using
 
-See [documentation](https://godoc.org/github.com/codeation/impress) and
-[examples folder](https://github.com/codeation/impress/tree/master/examples).
+See [documentation](https://pkg.go.dev/badge/github.com/codeation/impress),
+[examples folder](https://github.com/codeation/impress/tree/master/examples) and
+[project wiki](https://github.com/codeation/impress/wiki).
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
 
