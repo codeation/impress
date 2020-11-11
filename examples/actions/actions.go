@@ -15,8 +15,8 @@ var (
 	silver = impress.NewColor(224, 224, 224)
 	red    = impress.NewColor(255, 0, 0)
 
-	leftRect  = impress.NewRect(0, 0, 320, 480)
-	rightRect = impress.NewRect(320, 0, 320, 480)
+	leftRect  = impress.NewRect(0, 0, 340, 480)
+	rightRect = impress.NewRect(300, 0, 340, 480)
 )
 
 // loop is endless func for any window
@@ -28,6 +28,7 @@ func loop(act *action.Action, w *impress.Window, font *impress.Font) {
 		w.Text("Hello, world!", font, impress.NewPoint(105, pos), black)
 		if act.Activated() {
 			w.Line(impress.NewPoint(105, pos+30), impress.NewPoint(215, pos+30), red)
+			w.Raise()
 		}
 		w.Show()
 

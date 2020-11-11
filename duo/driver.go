@@ -18,6 +18,7 @@ type driver struct {
 	lastWindowID int
 	lastFontID   int
 	lastImageID  int
+	lastMenuID   int
 	events       chan impress.Eventer
 	onDraw       sync.Mutex
 	connDraw     net.Conn
@@ -165,6 +166,11 @@ func (d *driver) readEvents() {
 				Control: control,
 				Alt:     alt,
 				Meta:    meta,
+			}
+		case 'u':
+			name, _ := readString(d.connEvent)
+			d.events <- impress.MenuEvent{
+				Action: name,
 			}
 		default:
 			d.events <- impress.UnknownEvent

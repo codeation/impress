@@ -9,6 +9,7 @@ type Driver interface {
 	NewWindow(rect Rect, color Color) Painter
 	NewFont(font *Font) (Fonter, error)
 	NewImage(img *Image) (Imager, error)
+	NewMenu(label string) Menuer
 	Chan() <-chan Eventer
 }
 
@@ -16,6 +17,7 @@ type Driver interface {
 type Painter interface {
 	Drop()
 	Size(rect Rect)
+	Raise()
 	Clear()
 	Show()
 	Fill(rect Rect, color Color)
@@ -34,6 +36,12 @@ type Fonter interface {
 // Imager is the interface to a image functions
 type Imager interface {
 	Close()
+}
+
+// Menuer is the interface to a menu node
+type Menuer interface {
+	NewMenu(label string) Menuer
+	NewItem(label string, action string)
 }
 
 // Actor is an event receiver interface

@@ -10,6 +10,7 @@ const (
 	KeyboardEventType = 20
 	ButtonEventType   = 30
 	MotionEventType   = 40
+	MenuEventType     = 50
 )
 
 // Eventer is the interface that groups GUI events
@@ -105,4 +106,21 @@ type MotionEvent struct {
 // Type returns event type
 func (e MotionEvent) Type() int {
 	return MotionEventType
+}
+
+// MenuEvent is menu action event
+type MenuEvent struct {
+	Action string
+}
+
+// NewMenuEvent returns a menu action event
+func NewMenuEvent(short string) MenuEvent {
+	return MenuEvent{
+		Action: "app." + short,
+	}
+}
+
+// Type returns event type
+func (e MenuEvent) Type() int {
+	return MenuEventType
 }

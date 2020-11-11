@@ -84,9 +84,6 @@ func (app *Application) Event() Eventer {
 	}
 }
 
-func (app *Application) singleEvent(e Eventer) {
-}
-
 // Redirect drivers events to active Actor or Application itself
 func (app *Application) eventLoop() {
 	for {

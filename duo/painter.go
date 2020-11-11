@@ -36,6 +36,12 @@ func (p *painter) Drop() {
 	writeSequence(p.driver.connDraw, 'O', p.id)
 }
 
+func (p *painter) Raise() {
+	p.driver.onDraw.Lock()
+	defer p.driver.onDraw.Unlock()
+	writeSequence(p.driver.connDraw, 'A', p.id)
+}
+
 func (p *painter) Size(rect impress.Rect) {
 	p.rect = rect
 	p.driver.onDraw.Lock()

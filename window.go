@@ -39,7 +39,7 @@ func (w *Window) Line(from Point, to Point, color Color) {
 	w.paint.Line(from, to, color)
 }
 
-// Image draw a CAIRO_FORMAT_RGB24 data
+// Image draws a CAIRO_FORMAT_RGB24 data
 func (w *Window) Image(from Point, img *Image) {
 	w.paint.Image(from, img)
 }
@@ -52,4 +52,9 @@ func (w *Window) Text(text string, font *Font, from Point, color Color) {
 // Show sends the contents of the window to the screen
 func (w *Window) Show() {
 	w.paint.Show()
+}
+
+// Raise brings the window to the forefront
+func (w *Window) Raise() {
+	w.paint.Raise()
 }
