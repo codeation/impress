@@ -9,7 +9,7 @@
 Notes:
 
 - This project is still in the early stages of development and is not yet in a usable state.
-- The project tested on Debian 9, 10 and MacOS 10.13, 10.14.
+- The project tested on Debian 9, 10 and MacOS 10.14, 10.15.
 
 ## Basic Principles of Library Building Design
 
