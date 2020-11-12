@@ -104,7 +104,7 @@ First of all, welcome:
 
 ## Using
 
-See [documentation](https://pkg.go.dev/badge/github.com/codeation/impress),
+See [documentation](https://pkg.go.dev/github.com/codeation/impress),
 [examples folder](https://github.com/codeation/impress/tree/master/examples) and
 [project wiki](https://github.com/codeation/impress/wiki).
 
