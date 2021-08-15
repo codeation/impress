@@ -1,14 +1,22 @@
 package duo
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
 	"log"
-	"net"
 	"os"
 	"os/exec"
 	"sync"
-	"time"
+	"syscall"
 
 	"github.com/codeation/impress"
+)
+
+const (
+	fifoInputPath  = "/tmp/it_fifo_input_"
+	fifoOutputPath = "/tmp/it_fifo_output_"
+	fifoEventPath  = "/tmp/it_fifo_event_"
 )
 
 // Driver
@@ -21,9 +29,11 @@ type driver struct {
 	lastMenuID   int
 	events       chan impress.Eventer
 	onDraw       sync.Mutex
-	connDraw     net.Conn
+	pipeDraw     *os.File
+	pipeAnswer   *os.File
+	pipeEvent    *os.File
+	pipeSuffix   string
 	onExit       bool
-	connEvent    net.Conn
 }
 
 func init() {
@@ -34,45 +44,44 @@ func init() {
 }
 
 func (d *driver) runrpc() {
+	randBuffer := make([]byte, 8)
+	if _, err := rand.Reader.Read(randBuffer); err != nil {
+		log.Fatal(err)
+	}
+	d.pipeSuffix = hex.EncodeToString(randBuffer)
+	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
+		if err := syscall.Mkfifo(name+d.pipeSuffix, 0644); err != nil {
+			log.Fatal(err)
+		}
+	}
 	path := os.Getenv("IMPRESS_TERMINAL_PATH")
 	if path == "" {
 		path = "./it"
 	}
-	d.cmd = exec.Command(path)
+	d.cmd = exec.Command(path, d.pipeSuffix)
 	d.cmd.Stdout = os.Stdout
 	d.cmd.Stderr = os.Stderr
 	if err := d.cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func (d *driver) Init() {
-	// Wait connection to duo driver
 	var err error
-	for i := 0; i < 100; i++ {
-		if d.connDraw, err = net.Dial("tcp", "localhost:1101"); err == nil {
-			break
-		}
-		time.Sleep(50 * time.Millisecond)
-	}
-	if err != nil {
+	if d.pipeAnswer, err = os.OpenFile(fifoOutputPath+d.pipeSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
-	// Wait connection to event socket
-	for i := 0; i < 100; i++ {
-		if d.connEvent, err = net.Dial("tcp", "localhost:1102"); err == nil {
-			break
-		}
-		time.Sleep(50 * time.Millisecond)
+	if d.pipeEvent, err = os.OpenFile(fifoEventPath+d.pipeSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
+		log.Fatal(err)
 	}
-	if err != nil {
+	if d.pipeDraw, err = os.OpenFile(fifoInputPath+d.pipeSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
 	go d.readEvents()
+}
+
+func (d *driver) Init() {
 	// Version test
 	d.onDraw.Lock()
-	writeSequence(d.connDraw, 'V')
-	version, _ := readString(d.connDraw)
+	writeSequence(d.pipeDraw, 'V')
+	version, _ := readString(d.pipeAnswer)
 	d.onDraw.Unlock()
 	if version != it_version {
 		log.Fatalf("./it version \"%s\", expected \"%s\"", version, it_version)
@@ -82,29 +91,37 @@ func (d *driver) Init() {
 func (d *driver) Done() {
 	d.onExit = true
 	d.onDraw.Lock()
-	writeSequence(d.connDraw, 'X')
+	writeSequence(d.pipeDraw, 'X')
 	d.onDraw.Unlock()
-	if err := d.connEvent.Close(); err != nil {
-		log.Fatalf("Close(e) %s", err)
-	}
-	if err := d.connDraw.Close(); err != nil {
-		log.Fatalf("Close(d) %s", err)
-	}
 	if err := d.cmd.Wait(); err != nil {
 		log.Fatalf("Wait %s", err)
+	}
+	if err := d.pipeDraw.Close(); err != nil {
+		log.Fatalf("Close(d) %s", err)
+	}
+	if err := d.pipeAnswer.Close(); err != nil {
+		log.Fatalf("Close(a) %s", err)
+	}
+	if err := d.pipeEvent.Close(); err != nil {
+		log.Fatalf("Close(e) %s", err)
+	}
+	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
+		if _, err := os.Stat(name + d.pipeSuffix); err == nil || !errors.Is(err, os.ErrNotExist) {
+			_ = os.Remove(name + d.pipeSuffix)
+		}
 	}
 }
 
 func (d *driver) Size(rect impress.Rect) {
 	d.onDraw.Lock()
 	defer d.onDraw.Unlock()
-	writeSequence(d.connDraw, 'S', rect.X, rect.Y, rect.Width, rect.Height)
+	writeSequence(d.pipeDraw, 'S', rect.X, rect.Y, rect.Width, rect.Height)
 }
 
 func (d *driver) Title(title string) {
 	d.onDraw.Lock()
 	defer d.onDraw.Unlock()
-	writeSequence(d.connDraw, 'T', title)
+	writeSequence(d.pipeDraw, 'T', title)
 }
 
 func (d *driver) Chan() <-chan impress.Eventer {
@@ -115,7 +132,7 @@ func (d *driver) Chan() <-chan impress.Eventer {
 
 func (d *driver) readEvents() {
 	for {
-		command, err := readChar(d.connEvent)
+		command, err := readChar(d.pipeEvent)
 		if err != nil {
 			if d.onExit {
 				break
@@ -124,12 +141,12 @@ func (d *driver) readEvents() {
 		}
 		switch command {
 		case 'k':
-			u, _ := readUInt32(d.connEvent)
-			shift, _ := readBool(d.connEvent)
-			control, _ := readBool(d.connEvent)
-			alt, _ := readBool(d.connEvent)
-			meta, _ := readBool(d.connEvent)
-			name, _ := readString(d.connEvent)
+			u, _ := readUInt32(d.pipeEvent)
+			shift, _ := readBool(d.pipeEvent)
+			control, _ := readBool(d.pipeEvent)
+			alt, _ := readBool(d.pipeEvent)
+			meta, _ := readBool(d.pipeEvent)
+			name, _ := readString(d.pipeEvent)
 			d.events <- impress.KeyboardEvent{
 				Rune:    rune(u),
 				Name:    name,
@@ -139,27 +156,33 @@ func (d *driver) readEvents() {
 				Meta:    meta,
 			}
 		case 'g':
-			u, _ := readUInt32(d.connEvent)
+			u, _ := readUInt32(d.pipeEvent)
 			d.events <- impress.GeneralEvent{
 				Event: u,
 			}
+		case 'f':
+			width, _ := readInt16(d.pipeEvent)
+			height, _ := readInt16(d.pipeEvent)
+			d.events <- impress.ConfigureEvent{
+				Size: impress.NewSize(width, height),
+			}
 		case 'b':
-			btype, _ := readChar(d.connEvent)
-			button, _ := readChar(d.connEvent)
-			x, _ := readInt16(d.connEvent)
-			y, _ := readInt16(d.connEvent)
+			btype, _ := readChar(d.pipeEvent)
+			button, _ := readChar(d.pipeEvent)
+			x, _ := readInt16(d.pipeEvent)
+			y, _ := readInt16(d.pipeEvent)
 			d.events <- impress.ButtonEvent{
 				Action: int(btype),
 				Button: int(button),
 				Point:  impress.NewPoint(x, y),
 			}
 		case 'm':
-			x, _ := readInt16(d.connEvent)
-			y, _ := readInt16(d.connEvent)
-			shift, _ := readBool(d.connEvent)
-			control, _ := readBool(d.connEvent)
-			alt, _ := readBool(d.connEvent)
-			meta, _ := readBool(d.connEvent)
+			x, _ := readInt16(d.pipeEvent)
+			y, _ := readInt16(d.pipeEvent)
+			shift, _ := readBool(d.pipeEvent)
+			control, _ := readBool(d.pipeEvent)
+			alt, _ := readBool(d.pipeEvent)
+			meta, _ := readBool(d.pipeEvent)
 			d.events <- impress.MotionEvent{
 				Point:   impress.NewPoint(x, y),
 				Shift:   shift,
@@ -168,7 +191,7 @@ func (d *driver) readEvents() {
 				Meta:    meta,
 			}
 		case 'u':
-			name, _ := readString(d.connEvent)
+			name, _ := readString(d.pipeEvent)
 			d.events <- impress.MenuEvent{
 				Action: name,
 			}

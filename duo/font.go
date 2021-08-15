@@ -74,7 +74,7 @@ func (f *ftfont) defaultValue(fieldname string, maps *map[string]int) int {
 }
 
 func (d *driver) NewFont(font *impress.Font) (impress.Fonter, error) {
-	if d == nil || d.connDraw == nil {
+	if d == nil || d.pipeDraw == nil {
 		log.Fatal("GUI driver not initialized")
 	}
 	d.lastFontID++
@@ -89,11 +89,11 @@ func (d *driver) NewFont(font *impress.Font) (impress.Fonter, error) {
 	stretch := f.defaultValue("stretch", &tableStretch)
 	f.driver.onDraw.Lock()
 	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.connDraw, 'N', f.ID, f.Font.Height, style, variant, weight, stretch,
+	writeSequence(f.driver.pipeDraw, 'N', f.ID, f.Font.Height, style, variant, weight, stretch,
 		f.Font.Attr["family"])
-	font.Baseline, _ = readInt16(f.driver.connDraw)
-	font.Ascent, _ = readInt16(f.driver.connDraw)
-	font.Descent, _ = readInt16(f.driver.connDraw)
+	font.Baseline, _ = readInt16(f.driver.pipeAnswer)
+	font.Ascent, _ = readInt16(f.driver.pipeAnswer)
+	font.Descent, _ = readInt16(f.driver.pipeAnswer)
 	return f, nil
 }
 
@@ -105,12 +105,12 @@ func (f *ftfont) Split(text string, edge int) []string {
 	}
 	f.driver.onDraw.Lock()
 	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.connDraw, 'P', f.ID, edge, text)
-	count, _ := readInt16(f.driver.connDraw)
+	writeSequence(f.driver.pipeDraw, 'P', f.ID, edge, text)
+	count, _ := readInt16(f.driver.pipeAnswer)
 	pos := 0
 	out := make([]string, count)
 	for i := 0; i < count; i++ {
-		length, _ := readInt16(f.driver.connDraw)
+		length, _ := readInt16(f.driver.pipeAnswer)
 		out[i] = text[pos : pos+length]
 		pos += length
 	}
@@ -123,8 +123,8 @@ func (f *ftfont) Size(text string) impress.Size {
 	}
 	f.driver.onDraw.Lock()
 	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.connDraw, 'R', f.ID, text)
-	width, _ := readInt16(f.driver.connDraw)
-	height, _ := readInt16(f.driver.connDraw)
+	writeSequence(f.driver.pipeDraw, 'R', f.ID, text)
+	width, _ := readInt16(f.driver.pipeAnswer)
+	height, _ := readInt16(f.driver.pipeAnswer)
 	return impress.NewSize(width, height)
 }

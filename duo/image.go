@@ -13,7 +13,7 @@ type bitmap struct {
 }
 
 func (d *driver) NewImage(img *impress.Image) (impress.Imager, error) {
-	if d == nil || d.connDraw == nil {
+	if d == nil || d.pipeDraw == nil {
 		log.Fatal("GUI driver not initialized")
 	}
 	d.lastImageID++
@@ -24,12 +24,12 @@ func (d *driver) NewImage(img *impress.Image) (impress.Imager, error) {
 	}
 	b.driver.onDraw.Lock()
 	defer b.driver.onDraw.Unlock()
-	writeSequence(b.driver.connDraw, 'B', b.ID, img.Width, img.Height, img.PixNRGBA)
+	writeSequence(b.driver.pipeDraw, 'B', b.ID, img.Width, img.Height, img.PixNRGBA)
 	return b, nil
 }
 
 func (b *bitmap) Close() {
 	b.driver.onDraw.Lock()
 	defer b.driver.onDraw.Unlock()
-	writeSequence(b.driver.connDraw, 'M', b.ID)
+	writeSequence(b.driver.pipeDraw, 'M', b.ID)
 }

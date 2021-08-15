@@ -6,11 +6,12 @@ import (
 
 // Event types
 const (
-	GeneralEventType  = 10
-	KeyboardEventType = 20
-	ButtonEventType   = 30
-	MotionEventType   = 40
-	MenuEventType     = 50
+	GeneralEventType   = 10
+	KeyboardEventType  = 20
+	ButtonEventType    = 30
+	MotionEventType    = 40
+	MenuEventType      = 50
+	ConfigureEventType = 60
 )
 
 // Eventer is the interface that groups GUI events
@@ -36,6 +37,16 @@ var (
 	ActivatedEvent   = GeneralEvent{Event: 3}
 	DeactivatedEvent = GeneralEvent{Event: 4}
 )
+
+// Configure event
+type ConfigureEvent struct {
+	Size Size
+}
+
+// Type returns event type
+func (e ConfigureEvent) Type() int {
+	return ConfigureEventType
+}
 
 // KeyboardEvent is a keyboard event
 type KeyboardEvent struct {
