@@ -31,11 +31,9 @@ func (e GeneralEvent) Type() int {
 
 // Signal events
 var (
-	UnknownEvent     = GeneralEvent{Event: 0}
-	DestroyEvent     = GeneralEvent{Event: 1}
-	DoneEvent        = GeneralEvent{Event: 2}
-	ActivatedEvent   = GeneralEvent{Event: 3}
-	DeactivatedEvent = GeneralEvent{Event: 4}
+	UnknownEvent = GeneralEvent{Event: 0}
+	DestroyEvent = GeneralEvent{Event: 1}
+	DoneEvent    = GeneralEvent{Event: 2}
 )
 
 // Configure event
@@ -64,8 +62,10 @@ var (
 	KeyRight     = KeyboardEvent{Name: "Right"}
 	KeyUp        = KeyboardEvent{Name: "Up"}
 	KeyDown      = KeyboardEvent{Name: "Down"}
-	KeyEnter     = KeyboardEvent{Rune: 13, Name: "Return"}
 	KeyBackSpace = KeyboardEvent{Rune: 8, Name: "BackSpace"}
+	KeyTab       = KeyboardEvent{Rune: 9, Name: "Tab"}
+	KeyEnter     = KeyboardEvent{Rune: 13, Name: "Return"}
+	KeyDelete    = KeyboardEvent{Rune: 127, Name: "Delete"}
 )
 
 // Type returns event type

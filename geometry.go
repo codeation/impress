@@ -13,6 +13,34 @@ func NewPoint(x, y int) Point {
 	}
 }
 
+func (p Point) Size(size Size) Rect {
+	return Rect{
+		Point: p,
+		Size:  size,
+	}
+}
+
+func (p Point) Move(add Point) Point {
+	return Point{
+		X: p.X + add.X,
+		Y: p.Y + add.Y,
+	}
+}
+
+func (p Point) MoveX(x int) Point {
+	return Point{
+		X: p.X + x,
+		Y: p.Y,
+	}
+}
+
+func (p Point) MoveY(y int) Point {
+	return Point{
+		X: p.X,
+		Y: p.Y + y,
+	}
+}
+
 // A Size is an Width and Height pair.
 type Size struct {
 	Width, Height int
@@ -37,6 +65,13 @@ func NewRect(x, y, width, height int) Rect {
 	return Rect{
 		Point: NewPoint(x, y),
 		Size:  NewSize(width, height),
+	}
+}
+
+func (r Rect) Move(add Point) Rect {
+	return Rect{
+		Point: r.Point.Move(add),
+		Size:  r.Size,
 	}
 }
 
