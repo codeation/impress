@@ -29,7 +29,7 @@ func main() {
 	menu1.NewItem("Exit", impress.NewMenuEvent("exit"))
 
 	menu2 := app.NewMenu("Edit")
-	menu2.NewItemFunc("Paste", impress.NewMenuEvent("check"), func() { fmt.Println("Paste event") })
+	menu2.NewItem("Paste", impress.NewMenuEvent("paste"))
 
 	menu3 := app.NewMenu("Help")
 	menu3.NewItem("Impress Help", impress.NewMenuEvent("help"))
@@ -37,5 +37,15 @@ func main() {
 	menuM.NewItem("Index", impress.NewMenuEvent("index"))
 	menuM.NewItem("Search", impress.NewMenuEvent("search"))
 
-	app.Wait()
+	for {
+		event := <-app.Chan()
+		if event == impress.DestroyEvent || event == impress.KeyExit {
+			break
+		}
+		if event.Type() == impress.MenuEventType {
+			if menuEvent, ok := event.(impress.MenuEvent); ok {
+				fmt.Println("Menu event", menuEvent.Action)
+			}
+		}
+	}
 }

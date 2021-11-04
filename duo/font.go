@@ -74,7 +74,7 @@ func (f *ftfont) defaultValue(fieldname string, maps *map[string]int) int {
 }
 
 func (d *driver) NewFont(font *impress.Font) (impress.Fonter, error) {
-	if d == nil || d.pipeDraw == nil {
+	if d == nil || d.drawPipe == nil {
 		log.Fatal("GUI driver not initialized")
 	}
 	d.lastFontID++
@@ -87,13 +87,12 @@ func (d *driver) NewFont(font *impress.Font) (impress.Fonter, error) {
 	variant := f.defaultValue("variant", &tableVariant)
 	weight := f.defaultValue("weight", &tableWeight)
 	stretch := f.defaultValue("stretch", &tableStretch)
-	f.driver.onDraw.Lock()
-	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.pipeDraw, 'N', f.ID, f.Font.Height, style, variant, weight, stretch,
-		f.Font.Attr["family"])
-	font.Baseline, _ = readInt16(f.driver.pipeAnswer)
-	font.Ascent, _ = readInt16(f.driver.pipeAnswer)
-	font.Descent, _ = readInt16(f.driver.pipeAnswer)
+	d.drawPipe.
+		Int16(&font.Baseline).
+		Int16(&font.Ascent).
+		Int16(&font.Descent).
+		Call(
+			'N', f.ID, f.Font.Height, style, variant, weight, stretch, f.Font.Attr["family"])
 	return f, nil
 }
 
@@ -103,16 +102,16 @@ func (f *ftfont) Split(text string, edge int) []string {
 	if len(text) == 0 {
 		return nil
 	}
-	f.driver.onDraw.Lock()
-	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.pipeDraw, 'P', f.ID, edge, text)
-	count, _ := readInt16(f.driver.pipeAnswer)
+	var lengths []int
+	f.driver.drawPipe.
+		Int16s(&lengths).
+		Call(
+			'P', f.ID, edge, text)
+	out := make([]string, len(lengths))
 	pos := 0
-	out := make([]string, count)
-	for i := 0; i < count; i++ {
-		length, _ := readInt16(f.driver.pipeAnswer)
-		out[i] = text[pos : pos+length]
-		pos += length
+	for i := 0; i < len(lengths); i++ {
+		out[i] = text[pos : pos+lengths[i]]
+		pos += lengths[i]
 	}
 	return out
 }
@@ -121,10 +120,11 @@ func (f *ftfont) Size(text string) impress.Size {
 	if len(text) == 0 {
 		return impress.NewSize(0, f.Font.Height)
 	}
-	f.driver.onDraw.Lock()
-	defer f.driver.onDraw.Unlock()
-	writeSequence(f.driver.pipeDraw, 'R', f.ID, text)
-	width, _ := readInt16(f.driver.pipeAnswer)
-	height, _ := readInt16(f.driver.pipeAnswer)
+	var width, height int
+	f.driver.drawPipe.
+		Int16(&width).
+		Int16(&height).
+		Call(
+			'R', f.ID, text)
 	return impress.NewSize(width, height)
 }

@@ -1,6 +1,7 @@
 package duo
 
 import (
+	"bufio"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -28,18 +29,18 @@ type driver struct {
 	lastImageID  int
 	lastMenuID   int
 	events       chan impress.Eventer
-	onDraw       sync.Mutex
-	pipeDraw     *os.File
-	pipeAnswer   *os.File
-	pipeEvent    *os.File
-	pipeSuffix   string
+	fileDraw     *os.File
+	fileAnswer   *os.File
+	fileEvent    *os.File
+	fileSuffix   string
 	onExit       bool
+	drawPipe     *pipe
+	eventPipe    *pipe
 }
 
 func init() {
 	d := &driver{}
 	d.runrpc()
-	d.events = make(chan impress.Eventer, 1024)
 	impress.Register(d)
 }
 
@@ -48,9 +49,9 @@ func (d *driver) runrpc() {
 	if _, err := rand.Reader.Read(randBuffer); err != nil {
 		log.Fatal(err)
 	}
-	d.pipeSuffix = hex.EncodeToString(randBuffer)
+	d.fileSuffix = hex.EncodeToString(randBuffer)
 	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
-		if err := syscall.Mkfifo(name+d.pipeSuffix, 0644); err != nil {
+		if err := syscall.Mkfifo(name+d.fileSuffix, 0644); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -58,31 +59,33 @@ func (d *driver) runrpc() {
 	if path == "" {
 		path = "./it"
 	}
-	d.cmd = exec.Command(path, d.pipeSuffix)
+	d.cmd = exec.Command(path, d.fileSuffix)
 	d.cmd.Stdout = os.Stdout
 	d.cmd.Stderr = os.Stderr
 	if err := d.cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
 	var err error
-	if d.pipeAnswer, err = os.OpenFile(fifoOutputPath+d.pipeSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
+	if d.fileAnswer, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
-	if d.pipeEvent, err = os.OpenFile(fifoEventPath+d.pipeSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
+	if d.fileEvent, err = os.OpenFile(fifoEventPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
-	if d.pipeDraw, err = os.OpenFile(fifoInputPath+d.pipeSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
+	if d.fileDraw, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
+	d.drawPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileDraw), bufio.NewReader(d.fileAnswer))
+	d.eventPipe = newPipe(new(dummyMutex), nil, bufio.NewReader(d.fileEvent))
+	d.events = make(chan impress.Eventer, 1024)
 	go d.readEvents()
 }
 
 func (d *driver) Init() {
 	// Version test
-	d.onDraw.Lock()
-	writeSequence(d.pipeDraw, 'V')
-	version, _ := readString(d.pipeAnswer)
-	d.onDraw.Unlock()
+	var version string
+	d.drawPipe.String(&version).Call(
+		'V')
 	if version != it_version {
 		log.Fatalf("./it version \"%s\", expected \"%s\"", version, it_version)
 	}
@@ -90,38 +93,35 @@ func (d *driver) Init() {
 
 func (d *driver) Done() {
 	d.onExit = true
-	d.onDraw.Lock()
-	writeSequence(d.pipeDraw, 'X')
-	d.onDraw.Unlock()
+	d.drawPipe.Call('X')
+	d.drawPipe.Flush()
+	if err := d.fileDraw.Close(); err != nil {
+		log.Fatalf("Close(d) %s", err)
+	}
 	if err := d.cmd.Wait(); err != nil {
 		log.Fatalf("Wait %s", err)
 	}
-	if err := d.pipeDraw.Close(); err != nil {
-		log.Fatalf("Close(d) %s", err)
-	}
-	if err := d.pipeAnswer.Close(); err != nil {
+	if err := d.fileAnswer.Close(); err != nil {
 		log.Fatalf("Close(a) %s", err)
 	}
-	if err := d.pipeEvent.Close(); err != nil {
+	if err := d.fileEvent.Close(); err != nil {
 		log.Fatalf("Close(e) %s", err)
 	}
 	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
-		if _, err := os.Stat(name + d.pipeSuffix); err == nil || !errors.Is(err, os.ErrNotExist) {
-			_ = os.Remove(name + d.pipeSuffix)
+		if _, err := os.Stat(name + d.fileSuffix); err == nil || !errors.Is(err, os.ErrNotExist) {
+			_ = os.Remove(name + d.fileSuffix)
 		}
 	}
 }
 
 func (d *driver) Size(rect impress.Rect) {
-	d.onDraw.Lock()
-	defer d.onDraw.Unlock()
-	writeSequence(d.pipeDraw, 'S', rect.X, rect.Y, rect.Width, rect.Height)
+	d.drawPipe.Call(
+		'S', rect.X, rect.Y, rect.Width, rect.Height)
 }
 
 func (d *driver) Title(title string) {
-	d.onDraw.Lock()
-	defer d.onDraw.Unlock()
-	writeSequence(d.pipeDraw, 'T', title)
+	d.drawPipe.Call(
+		'T', title)
 }
 
 func (d *driver) Chan() <-chan impress.Eventer {
@@ -132,69 +132,65 @@ func (d *driver) Chan() <-chan impress.Eventer {
 
 func (d *driver) readEvents() {
 	for {
-		command, err := readChar(d.pipeEvent)
-		if err != nil {
+		var command byte
+		if err := d.eventPipe.Byte(&command).CallErr(); err != nil {
 			if d.onExit {
-				break
+				close(d.events)
+				return
 			}
-			log.Fatalf("readEvents %s", err)
+			log.Fatal(err)
 		}
 		switch command {
-		case 'k':
-			u, _ := readUInt32(d.pipeEvent)
-			shift, _ := readBool(d.pipeEvent)
-			control, _ := readBool(d.pipeEvent)
-			alt, _ := readBool(d.pipeEvent)
-			meta, _ := readBool(d.pipeEvent)
-			name, _ := readString(d.pipeEvent)
-			d.events <- impress.KeyboardEvent{
-				Rune:    rune(u),
-				Name:    name,
-				Shift:   shift,
-				Control: control,
-				Alt:     alt,
-				Meta:    meta,
-			}
 		case 'g':
-			u, _ := readUInt32(d.pipeEvent)
-			d.events <- impress.GeneralEvent{
-				Event: u,
-			}
+			var e impress.GeneralEvent
+			d.eventPipe.
+				UInt32(&e.Event).
+				Call()
+			d.events <- e
+		case 'k':
+			var e impress.KeyboardEvent
+			d.eventPipe.
+				Rune(&e.Rune).
+				Bool(&e.Shift).
+				Bool(&e.Control).
+				Bool(&e.Alt).
+				Bool(&e.Meta).
+				String(&e.Name).
+				Call()
+			d.events <- e
 		case 'f':
-			width, _ := readInt16(d.pipeEvent)
-			height, _ := readInt16(d.pipeEvent)
-			d.events <- impress.ConfigureEvent{
-				Size: impress.NewSize(width, height),
-			}
+			var e impress.ConfigureEvent
+			d.eventPipe.
+				Int16(&e.Size.Width).
+				Int16(&e.Size.Height).
+				Call()
+			d.events <- e
 		case 'b':
-			btype, _ := readChar(d.pipeEvent)
-			button, _ := readChar(d.pipeEvent)
-			x, _ := readInt16(d.pipeEvent)
-			y, _ := readInt16(d.pipeEvent)
-			d.events <- impress.ButtonEvent{
-				Action: int(btype),
-				Button: int(button),
-				Point:  impress.NewPoint(x, y),
-			}
+			var e impress.ButtonEvent
+			d.eventPipe.
+				Char(&e.Action).
+				Char(&e.Button).
+				Int16(&e.Point.X).
+				Int16(&e.Point.Y).
+				Call()
+			d.events <- e
 		case 'm':
-			x, _ := readInt16(d.pipeEvent)
-			y, _ := readInt16(d.pipeEvent)
-			shift, _ := readBool(d.pipeEvent)
-			control, _ := readBool(d.pipeEvent)
-			alt, _ := readBool(d.pipeEvent)
-			meta, _ := readBool(d.pipeEvent)
-			d.events <- impress.MotionEvent{
-				Point:   impress.NewPoint(x, y),
-				Shift:   shift,
-				Control: control,
-				Alt:     alt,
-				Meta:    meta,
-			}
+			var e impress.MotionEvent
+			d.eventPipe.
+				Int16(&e.Point.X).
+				Int16(&e.Point.Y).
+				Bool(&e.Shift).
+				Bool(&e.Control).
+				Bool(&e.Alt).
+				Bool(&e.Meta).
+				Call()
+			d.events <- e
 		case 'u':
-			name, _ := readString(d.pipeEvent)
-			d.events <- impress.MenuEvent{
-				Action: name,
-			}
+			var e impress.MenuEvent
+			d.eventPipe.
+				String(&e.Action).
+				Call()
+			d.events <- e
 		default:
 			d.events <- impress.UnknownEvent
 		}

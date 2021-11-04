@@ -9,7 +9,7 @@
 Notes:
 
 - This project is still in the early stages of development and is not yet in a usable state.
-- The project tested on Ubuntu 21.04 and MacOS Big Sur (11.5)
+- The project tested on Debian 11.01 (bullseye) and MacOS Big Sur (11.5)
 
 ## Basic Principles of Library Building Design
 
@@ -53,7 +53,12 @@ func main() {
 	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
 	w.Show()
 
-	app.Wait()
+	for {
+		event := <-app.Chan()
+		if event == impress.DestroyEvent || event == impress.KeyExit {
+			break
+		}
+	}
 }
 ```
 

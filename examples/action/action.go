@@ -70,10 +70,11 @@ func action(app *impress.Application, windows []*smallWindow) {
 			w.Redraw(w == activeWindow)
 		}
 
-		event := app.Event()
-		switch {
-		case event == impress.DoneEvent:
+		event := <-app.Chan()
+		if event == impress.DestroyEvent || event == impress.KeyExit {
 			return
+		}
+		switch {
 		case event.Type() == impress.ButtonEventType:
 			clickEvent, ok := event.(impress.ButtonEvent)
 			if ok && clickEvent.Action == impress.ButtonActionPress && clickEvent.Button == impress.ButtonLeft {
@@ -109,6 +110,5 @@ func main() {
 	w2 := NewSmallWindow(app, rightRect, silver, font)
 	defer w2.Drop()
 
-	app.Start(func() { action(app, []*smallWindow{w1, w2}) })
-	app.Wait()
+	action(app, []*smallWindow{w1, w2})
 }

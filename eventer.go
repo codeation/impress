@@ -6,12 +6,13 @@ import (
 
 // Event types
 const (
-	GeneralEventType   = 10
-	KeyboardEventType  = 20
-	ButtonEventType    = 30
-	MotionEventType    = 40
-	MenuEventType      = 50
-	ConfigureEventType = 60
+	_ int = iota
+	GeneralEventType
+	KeyboardEventType
+	ButtonEventType
+	MotionEventType
+	MenuEventType
+	ConfigureEventType
 )
 
 // Eventer is the interface that groups GUI events
@@ -33,7 +34,6 @@ func (e GeneralEvent) Type() int {
 var (
 	UnknownEvent = GeneralEvent{Event: 0}
 	DestroyEvent = GeneralEvent{Event: 1}
-	DoneEvent    = GeneralEvent{Event: 2}
 )
 
 // Configure event

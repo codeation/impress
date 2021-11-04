@@ -26,9 +26,3 @@ func (m *Menu) NewMenu(label string) *Menu {
 func (m *Menu) NewItem(label string, event MenuEvent) {
 	m.menuer.NewItem(label, event.Action)
 }
-
-// NewItemFunc adds a item with callback func to menu node
-func (m *Menu) NewItemFunc(label string, event MenuEvent, f func()) {
-	m.menuer.NewItem(label, event.Action)
-	m.app.OnEvent(event, f)
-}

@@ -22,5 +22,10 @@ func main() {
 	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
 	w.Show()
 
-	app.Wait()
+	for {
+		event := <-app.Chan()
+		if event == impress.DestroyEvent || event == impress.KeyExit {
+			break
+		}
+	}
 }

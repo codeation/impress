@@ -32,5 +32,10 @@ func main() {
 	w.Image(impress.NewPoint(100, 10), i)
 	w.Show()
 
-	app.Wait()
+	for {
+		event := <-app.Chan()
+		if event == impress.DestroyEvent || event == impress.KeyExit {
+			break
+		}
+	}
 }
