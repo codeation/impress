@@ -72,7 +72,8 @@ func (p *painter) Text(text string, font *impress.Font, from impress.Point, colo
 }
 
 func (p *painter) Show() {
-	p.driver.drawPipe.Call(
+	var zero int
+	p.driver.drawPipe.
+		Int16(&zero).Call(
 		'W', p.id)
-	p.driver.drawPipe.Flush()
 }

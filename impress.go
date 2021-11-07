@@ -1,6 +1,6 @@
 package impress
 
-// Driver is the interface to a application level functions
+// Driver is a internal interface to a application level functions
 type Driver interface {
 	Init()
 	Done()
@@ -13,7 +13,7 @@ type Driver interface {
 	Chan() <-chan Eventer
 }
 
-// Painter is the interface to a window functions
+// Painter is a internal interface to a window functions
 type Painter interface {
 	Drop()
 	Size(rect Rect)
@@ -26,32 +26,27 @@ type Painter interface {
 	Text(text string, font *Font, from Point, color Color)
 }
 
-// Fonter is the interface to a font functions
+// Fonter is a internal interface to a font functions
 type Fonter interface {
 	Close()
 	Split(text string, edge int) []string
 	Size(text string) Size
 }
 
-// Imager is the interface to a image functions
+// Imager is a internal interface to a image functions
 type Imager interface {
 	Close()
 }
 
-// Menuer is the interface to a menu node
+// Menuer is a internal interface to a menu node functions
 type Menuer interface {
 	NewMenu(label string) Menuer
 	NewItem(label string, action string)
 }
 
-// Actor is an event receiver interface
-type Actor interface {
-	Chan() chan Eventer
-}
-
 var driver Driver
 
-// Register makes a GUI driver available
+// Register makes a GUI driver available. Internal
 func Register(d Driver) {
 	driver = d
 }
