@@ -1,36 +1,36 @@
 package duo
 
 import (
-	"github.com/codeation/impress"
+	"github.com/codeation/impress/driver"
 )
 
-type menuNode struct {
-	driver *driver
+type menuitem struct {
+	driver *duo
 	ID     int
 }
 
-func (d *driver) NewMenu(label string) impress.Menuer {
+func (d *duo) NewMenu(label string) driver.Menuer {
 	d.lastMenuID++
 	d.drawPipe.Call(
 		'E', d.lastMenuID, 0, label)
-	return &menuNode{
+	return &menuitem{
 		driver: d,
 		ID:     d.lastMenuID,
 	}
 }
 
-func (node *menuNode) NewMenu(label string) impress.Menuer {
-	node.driver.lastMenuID++
-	node.driver.drawPipe.Call(
-		'E', node.driver.lastMenuID, node.ID, label)
-	return &menuNode{
-		driver: node.driver,
-		ID:     node.driver.lastMenuID,
+func (m *menuitem) NewMenu(label string) driver.Menuer {
+	m.driver.lastMenuID++
+	m.driver.drawPipe.Call(
+		'E', m.driver.lastMenuID, m.ID, label)
+	return &menuitem{
+		driver: m.driver,
+		ID:     m.driver.lastMenuID,
 	}
 }
 
-func (node *menuNode) NewItem(label string, action string) {
-	node.driver.lastMenuID++
-	node.driver.drawPipe.Call(
-		'G', node.driver.lastMenuID, node.ID, label, action)
+func (m *menuitem) NewItem(label string, action string) {
+	m.driver.lastMenuID++
+	m.driver.drawPipe.Call(
+		'G', m.driver.lastMenuID, m.ID, label, action)
 }

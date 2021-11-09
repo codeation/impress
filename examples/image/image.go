@@ -1,16 +1,24 @@
 package main
 
 import (
+	"image"
+	"image/color"
 	"image/png"
 	"log"
 	"os"
 
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/event"
+
 	_ "github.com/codeation/impress/duo"
 )
 
+var (
+	background = color.RGBA{255, 255, 255, 0}
+)
+
 func main() {
-	app := impress.NewApplication(impress.NewRect(0, 0, 640, 480), "Image Application")
+	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Image Application")
 	defer app.Close()
 
 	f, err := os.Open("test_image.png")
@@ -22,19 +30,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	i, err := impress.NewImage(img)
-	if err != nil {
-		log.Fatal(err)
-	}
+	i := impress.NewImage(img)
 	defer i.Close()
 
-	w := app.NewWindow(impress.NewRect(0, 0, 640, 480), impress.NewColor(255, 255, 255))
-	w.Image(impress.NewPoint(100, 10), i)
+	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
+	w.Image(image.Pt(100, 10), i)
 	w.Show()
 
 	for {
-		event := <-app.Chan()
-		if event == impress.DestroyEvent || event == impress.KeyExit {
+		action := <-app.Chan()
+		if action == event.DestroyEvent || action == event.KeyExit {
 			break
 		}
 	}

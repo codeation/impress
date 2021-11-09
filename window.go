@@ -1,60 +1,68 @@
 package impress
 
+import (
+	"image"
+	"image/color"
+
+	"github.com/codeation/impress/driver"
+)
+
 // Window represents inner window
 type Window struct {
-	paint Painter
+	painter driver.Painter
 }
 
 // NewWindow creates new inner window with a specified size and background color
-func (app *Application) NewWindow(rect Rect, color Color) *Window {
+func (app *Application) NewWindow(rect image.Rectangle, background color.Color) *Window {
 	return &Window{
-		paint: driver.NewWindow(rect, color),
+		painter: d.NewWindow(rect, background),
 	}
 }
 
 // Drop deletes window
 // Note that a dropped window can no longer be used
 func (w *Window) Drop() {
-	w.paint.Drop()
-	w.paint = nil // TODO notice when the window is dropped
+	w.painter.Drop()
+	w.painter = nil // TODO notice when the window is dropped
 }
 
 // Size changes window size and position
-func (w *Window) Size(rect Rect) {
-	w.paint.Size(rect)
+func (w *Window) Size(rect image.Rectangle) {
+	w.painter.Size(rect)
 }
 
 // Clear clears current window
 func (w *Window) Clear() {
-	w.paint.Clear()
+	w.painter.Clear()
 }
 
 // Fill draws a rectangle with specified size and foreground color
-func (w *Window) Fill(rect Rect, color Color) {
-	w.paint.Fill(rect, color)
+func (w *Window) Fill(rect image.Rectangle, foreground color.Color) {
+	w.painter.Fill(rect, foreground)
 }
 
 // Line draws a color line connecting two specified points
-func (w *Window) Line(from Point, to Point, color Color) {
-	w.paint.Line(from, to, color)
+func (w *Window) Line(from image.Point, to image.Point, foreground color.Color) {
+	w.painter.Line(from, to, foreground)
 }
 
-// Image draws a CAIRO_FORMAT_RGB24 data
-func (w *Window) Image(from Point, img *Image) {
-	w.paint.Image(from, img)
+// Image draws a image at specified location
+func (w *Window) Image(from image.Point, img *Image) {
+	w.painter.Image(from, img.imager)
 }
 
 // Text draws a text at specified location using a specified font and foreground color
-func (w *Window) Text(text string, font *Font, from Point, color Color) {
-	w.paint.Text(text, font, from, color)
+func (w *Window) Text(text string, font *Font, from image.Point, foreground color.Color) {
+	w.painter.Text(text, font.fonter, from, foreground)
 }
 
 // Show sends the contents of the window to the screen
+// Note that a drawings are not visible until Show
 func (w *Window) Show() {
-	w.paint.Show()
+	w.painter.Show()
 }
 
 // Raise brings the window to the forefront
 func (w *Window) Raise() {
-	w.paint.Raise()
+	w.painter.Raise()
 }

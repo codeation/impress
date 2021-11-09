@@ -1,30 +1,36 @@
 package main
 
 import (
-	"log"
+	"image"
+	"image/color"
 
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/event"
+
 	_ "github.com/codeation/impress/duo"
 )
 
+var (
+	background = color.RGBA{255, 255, 255, 0}
+	foreground = color.RGBA{0, 0, 0, 0}
+	underline  = color.RGBA{255, 0, 0, 0}
+)
+
 func main() {
-	app := impress.NewApplication(impress.NewRect(0, 0, 640, 480), "Hello World Application")
+	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Hello World Application")
 	defer app.Close()
 
-	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
-	if err != nil {
-		log.Fatal(err)
-	}
+	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
-	w := app.NewWindow(impress.NewRect(0, 0, 640, 480), impress.NewColor(255, 255, 255))
-	w.Text("Hello, world!", font, impress.NewPoint(280, 210), impress.NewColor(0, 0, 0))
-	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
+	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
+	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
+	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
 	w.Show()
 
 	for {
-		event := <-app.Chan()
-		if event == impress.DestroyEvent || event == impress.KeyExit {
+		action := <-app.Chan()
+		if action == event.DestroyEvent || action == event.KeyExit {
 			break
 		}
 	}

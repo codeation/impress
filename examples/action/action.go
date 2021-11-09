@@ -1,33 +1,38 @@
 package main
 
 import (
-	"log"
+	"image"
+	"image/color"
 
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/event"
+
 	_ "github.com/codeation/impress/duo"
 )
 
 var (
-	black  = impress.NewColor(0, 0, 0)
-	white  = impress.NewColor(255, 255, 255)
-	silver = impress.NewColor(224, 224, 224)
-	red    = impress.NewColor(255, 0, 0)
+	white  = color.RGBA{255, 255, 255, 0}
+	black  = color.RGBA{0, 0, 0, 0}
+	silver = color.RGBA{224, 224, 224, 0}
+	red    = color.RGBA{255, 0, 0, 0}
 
-	appRect   = impress.NewRect(0, 0, 640, 480)
-	leftRect  = impress.NewRect(0, 0, 340, 480)
-	rightRect = impress.NewRect(300, 0, 340, 480)
+	appRect   = image.Rect(0, 0, 640, 480)
+	leftRect  = image.Rect(0, 0, 340, 480)
+	rightRect = leftRect.Add(image.Pt(300, 0))
 )
 
 type smallWindow struct {
 	w    *impress.Window
-	rect impress.Rect
+	rect image.Rectangle
 	pos  int
 	font *impress.Font
 }
 
-func NewSmallWindow(app *impress.Application, rect impress.Rect, color impress.Color, font *impress.Font) *smallWindow {
+func NewSmallWindow(app *impress.Application, rect image.Rectangle,
+	background color.Color, font *impress.Font,
+) *smallWindow {
 	return &smallWindow{
-		w:    app.NewWindow(rect, color),
+		w:    app.NewWindow(rect, background),
 		rect: rect,
 		pos:  0,
 		font: font,
@@ -40,22 +45,22 @@ func (sw *smallWindow) Drop() {
 
 func (sw *smallWindow) Redraw(isActive bool) {
 	sw.w.Clear()
-	sw.w.Text("Hello, world!", sw.font, impress.NewPoint(105, sw.pos), black)
+	sw.w.Text("Hello, world!", sw.font, image.Pt(105, sw.pos), black)
 	if isActive {
-		sw.w.Line(impress.NewPoint(105, sw.pos+30), impress.NewPoint(215, sw.pos+30), red)
+		sw.w.Line(image.Pt(105, sw.pos+30), image.Pt(215, sw.pos+30), red)
 		sw.w.Raise()
 	}
 	sw.w.Show()
 }
 
-func (sw *smallWindow) Event(event impress.Eventer) {
-	switch event {
-	case impress.KeyUp:
+func (sw *smallWindow) Event(action event.Eventer) {
+	switch action {
+	case event.KeyUp:
 		sw.pos -= 16
 		if sw.pos < 0 {
 			sw.pos = 0
 		}
-	case impress.KeyDown:
+	case event.KeyDown:
 		sw.pos += 16
 		if sw.pos > 450 {
 			sw.pos = 450
@@ -70,14 +75,18 @@ func action(app *impress.Application, windows []*smallWindow) {
 			w.Redraw(w == activeWindow)
 		}
 
-		event := <-app.Chan()
-		if event == impress.DestroyEvent || event == impress.KeyExit {
+		action := <-app.Chan()
+		if action == event.DestroyEvent || action == event.KeyExit {
 			return
 		}
 		switch {
-		case event.Type() == impress.ButtonEventType:
-			clickEvent, ok := event.(impress.ButtonEvent)
-			if ok && clickEvent.Action == impress.ButtonActionPress && clickEvent.Button == impress.ButtonLeft {
+		case action == event.KeyLeft:
+			activeWindow = windows[0]
+		case action == event.KeyRight:
+			activeWindow = windows[1]
+		case action.Type() == event.ButtonType:
+			clickEvent, ok := action.(event.Button)
+			if ok && clickEvent.Action == event.ButtonActionPress && clickEvent.Button == event.ButtonLeft {
 				for _, w := range windows {
 					if clickEvent.Point.In(w.rect) && w != activeWindow {
 						activeWindow = w
@@ -85,12 +94,8 @@ func action(app *impress.Application, windows []*smallWindow) {
 					}
 				}
 			}
-		case event == impress.KeyLeft:
-			activeWindow = windows[0]
-		case event == impress.KeyRight:
-			activeWindow = windows[1]
 		default:
-			activeWindow.Event(event)
+			activeWindow.Event(action)
 		}
 	}
 }
@@ -99,10 +104,7 @@ func main() {
 	app := impress.NewApplication(appRect, "Example")
 	defer app.Close()
 
-	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
-	if err != nil {
-		log.Fatal(err)
-	}
+	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
 	w1 := NewSmallWindow(app, leftRect, white, font)

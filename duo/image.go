@@ -1,33 +1,45 @@
 package duo
 
 import (
+	"image"
+	"image/draw"
 	"log"
 
-	"github.com/codeation/impress"
+	"github.com/codeation/impress/driver"
 )
 
 type bitmap struct {
-	driver *driver
-	ID     int
-	Image  *impress.Image
+	driver *duo
+	id     int
+	width  int
+	height int
 }
 
-func (d *driver) NewImage(img *impress.Image) (impress.Imager, error) {
+func (d *duo) NewImage(img image.Image) driver.Imager {
 	if d == nil || d.drawPipe == nil {
 		log.Fatal("GUI driver not initialized")
+	}
+	pix, ok := img.(*image.NRGBA)
+	if !ok {
+		pix = image.NewNRGBA(image.Rect(0, 0, img.Bounds().Size().X, img.Bounds().Size().Y))
+		draw.Draw(pix, pix.Bounds(), img, image.Pt(0, 0), draw.Src)
 	}
 	d.lastImageID++
 	b := &bitmap{
 		driver: d,
-		ID:     d.lastImageID,
-		Image:  img,
+		id:     d.lastImageID,
+		width:  img.Bounds().Size().X,
+		height: img.Bounds().Size().Y,
 	}
 	b.driver.drawPipe.Call(
-		'B', b.ID, img.Width, img.Height, img.PixNRGBA)
-	return b, nil
+		'B', b.id, b.width, b.height, pix.Pix)
+	return b
 }
 
 func (b *bitmap) Close() {
 	b.driver.drawPipe.Call(
-		'M', b.ID)
+		'M', b.id)
 }
+
+func (b *bitmap) Width() int  { return b.width }
+func (b *bitmap) Height() int { return b.height }

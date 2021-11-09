@@ -4,12 +4,12 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
-## Proof of Concept Version
+## Alpha Version
 
 Notes:
 
-- This project is still in the early stages of development and is not yet in a usable state.
-- The project tested on Debian 11.01 (bullseye) and MacOS Big Sur (11.5)
+- The project tested on Debian 11.1 and macOS Big Sur (11.5)
+- The library may contain bugs
 
 ## Basic Principles of Library Building Design
 
@@ -32,30 +32,36 @@ Let's say hello:
 package main
 
 import (
-	"log"
+	"image"
+	"image/color"
 
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/event"
+
 	_ "github.com/codeation/impress/duo"
 )
 
+var (
+	background = color.RGBA{255, 255, 255, 0}
+	foreground = color.RGBA{0, 0, 0, 0}
+	underline  = color.RGBA{255, 0, 0, 0}
+)
+
 func main() {
-	app := impress.NewApplication(impress.NewRect(0, 0, 640, 480), "Hello World Application")
+	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Hello World Application")
 	defer app.Close()
 
-	font, err := impress.NewFont(`{"family":"Verdana"}`, 15)
-	if err != nil {
-		log.Fatal(err)
-	}
+	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
-	w := app.NewWindow(impress.NewRect(0, 0, 640, 480), impress.NewColor(255, 255, 255))
-	w.Text("Hello, world!", font, impress.NewPoint(280, 210), impress.NewColor(0, 0, 0))
-	w.Line(impress.NewPoint(270, 230), impress.NewPoint(380, 230), impress.NewColor(255, 0, 0))
+	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
+	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
+	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
 	w.Show()
 
 	for {
-		event := <-app.Chan()
-		if event == impress.DestroyEvent || event == impress.KeyExit {
+		action := <-app.Chan()
+		if action == event.DestroyEvent || action == event.KeyExit {
 			break
 		}
 	}
@@ -103,9 +109,10 @@ Cons:
 
 First of all, welcome:
 
+- any clue of the project importance (stars, etc)
 - any advice on the library design and principles
-- help to correct grammatical and writing errors
-- contribution in the near future
+- help to correct grammatical and writing errors (PR or issue)
+- any contribution to project, project wiki, examples
 
 ## Using
 
@@ -113,6 +120,10 @@ See [documentation](https://pkg.go.dev/github.com/codeation/impress),
 [examples folder](https://github.com/codeation/impress/tree/master/examples) and
 [project wiki](https://github.com/codeation/impress/wiki).
 
-A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to check the library's applicability.
+A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the library's applicability.
 
 Stay tuned for more.
+
+## Issues
+
+Feel free to open [issue](https://github.com/codeation/impress/issues).

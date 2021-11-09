@@ -1,6 +1,7 @@
+//go:build darwin
 // +build darwin
 
-package impress
+package event
 
 // Platform specified keyboard events
 var (

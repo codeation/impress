@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"image"
 	"log"
 	"os"
 	"os/exec"
@@ -12,6 +13,7 @@ import (
 	"syscall"
 
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/event"
 )
 
 const (
@@ -20,15 +22,13 @@ const (
 	fifoEventPath  = "/tmp/it_fifo_event_"
 )
 
-// Driver
-
-type driver struct {
+type duo struct {
 	cmd          *exec.Cmd
 	lastWindowID int
 	lastFontID   int
 	lastImageID  int
 	lastMenuID   int
-	events       chan impress.Eventer
+	events       chan event.Eventer
 	fileDraw     *os.File
 	fileAnswer   *os.File
 	fileEvent    *os.File
@@ -39,12 +39,11 @@ type driver struct {
 }
 
 func init() {
-	d := &driver{}
-	d.runrpc()
-	impress.Register(d)
+	impress.Register(newDuo())
 }
 
-func (d *driver) runrpc() {
+func newDuo() *duo {
+	d := new(duo)
 	randBuffer := make([]byte, 8)
 	if _, err := rand.Reader.Read(randBuffer); err != nil {
 		log.Fatal(err)
@@ -77,11 +76,12 @@ func (d *driver) runrpc() {
 	}
 	d.drawPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileDraw), bufio.NewReader(d.fileAnswer))
 	d.eventPipe = newPipe(new(dummyMutex), nil, bufio.NewReader(d.fileEvent))
-	d.events = make(chan impress.Eventer, 1024)
+	d.events = make(chan event.Eventer, 1024)
 	go d.readEvents()
+	return d
 }
 
-func (d *driver) Init() {
+func (d *duo) Init() {
 	// Version test
 	var version string
 	d.drawPipe.String(&version).Call(
@@ -91,7 +91,7 @@ func (d *driver) Init() {
 	}
 }
 
-func (d *driver) Done() {
+func (d *duo) Done() {
 	d.onExit = true
 	d.drawPipe.Call('X')
 	d.drawPipe.Flush()
@@ -114,23 +114,22 @@ func (d *driver) Done() {
 	}
 }
 
-func (d *driver) Size(rect impress.Rect) {
+func (d *duo) Size(rect image.Rectangle) {
+	x, y, width, height := rectangle(rect)
 	d.drawPipe.Call(
-		'S', rect.X, rect.Y, rect.Width, rect.Height)
+		'S', x, y, width, height)
 }
 
-func (d *driver) Title(title string) {
+func (d *duo) Title(title string) {
 	d.drawPipe.Call(
 		'T', title)
 }
 
-func (d *driver) Chan() <-chan impress.Eventer {
+func (d *duo) Chan() <-chan event.Eventer {
 	return d.events
 }
 
-// Event
-
-func (d *driver) readEvents() {
+func (d *duo) readEvents() {
 	for {
 		var command byte
 		if err := d.eventPipe.Byte(&command).CallErr(); err != nil {
@@ -142,13 +141,13 @@ func (d *driver) readEvents() {
 		}
 		switch command {
 		case 'g':
-			var e impress.GeneralEvent
+			var e event.General
 			d.eventPipe.
 				UInt32(&e.Event).
 				Call()
 			d.events <- e
 		case 'k':
-			var e impress.KeyboardEvent
+			var e event.Keyboard
 			d.eventPipe.
 				Rune(&e.Rune).
 				Bool(&e.Shift).
@@ -159,14 +158,14 @@ func (d *driver) readEvents() {
 				Call()
 			d.events <- e
 		case 'f':
-			var e impress.ConfigureEvent
+			var e event.Configure
 			d.eventPipe.
-				Int16(&e.Size.Width).
-				Int16(&e.Size.Height).
+				Int16(&e.Size.X).
+				Int16(&e.Size.Y).
 				Call()
 			d.events <- e
 		case 'b':
-			var e impress.ButtonEvent
+			var e event.Button
 			d.eventPipe.
 				Char(&e.Action).
 				Char(&e.Button).
@@ -175,7 +174,7 @@ func (d *driver) readEvents() {
 				Call()
 			d.events <- e
 		case 'm':
-			var e impress.MotionEvent
+			var e event.Motion
 			d.eventPipe.
 				Int16(&e.Point.X).
 				Int16(&e.Point.Y).
@@ -186,13 +185,13 @@ func (d *driver) readEvents() {
 				Call()
 			d.events <- e
 		case 'u':
-			var e impress.MenuEvent
+			var e event.Menu
 			d.eventPipe.
 				String(&e.Action).
 				Call()
 			d.events <- e
 		default:
-			d.events <- impress.UnknownEvent
+			d.events <- event.UnknownEvent
 		}
 	}
 }

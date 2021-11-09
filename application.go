@@ -1,32 +1,42 @@
 package impress
 
+import (
+	"image"
+	"log"
+
+	"github.com/codeation/impress/event"
+)
+
 // Application represents application top level window
 type Application struct{}
 
 // NewApplication creates main application window
-func NewApplication(rect Rect, title string) *Application {
-	app := &Application{}
-	driver.Init()
-	driver.Size(rect)
-	driver.Title(title)
-	return app
+func NewApplication(rect image.Rectangle, title string) *Application {
+	if d == nil {
+		log.Fatal("GUI driver is not available")
+	}
+	d.Init()
+	d.Size(rect)
+	d.Title(title)
+	return &Application{}
 }
 
-// Close makes invocation of the main loop return
+// Close destroys application resources
 func (app *Application) Close() {
-	driver.Done()
+	d.Done()
 }
 
 // Title sets application window title
 func (app *Application) Title(title string) {
-	driver.Title(title)
+	d.Title(title)
 }
 
 // Size sets application window size
-func (app *Application) Size(rect Rect) {
-	driver.Size(rect)
+func (app *Application) Size(rect image.Rectangle) {
+	d.Size(rect)
 }
 
-func (app *Application) Chan() <-chan Eventer {
-	return driver.Chan()
+// Chan returns event channel
+func (app *Application) Chan() <-chan event.Eventer {
+	return d.Chan()
 }

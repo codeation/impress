@@ -95,6 +95,10 @@ func (p *pipe) CallErr(values ...interface{}) error {
 			if err := putInt32(p.writer, value); err != nil {
 				return err
 			}
+		case uint32:
+			if err := putUInt32(p.writer, value); err != nil {
+				return err
+			}
 		case byte:
 			if err := putByte(p.writer, value); err != nil {
 				return err

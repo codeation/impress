@@ -1,26 +1,30 @@
 package duo
 
 import (
+	"image"
 	"log"
 
-	"github.com/codeation/impress"
+	"github.com/codeation/impress/driver"
 )
 
-var tableStyle = map[string]int{
+// Values for "style" atribute
+var styleValues = map[string]int{
 	"":        0,
 	"normal":  0,
 	"oblique": 1,
 	"italic":  2,
 }
 
-var tableVariant = map[string]int{
+// Values for "variant" atribute
+var variantValues = map[string]int{
 	"":           0,
 	"normal":     0,
 	"small_caps": 1,
 	"small caps": 1,
 }
 
-var tableWeight = map[string]int{
+// Values for "weight" atribute
+var weightValues = map[string]int{
 	"thin":       100,
 	"ultralight": 200,
 	"light":      300,
@@ -36,7 +40,8 @@ var tableWeight = map[string]int{
 	"ultraheavy": 1000,
 }
 
-var tableStretch = map[string]int{
+// Values for "stretch" atribute
+var stretchValues = map[string]int{
 	"ultra_condensed": 0,
 	"ultra condensed": 0,
 	"extra_condensed": 1,
@@ -55,50 +60,47 @@ var tableStretch = map[string]int{
 	"ultra expanded":  8,
 }
 
-type ftfont struct {
-	driver *driver
-	ID     int
-	Font   *impress.Font
+type fontface struct {
+	driver     *duo
+	id         int
+	height     int
+	baseline   int
+	ascent     int
+	descent    int
+	attributes map[string]string
 }
 
-func (f *ftfont) defaultValue(fieldname string, maps *map[string]int) int {
-	source, ok := f.Font.Attr[fieldname]
-	if !ok {
-		return (*maps)[""]
-	}
-	value, ok := (*maps)[source]
-	if !ok {
-		return (*maps)[""]
-	}
-	return value
-}
-
-func (d *driver) NewFont(font *impress.Font) (impress.Fonter, error) {
+func (d *duo) NewFont(height int, attributes map[string]string) driver.Fonter {
 	if d == nil || d.drawPipe == nil {
 		log.Fatal("GUI driver not initialized")
 	}
 	d.lastFontID++
-	f := &ftfont{
-		driver: d,
-		ID:     d.lastFontID,
-		Font:   font,
+	f := &fontface{
+		driver:     d,
+		id:         d.lastFontID,
+		height:     height,
+		attributes: attributes,
 	}
-	style := f.defaultValue("style", &tableStyle)
-	variant := f.defaultValue("variant", &tableVariant)
-	weight := f.defaultValue("weight", &tableWeight)
-	stretch := f.defaultValue("stretch", &tableStretch)
+	style := f.getValue("style", styleValues)
+	variant := f.getValue("variant", variantValues)
+	weight := f.getValue("weight", weightValues)
+	stretch := f.getValue("stretch", stretchValues)
 	d.drawPipe.
-		Int16(&font.Baseline).
-		Int16(&font.Ascent).
-		Int16(&font.Descent).
+		Int16(&f.baseline).
+		Int16(&f.ascent).
+		Int16(&f.descent).
 		Call(
-			'N', f.ID, f.Font.Height, style, variant, weight, stretch, f.Font.Attr["family"])
-	return f, nil
+			'N', f.id, f.height, style, variant, weight, stretch, f.attributes["family"])
+	return f
 }
 
-func (f *ftfont) Close() {}
+func (f *fontface) Close() {}
 
-func (f *ftfont) Split(text string, edge int) []string {
+func (f *fontface) Ascent() int   { return f.ascent }
+func (f *fontface) Baseline() int { return f.baseline }
+func (f *fontface) Descent() int  { return f.descent }
+
+func (f *fontface) Split(text string, edge int) []string {
 	if len(text) == 0 {
 		return nil
 	}
@@ -106,25 +108,37 @@ func (f *ftfont) Split(text string, edge int) []string {
 	f.driver.drawPipe.
 		Int16s(&lengths).
 		Call(
-			'P', f.ID, edge, text)
-	out := make([]string, len(lengths))
+			'P', f.id, edge, text)
+	output := make([]string, len(lengths))
 	pos := 0
 	for i := 0; i < len(lengths); i++ {
-		out[i] = text[pos : pos+lengths[i]]
+		output[i] = text[pos : pos+lengths[i]]
 		pos += lengths[i]
 	}
-	return out
+	return output
 }
 
-func (f *ftfont) Size(text string) impress.Size {
+func (f *fontface) Size(text string) image.Point {
 	if len(text) == 0 {
-		return impress.NewSize(0, f.Font.Height)
+		return image.Pt(0, f.height)
 	}
 	var width, height int
 	f.driver.drawPipe.
 		Int16(&width).
 		Int16(&height).
 		Call(
-			'R', f.ID, text)
-	return impress.NewSize(width, height)
+			'R', f.id, text)
+	return image.Pt(width, height)
+}
+
+func (f *fontface) getValue(fieldname string, values map[string]int) int {
+	source, ok := f.attributes[fieldname]
+	if !ok {
+		return values[""]
+	}
+	value, ok := values[source]
+	if !ok {
+		return values[""]
+	}
+	return value
 }
