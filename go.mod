@@ -1,3 +1,3 @@
 module github.com/codeation/impress
 
-go 1.13
+go 1.17

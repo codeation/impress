@@ -39,7 +39,8 @@ var (
 
 // Configure event
 type Configure struct {
-	Size image.Point
+	Size      image.Point
+	InnerSize image.Point
 }
 
 // Type returns event type

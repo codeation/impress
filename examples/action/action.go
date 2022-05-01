@@ -76,10 +76,9 @@ func action(app *impress.Application, windows []*smallWindow) {
 		}
 
 		action := <-app.Chan()
-		if action == event.DestroyEvent || action == event.KeyExit {
-			return
-		}
 		switch {
+		case action == event.DestroyEvent || action == event.KeyExit:
+			return
 		case action == event.KeyLeft:
 			activeWindow = windows[0]
 		case action == event.KeyRight:

@@ -162,6 +162,8 @@ func (d *duo) readEvents() {
 			d.eventPipe.
 				Int16(&e.Size.X).
 				Int16(&e.Size.Y).
+				Int16(&e.InnerSize.X).
+				Int16(&e.InnerSize.Y).
 				Call()
 			d.events <- e
 		case 'b':
