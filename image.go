@@ -9,8 +9,7 @@ import (
 // Image represents a draw-ready image
 type Image struct {
 	imager driver.Imager
-	Width  int
-	Height int
+	Size   image.Point
 }
 
 // NewImage returns a image resources struct
@@ -18,8 +17,7 @@ func NewImage(img image.Image) *Image {
 	imager := d.NewImage(img)
 	return &Image{
 		imager: imager,
-		Width:  imager.Width(),
-		Height: imager.Height(),
+		Size:   img.Bounds().Size(),
 	}
 }
 

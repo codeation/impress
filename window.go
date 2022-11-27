@@ -46,9 +46,9 @@ func (w *Window) Line(from image.Point, to image.Point, foreground color.Color) 
 	w.painter.Line(from, to, foreground)
 }
 
-// Image draws a image at specified location
-func (w *Window) Image(from image.Point, img *Image) {
-	w.painter.Image(from, img.imager)
+// ImageScale draws a image into specified rectangle
+func (w *Window) Image(rect image.Rectangle, img *Image) {
+	w.painter.Image(rect, img.imager)
 }
 
 // Text draws a text at specified location using a specified font and foreground color

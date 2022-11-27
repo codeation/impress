@@ -14,6 +14,7 @@ const (
 	MotionType
 	MenuType
 	ConfigureType
+	ScrollType
 )
 
 // Eventer is the interface that groups GUI events
@@ -67,7 +68,13 @@ var (
 	KeyBackSpace = Keyboard{Rune: 8, Name: "BackSpace"}
 	KeyTab       = Keyboard{Rune: 9, Name: "Tab"}
 	KeyEnter     = Keyboard{Rune: 13, Name: "Return"}
+	KeyEscape    = Keyboard{Rune: 27, Name: "Escape"}
+	KeySpace     = Keyboard{Rune: 32, Name: "space"}
 	KeyDelete    = Keyboard{Rune: 127, Name: "Delete"}
+	KeyPageUp    = Keyboard{Name: "Page_Up"}
+	KeyPageDown  = Keyboard{Name: "Page_Down"}
+	KeyHome      = Keyboard{Name: "Home"}
+	KeyEnd       = Keyboard{Name: "End"}
 )
 
 // Type returns event type
@@ -136,4 +143,24 @@ func NewMenu(short string) Menu {
 // Type returns event type
 func (e Menu) Type() int {
 	return MenuType
+}
+
+// Scrool is scrool event
+type Scroll struct {
+	Direction int
+	DeltaX    int
+	DeltaY    int
+}
+
+const (
+	ScrollUp     = 0
+	ScrollDown   = 1
+	ScrollLeft   = 2
+	ScrollRight  = 3
+	ScrollSmooth = 4
+)
+
+// Type returns event type
+func (e Scroll) Type() int {
+	return ScrollType
 }

@@ -192,6 +192,14 @@ func (d *duo) readEvents() {
 				String(&e.Action).
 				Call()
 			d.events <- e
+		case 's':
+			var e event.Scroll
+			d.eventPipe.
+				Int16(&e.Direction).
+				Int16(&e.DeltaX).
+				Int16(&e.DeltaY).
+				Call()
+			d.events <- e
 		default:
 			d.events <- event.UnknownEvent
 		}

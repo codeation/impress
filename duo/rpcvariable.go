@@ -117,7 +117,7 @@ func putByte(writer io.Writer, value byte) error {
 }
 
 func putBytes(writer io.Writer, value []byte) error {
-	if len(value) > 8388607 {
+	if len(value) > 67108863 {
 		return errors.New("slice too large")
 	}
 	if err := binary.Write(writer, binary.LittleEndian, int32(len(value))); err != nil {

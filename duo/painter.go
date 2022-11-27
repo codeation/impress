@@ -69,10 +69,10 @@ func (c *canvas) Line(from image.Point, to image.Point, foreground color.Color) 
 		'L', c.id, from.X, from.Y, to.X, to.Y, r, g, b)
 }
 
-func (p *canvas) Image(from image.Point, img driver.Imager) {
+func (p *canvas) Image(rect image.Rectangle, img driver.Imager) {
 	b := img.(*bitmap)
 	p.driver.drawPipe.Call(
-		'I', p.id, from.X, from.Y, b.id)
+		'I', p.id, rect.Min.X, rect.Min.Y, rect.Dx(), rect.Dy(), b.id)
 }
 
 func (c *canvas) Text(text string, fonter driver.Fonter, from image.Point, foreground color.Color) {

@@ -29,7 +29,7 @@ type Painter interface {
 	Show()
 	Fill(rect image.Rectangle, foreground color.Color)
 	Line(from image.Point, to image.Point, foreground color.Color)
-	Image(from image.Point, img Imager)
+	Image(rect image.Rectangle, img Imager)
 	Text(text string, font Fonter, from image.Point, foreground color.Color)
 }
 

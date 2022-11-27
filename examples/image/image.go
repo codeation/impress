@@ -34,7 +34,7 @@ func main() {
 	defer i.Close()
 
 	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
-	w.Image(image.Pt(100, 10), i)
+	w.Image(image.Rect(100, 10, 100+i.Size.X, 10+i.Size.Y), i)
 	w.Show()
 
 	for {
