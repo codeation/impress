@@ -18,6 +18,7 @@ type Driver interface {
 	NewImage(img image.Image) Imager
 	NewMenu(label string) Menuer
 	Chan() <-chan event.Eventer
+	Sync()
 }
 
 // Painter is a internal interface to a window functions

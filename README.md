@@ -8,7 +8,7 @@
 
 Notes:
 
-- The project tested on Debian 11.1 and macOS Big Sur (11.5)
+- The project tested on Debian 11.6 and macOS Big Sur (11.5)
 - The library may contain bugs
 
 ## Basic Principles of Library Building Design
@@ -60,6 +60,7 @@ func main() {
 	w.Show()
 
 	for {
+		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break

@@ -142,6 +142,9 @@ func (p *pipe) Call(values ...interface{}) {
 }
 
 func (p *pipe) Flush() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	if err := p.writer.Flush(); err != nil {
 		log.Fatal(err)
 	}

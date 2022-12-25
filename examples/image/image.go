@@ -38,6 +38,7 @@ func main() {
 	w.Show()
 
 	for {
+		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break

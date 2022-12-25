@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	fifoStreamPath = "/tmp/it_fifo_stream_"
 	fifoInputPath  = "/tmp/it_fifo_input_"
 	fifoOutputPath = "/tmp/it_fifo_output_"
 	fifoEventPath  = "/tmp/it_fifo_event_"
@@ -29,12 +30,14 @@ type duo struct {
 	lastImageID  int
 	lastMenuID   int
 	events       chan event.Eventer
-	fileDraw     *os.File
-	fileAnswer   *os.File
+	fileStream   *os.File
+	fileRequest  *os.File
+	fileResponse *os.File
 	fileEvent    *os.File
 	fileSuffix   string
 	onExit       bool
-	drawPipe     *pipe
+	streamPipe   *pipe
+	syncPipe     *pipe
 	eventPipe    *pipe
 }
 
@@ -49,7 +52,7 @@ func newDuo() *duo {
 		log.Fatal(err)
 	}
 	d.fileSuffix = hex.EncodeToString(randBuffer)
-	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
+	for _, name := range []string{fifoInputPath, fifoStreamPath, fifoOutputPath, fifoEventPath} {
 		if err := syscall.Mkfifo(name+d.fileSuffix, 0644); err != nil {
 			log.Fatal(err)
 		}
@@ -65,16 +68,20 @@ func newDuo() *duo {
 		log.Fatal(err)
 	}
 	var err error
-	if d.fileAnswer, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
+	if d.fileResponse, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
 	if d.fileEvent, err = os.OpenFile(fifoEventPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
-	if d.fileDraw, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
+	if d.fileRequest, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
 		log.Fatal(err)
 	}
-	d.drawPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileDraw), bufio.NewReader(d.fileAnswer))
+	if d.fileStream, err = os.OpenFile(fifoStreamPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
+		log.Fatal(err)
+	}
+	d.streamPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileStream), nil)
+	d.syncPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileRequest), bufio.NewReader(d.fileResponse))
 	d.eventPipe = newPipe(new(dummyMutex), nil, bufio.NewReader(d.fileEvent))
 	d.events = make(chan event.Eventer, 1024)
 	go d.readEvents()
@@ -84,7 +91,7 @@ func newDuo() *duo {
 func (d *duo) Init() {
 	// Version test
 	var version string
-	d.drawPipe.String(&version).Call(
+	d.syncPipe.String(&version).Call(
 		'V')
 	if version != it_version {
 		log.Fatalf("./it version \"%s\", expected \"%s\"", version, it_version)
@@ -93,16 +100,19 @@ func (d *duo) Init() {
 
 func (d *duo) Done() {
 	d.onExit = true
-	d.drawPipe.Call('X')
-	d.drawPipe.Flush()
-	if err := d.fileDraw.Close(); err != nil {
-		log.Fatalf("Close(d) %s", err)
+	d.streamPipe.Call('X')
+	d.streamPipe.Flush()
+	if err := d.fileRequest.Close(); err != nil {
+		log.Fatalf("Close(q) %s", err)
+	}
+	if err := d.fileStream.Close(); err != nil {
+		log.Fatalf("Close(s) %s", err)
 	}
 	if err := d.cmd.Wait(); err != nil {
 		log.Fatalf("Wait %s", err)
 	}
-	if err := d.fileAnswer.Close(); err != nil {
-		log.Fatalf("Close(a) %s", err)
+	if err := d.fileResponse.Close(); err != nil {
+		log.Fatalf("Close(p) %s", err)
 	}
 	if err := d.fileEvent.Close(); err != nil {
 		log.Fatalf("Close(e) %s", err)
@@ -114,14 +124,18 @@ func (d *duo) Done() {
 	}
 }
 
+func (d *duo) Sync() {
+	d.streamPipe.Flush()
+}
+
 func (d *duo) Size(rect image.Rectangle) {
 	x, y, width, height := rectangle(rect)
-	d.drawPipe.Call(
+	d.streamPipe.Call(
 		'S', x, y, width, height)
 }
 
 func (d *duo) Title(title string) {
-	d.drawPipe.Call(
+	d.streamPipe.Call(
 		'T', title)
 }
 

@@ -75,6 +75,7 @@ func action(app *impress.Application, windows []*smallWindow) {
 			w.Redraw(w == activeWindow)
 		}
 
+		app.Sync()
 		action := <-app.Chan()
 		switch {
 		case action == event.DestroyEvent || action == event.KeyExit:

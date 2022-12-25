@@ -26,6 +26,11 @@ func (app *Application) Close() {
 	d.Done()
 }
 
+// Sync flushes graphics content to screen driver
+func (app *Application) Sync() {
+	d.Sync()
+}
+
 // Title sets application window title
 func (app *Application) Title(title string) {
 	d.Title(title)

@@ -51,6 +51,7 @@ func main() {
 			w.Show()
 		}
 
+		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break

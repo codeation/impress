@@ -71,7 +71,7 @@ type fontface struct {
 }
 
 func (d *duo) NewFont(height int, attributes map[string]string) driver.Fonter {
-	if d == nil || d.drawPipe == nil {
+	if d == nil || d.syncPipe == nil {
 		log.Fatal("GUI driver not initialized")
 	}
 	d.lastFontID++
@@ -85,7 +85,7 @@ func (d *duo) NewFont(height int, attributes map[string]string) driver.Fonter {
 	variant := f.getValue("variant", variantValues)
 	weight := f.getValue("weight", weightValues)
 	stretch := f.getValue("stretch", stretchValues)
-	d.drawPipe.
+	d.syncPipe.
 		Int16(&f.baseline).
 		Int16(&f.ascent).
 		Int16(&f.descent).
@@ -105,7 +105,7 @@ func (f *fontface) Split(text string, edge int) []string {
 		return nil
 	}
 	var lengths []int
-	f.driver.drawPipe.
+	f.driver.syncPipe.
 		Int16s(&lengths).
 		Call(
 			'P', f.id, edge, text)
@@ -123,7 +123,7 @@ func (f *fontface) Size(text string) image.Point {
 		return image.Pt(0, f.height)
 	}
 	var width, height int
-	f.driver.drawPipe.
+	f.driver.syncPipe.
 		Int16(&width).
 		Int16(&height).
 		Call(

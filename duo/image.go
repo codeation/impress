@@ -16,7 +16,7 @@ type bitmap struct {
 }
 
 func (d *duo) NewImage(img image.Image) driver.Imager {
-	if d == nil || d.drawPipe == nil {
+	if d == nil || d.streamPipe == nil {
 		log.Fatal("GUI driver not initialized")
 	}
 	pix, ok := img.(*image.NRGBA)
@@ -31,13 +31,13 @@ func (d *duo) NewImage(img image.Image) driver.Imager {
 		width:  img.Bounds().Size().X,
 		height: img.Bounds().Size().Y,
 	}
-	b.driver.drawPipe.Call(
+	b.driver.streamPipe.Call(
 		'B', b.id, b.width, b.height, pix.Pix)
 	return b
 }
 
 func (b *bitmap) Close() {
-	b.driver.drawPipe.Call(
+	b.driver.streamPipe.Call(
 		'M', b.id)
 }
 

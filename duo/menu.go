@@ -11,7 +11,7 @@ type menuitem struct {
 
 func (d *duo) NewMenu(label string) driver.Menuer {
 	d.lastMenuID++
-	d.drawPipe.Call(
+	d.streamPipe.Call(
 		'E', d.lastMenuID, 0, label)
 	return &menuitem{
 		driver: d,
@@ -21,7 +21,7 @@ func (d *duo) NewMenu(label string) driver.Menuer {
 
 func (m *menuitem) NewMenu(label string) driver.Menuer {
 	m.driver.lastMenuID++
-	m.driver.drawPipe.Call(
+	m.driver.streamPipe.Call(
 		'E', m.driver.lastMenuID, m.ID, label)
 	return &menuitem{
 		driver: m.driver,
@@ -31,6 +31,6 @@ func (m *menuitem) NewMenu(label string) driver.Menuer {
 
 func (m *menuitem) NewItem(label string, action string) {
 	m.driver.lastMenuID++
-	m.driver.drawPipe.Call(
+	m.driver.streamPipe.Call(
 		'G', m.driver.lastMenuID, m.ID, label, action)
 }

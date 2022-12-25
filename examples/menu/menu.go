@@ -44,12 +44,16 @@ func main() {
 	menuM.NewItem("Search", event.NewMenu("search"))
 
 	for {
+		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break
 		}
 		if action.Type() == event.MenuType {
 			if menuAction, ok := action.(event.Menu); ok {
+				if menuAction.Action == "app.exit" {
+					break
+				}
 				fmt.Println("Menu", menuAction.Action)
 			}
 		}
