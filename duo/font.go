@@ -71,8 +71,9 @@ type fontface struct {
 }
 
 func (d *duo) NewFont(height int, attributes map[string]string) driver.Fonter {
-	if d == nil || d.syncPipe == nil {
-		log.Fatal("GUI driver not initialized")
+	if d == nil {
+		log.Printf("GUI driver is not available")
+		return nil
 	}
 	d.lastFontID++
 	f := &fontface{

@@ -23,12 +23,14 @@ func main() {
 
 	f, err := os.Open("test_image.png")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer f.Close()
 	img, err := png.Decode(f)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	i := impress.NewImage(img)
 	defer i.Close()

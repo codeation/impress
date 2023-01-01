@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"log"
 )
 
 type parameterBool struct {
@@ -89,11 +88,11 @@ type parameterString struct {
 func (p *parameterString) set(reader io.Reader) error {
 	var length int16
 	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	data := make([]byte, length)
 	if err := binary.Read(reader, binary.LittleEndian, &data); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	*p.ptr = string(data)
 	return nil

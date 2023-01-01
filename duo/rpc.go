@@ -137,7 +137,7 @@ func (p *pipe) CallErr(values ...interface{}) error {
 
 func (p *pipe) Call(values ...interface{}) {
 	if err := p.CallErr(values...); err != nil {
-		log.Fatal(err)
+		log.Printf("call: %v", err)
 	}
 }
 
@@ -146,6 +146,6 @@ func (p *pipe) Flush() {
 	defer p.mutex.Unlock()
 
 	if err := p.writer.Flush(); err != nil {
-		log.Fatal(err)
+		log.Printf("flush: %v", err)
 	}
 }

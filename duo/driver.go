@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"image"
 	"log"
 	"os"
@@ -42,50 +43,66 @@ type duo struct {
 }
 
 func init() {
-	impress.Register(newDuo())
+	d := new(duo)
+	if err := d.start(); err != nil {
+		log.Printf("start duo driver error: %v", err)
+		return
+	}
+	if err := d.connect(); err != nil {
+		log.Println("connect duo driver error: %w", err)
+		if err := d.cmd.Process.Kill(); err != nil {
+			log.Println("kill duo driver error", err)
+		}
+		return
+	}
+	impress.Register(d)
 }
 
-func newDuo() *duo {
-	d := new(duo)
+func (d *duo) start() error {
 	randBuffer := make([]byte, 8)
 	if _, err := rand.Reader.Read(randBuffer); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("rand.Reader.Read: %w", err)
 	}
 	d.fileSuffix = hex.EncodeToString(randBuffer)
 	for _, name := range []string{fifoInputPath, fifoStreamPath, fifoOutputPath, fifoEventPath} {
 		if err := syscall.Mkfifo(name+d.fileSuffix, 0644); err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("syscall.Mkfifo: %w", err)
 		}
 	}
 	path := os.Getenv("IMPRESS_TERMINAL_PATH")
 	if path == "" {
 		path = "./it"
 	}
-	d.cmd = exec.Command(path, d.fileSuffix)
-	d.cmd.Stdout = os.Stdout
-	d.cmd.Stderr = os.Stderr
-	if err := d.cmd.Start(); err != nil {
-		log.Fatal(err)
+	cmd := exec.Command(path, d.fileSuffix)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("cmd.Start: %w", err)
 	}
+	d.cmd = cmd
+	return nil
+}
+
+func (d *duo) connect() error {
 	var err error
 	if d.fileResponse, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("os.OpenFile(p): %w", err)
 	}
 	if d.fileEvent, err = os.OpenFile(fifoEventPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("os.OpenFile(e): %w", err)
 	}
 	if d.fileRequest, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("os.OpenFile(q): %w", err)
 	}
 	if d.fileStream, err = os.OpenFile(fifoStreamPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("os.OpenFile(s): %w", err)
 	}
 	d.streamPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileStream), nil)
 	d.syncPipe = newPipe(new(sync.Mutex), bufio.NewWriter(d.fileRequest), bufio.NewReader(d.fileResponse))
 	d.eventPipe = newPipe(new(dummyMutex), nil, bufio.NewReader(d.fileEvent))
 	d.events = make(chan event.Eventer, 1024)
 	go d.readEvents()
-	return d
+	return nil
 }
 
 func (d *duo) Init() {
@@ -94,34 +111,43 @@ func (d *duo) Init() {
 	d.syncPipe.String(&version).Call(
 		'V')
 	if version != it_version {
-		log.Fatalf("./it version \"%s\", expected \"%s\"", version, it_version)
+		log.Printf("./it version \"%s\", expected \"%s\"", version, it_version)
 	}
 }
 
 func (d *duo) Done() {
+	if err := d.done(); err != nil {
+		log.Printf("done: %v", err)
+	}
+}
+
+func (d *duo) done() error {
 	d.onExit = true
 	d.streamPipe.Call('X')
 	d.streamPipe.Flush()
 	if err := d.fileRequest.Close(); err != nil {
-		log.Fatalf("Close(q) %s", err)
+		return fmt.Errorf("fileRequest.Close: %w", err)
 	}
 	if err := d.fileStream.Close(); err != nil {
-		log.Fatalf("Close(s) %s", err)
+		return fmt.Errorf("fileStream.Close: %w", err)
 	}
 	if err := d.cmd.Wait(); err != nil {
-		log.Fatalf("Wait %s", err)
+		return fmt.Errorf("cmd.Wait: %w", err)
 	}
 	if err := d.fileResponse.Close(); err != nil {
-		log.Fatalf("Close(p) %s", err)
+		return fmt.Errorf("fileResponse.Close: %w", err)
 	}
 	if err := d.fileEvent.Close(); err != nil {
-		log.Fatalf("Close(e) %s", err)
+		return fmt.Errorf("fileEvent.Close: %w", err)
 	}
 	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
 		if _, err := os.Stat(name + d.fileSuffix); err == nil || !errors.Is(err, os.ErrNotExist) {
-			_ = os.Remove(name + d.fileSuffix)
+			if err = os.Remove(name + d.fileSuffix); err != nil {
+				return fmt.Errorf("os.Remove: %w", err)
+			}
 		}
 	}
+	return nil
 }
 
 func (d *duo) Sync() {
@@ -151,7 +177,7 @@ func (d *duo) readEvents() {
 				close(d.events)
 				return
 			}
-			log.Fatal(err)
+			log.Printf("readEvents: %v", err)
 		}
 		switch command {
 		case 'g':

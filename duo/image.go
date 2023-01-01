@@ -16,8 +16,9 @@ type bitmap struct {
 }
 
 func (d *duo) NewImage(img image.Image) driver.Imager {
-	if d == nil || d.streamPipe == nil {
-		log.Fatal("GUI driver not initialized")
+	if d == nil {
+		log.Printf("GUI driver is not available")
+		return nil
 	}
 	pix, ok := img.(*image.NRGBA)
 	if !ok {
