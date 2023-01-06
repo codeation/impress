@@ -13,7 +13,8 @@ type Application struct{}
 // NewApplication creates main application window
 func NewApplication(rect image.Rectangle, title string) *Application {
 	if d == nil {
-		log.Fatal("GUI driver is not available")
+		log.Printf("GUI driver is not available")
+		return nil
 	}
 	d.Init()
 	d.Size(rect)
