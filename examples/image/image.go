@@ -38,9 +38,9 @@ func main() {
 	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
 	w.Image(image.Rect(100, 10, 100+i.Size.X, 10+i.Size.Y), i)
 	w.Show()
+	app.Sync()
 
 	for {
-		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break

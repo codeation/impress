@@ -24,11 +24,6 @@ func main() {
 	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
-	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
-	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
-	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
-	w.Show()
-
 	menu1 := app.NewMenu("File")
 	menu1.NewItem("Open", event.NewMenu("open"))
 	menu1.NewItem("Save", event.NewMenu("save"))
@@ -43,8 +38,13 @@ func main() {
 	menuM.NewItem("Index", event.NewMenu("index"))
 	menuM.NewItem("Search", event.NewMenu("search"))
 
+	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
+	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
+	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
+	w.Show()
+	app.Sync()
+
 	for {
-		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break

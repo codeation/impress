@@ -4,17 +4,17 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
-## Alpha Version
+## Beta Version
 
 Notes:
 
-- The project tested on Debian 11.6 and macOS Big Sur (11.5)
-- The library may contain bugs
+- The project tested on Debian 11.6 and macOS Big Sur.
+- The library may contain bugs.
 
 ## Basic Principles of Library Building Design
 
 - Performance of the application as well as native applications.
-- Simple and clean application code for using GUI.
+- Simple and clean application code.
 - Limited use of other libraries (graphic, low-level or native).
 - Creating a GUI application without form designer or hard-coded widgets.
 
@@ -58,9 +58,9 @@ func main() {
 	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
 	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
 	w.Show()
+	app.Sync()
 
 	for {
-		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break
@@ -77,7 +77,7 @@ Some usage examples are located in [examples folder](https://github.com/codeatio
 
 The library uses [a separate application](https://github.com/codeation/it) as a GUI driver
 for rendering, event collecting, etc. You can [download](https://github.com/codeation/it/releases)
-the compiled binary file or make it again from [the source](https://github.com/codeation/it).
+the compiled binary `it` file or make it again from [the source](https://github.com/codeation/it).
 
 You can specify the full path and name for the GUI driver via the environment variable, for example:
 
@@ -85,7 +85,7 @@ You can specify the full path and name for the GUI driver via the environment va
 IMPRESS_TERMINAL_PATH=/path/it go run ./examples/simple/simple.go
 ```
 
-or just copy the downloaded GUI driver to the working directory and launch example:
+or just copy the downloaded GUI driver to the working directory and run example:
 
 ```
 go run ./examples/simple/simple.go
@@ -111,6 +111,7 @@ Cons:
 First of all, welcome:
 
 - any clue of the project importance (stars, etc)
+- bug report, open [issue](https://github.com/codeation/impress/issues)
 - any advice on the library design and principles
 - help to correct grammatical and writing errors (PR or issue)
 - any contribution to project, project wiki, examples
@@ -121,10 +122,6 @@ See [documentation](https://pkg.go.dev/github.com/codeation/impress),
 [examples folder](https://github.com/codeation/impress/tree/master/examples) and
 [project wiki](https://github.com/codeation/impress/wiki).
 
-A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the library's applicability.
+A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the value of the library.
 
 Stay tuned for more.
-
-## Issues
-
-Feel free to open [issue](https://github.com/codeation/impress/issues).

@@ -49,9 +49,9 @@ func main() {
 			w.Line(image.Pt(100, 199+2), image.Pt(199, 199+2), red) // down
 
 			w.Show()
+			app.Sync()
 		}
 
-		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break

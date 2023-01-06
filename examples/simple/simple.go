@@ -27,9 +27,9 @@ func main() {
 	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
 	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
 	w.Show()
+	app.Sync()
 
 	for {
-		app.Sync()
 		action := <-app.Chan()
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break
