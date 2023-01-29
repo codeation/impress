@@ -13,7 +13,7 @@ type Driver interface {
 	Done()
 	Title(title string)
 	Size(rect image.Rectangle)
-	NewWindow(rect image.Rectangle, background color.Color) Painter
+	NewFrame(rect image.Rectangle) Framer
 	NewFont(height int, attributes map[string]string) Fonter
 	NewImage(img image.Image) Imager
 	NewMenu(label string) Menuer
@@ -32,6 +32,15 @@ type Painter interface {
 	Line(from image.Point, to image.Point, foreground color.Color)
 	Image(rect image.Rectangle, img Imager)
 	Text(text string, font Fonter, from image.Point, foreground color.Color)
+}
+
+// Framer is a internal interface to a layout window
+type Framer interface {
+	Drop()
+	Size(rect image.Rectangle)
+	Raise()
+	NewFrame(rect image.Rectangle) Framer
+	NewWindow(rect image.Rectangle, background color.Color) Painter
 }
 
 // Fonter is a internal interface to a font functions

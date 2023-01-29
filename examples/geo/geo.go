@@ -24,6 +24,7 @@ func main() {
 
 	windowRect := image.Rect(0, 0, 640, 480)
 	w := app.NewWindow(windowRect, background)
+	defer w.Drop()
 	readyRect := image.Rectangle{}
 
 	for {

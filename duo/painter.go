@@ -9,23 +9,25 @@ import (
 
 type canvas struct {
 	driver     *duo
+	layout     *layout
 	id         int
 	rect       image.Rectangle
 	background color.Color
 }
 
-func (d *duo) NewWindow(rect image.Rectangle, background color.Color) driver.Painter {
-	d.lastWindowID++
+func (l *layout) NewWindow(rect image.Rectangle, background color.Color) driver.Painter {
+	l.driver.lastWindowID++
 	c := &canvas{
-		driver:     d,
-		id:         d.lastWindowID,
+		driver:     l.driver,
+		layout:     l,
+		id:         l.driver.lastWindowID,
 		rect:       rect,
 		background: background,
 	}
 	x, y, width, height := rectangle(c.rect)
 	r, g, b, _ := c.background.RGBA()
 	c.driver.streamPipe.Call(
-		'D', c.id, x, y, width, height, r, g, b,
+		'D', c.id, l.id, x, y, width, height,
 		'F', c.id, 0, 0, width, height, r, g, b)
 	return c
 }
@@ -43,9 +45,8 @@ func (c *canvas) Raise() {
 func (c *canvas) Size(rect image.Rectangle) {
 	c.rect = rect
 	x, y, width, height := rectangle(c.rect)
-	r, g, b, _ := c.background.RGBA()
 	c.driver.streamPipe.Call(
-		'Z', c.id, x, y, width, height, r, g, b)
+		'Z', c.id, x, y, width, height)
 }
 
 func (c *canvas) Clear() {

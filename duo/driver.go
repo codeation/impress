@@ -26,6 +26,7 @@ const (
 
 type duo struct {
 	cmd          *exec.Cmd
+	lastFrameID  int
 	lastWindowID int
 	lastFontID   int
 	lastImageID  int

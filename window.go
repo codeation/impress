@@ -14,8 +14,13 @@ type Window struct {
 
 // NewWindow creates new inner window with a specified size and background color
 func (app *Application) NewWindow(rect image.Rectangle, background color.Color) *Window {
+	return app.frame.NewWindow(rect, background)
+}
+
+// NewWindow creates new frame window with a specified size and background color
+func (f *Frame) NewWindow(rect image.Rectangle, background color.Color) *Window {
 	return &Window{
-		painter: d.NewWindow(rect, background),
+		painter: f.framer.NewWindow(rect, background),
 	}
 }
 

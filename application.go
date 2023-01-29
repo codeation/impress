@@ -8,7 +8,9 @@ import (
 )
 
 // Application represents application top level window
-type Application struct{}
+type Application struct {
+	frame *Frame
+}
 
 // NewApplication creates main application window
 func NewApplication(rect image.Rectangle, title string) *Application {
@@ -19,7 +21,9 @@ func NewApplication(rect image.Rectangle, title string) *Application {
 	d.Init()
 	d.Size(rect)
 	d.Title(title)
-	return &Application{}
+	return &Application{
+		frame: &Frame{framer: d.NewFrame(rect)},
+	}
 }
 
 // Close destroys application resources

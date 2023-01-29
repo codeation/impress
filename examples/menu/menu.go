@@ -39,6 +39,8 @@ func main() {
 	menuM.NewItem("Search", event.NewMenu("search"))
 
 	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
+	defer w.Drop()
+
 	w.Text("Hello, world!", font, image.Pt(280, 210), foreground)
 	w.Line(image.Pt(270, 230), image.Pt(380, 230), underline)
 	w.Show()
