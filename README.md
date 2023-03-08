@@ -1,28 +1,27 @@
-# impress
+# impress. Go GUI cross-platform library
 
-**Cross platform GUI Library for Go**
+## Getting Started
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
-## Beta Version
+See [project wiki](https://github.com/codeation/impress/wiki) 
+for [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
 
-Notes:
+Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
-- The project tested on Debian 11.6 and macOS Big Sur.
-- The library may contain bugs.
-
-## Basic Principles of Library Building Design
+## Basic Principles of Library Design
 
 - Performance of the application as well as native applications.
 - Simple and clean application code.
 - Limited use of other libraries (graphic, low-level or native).
 - Creating a GUI application without form designer or hard-coded widgets.
+- Minimal library API to stay within the Go-way.
 
 The basic idea is to avoid the event-driven programming paradigm. See
 ["Whats wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
 page.
 
-## Examples
+## Hello World Example
 
 Let's say hello:
 
@@ -71,26 +70,19 @@ func main() {
 }
 ```
 
-See project wiki for [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
+See an explanation of the source code in [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
 
-Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
-
-## Installation
-
-The library uses [a separate application](https://github.com/codeation/it) as a GUI driver
-for rendering, event collecting, etc. You can [download](https://github.com/codeation/it/releases)
-the compiled binary `it` file or make it again from [the source](https://github.com/codeation/it).
-
-You can specify the full path and name for the GUI driver via the environment variable, for example:
+To run this example on Debian/ Ubuntu:
 
 ```
-IMPRESS_TERMINAL_PATH=/path/it go run ./examples/simple/simple.go
-```
+git clone https://github.com/codeation/impress.git
+cd impress
 
-or just copy the downloaded GUI driver to the working directory and run example:
+wget https://github.com/codeation/it/releases/download/v0.2.4/it-linux.zip
+unzip it-linux.zip
+rm it-linux.zip
 
-```
-go run ./examples/simple/simple.go
+go run ./examples/simple/
 ```
 
 ## GUI driver
@@ -108,6 +100,31 @@ Cons:
 - Some loss of speed due to data transfer between applications.
 - Additional complexity due to state synchronization between applications.
 
+You can [download](https://github.com/codeation/it/releases)
+the compiled binary `it` file or make it again from [the source](https://github.com/codeation/it).
+
+You can specify the full path and name for the GUI driver via the environment variable, for example:
+
+```
+IMPRESS_TERMINAL_PATH=/path/it go run ./examples/simple/
+```
+
+or just copy the downloaded GUI driver to the working directory and run example:
+
+```
+go run ./examples/simple/
+```
+
+## Project State
+
+Notes:
+
+- The project in a beta stage.
+- The project tested on Debian 11.6 and macOS Big Sur.
+- The library may contain bugs.
+
+A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the value of the library.
+
 ## Contributing
 
 First of all, welcome:
@@ -117,13 +134,5 @@ First of all, welcome:
 - any advice on the library design and principles
 - help to correct grammatical and writing errors (PR or issue)
 - any contribution to project, project wiki, examples
-
-## Using
-
-See [documentation](https://pkg.go.dev/github.com/codeation/impress),
-[examples folder](https://github.com/codeation/impress/tree/master/examples) and
-[project wiki](https://github.com/codeation/impress/wiki).
-
-A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the value of the library.
 
 Stay tuned for more.
