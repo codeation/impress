@@ -72,7 +72,7 @@ func main() {
 
 See an explanation of the source code in [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
 
-To run this example on Debian/ Ubuntu:
+### To run this example on Debian/ Ubuntu:
 
 ```
 git clone https://github.com/codeation/impress.git
@@ -83,6 +83,27 @@ unzip it-linux.zip
 rm it-linux.zip
 
 go run ./examples/simple/
+```
+
+### To run this example on macOS:
+
+1. Install [Homebrew](https://brew.sh/) if you don't have installed.
+2. Install GTK+ 3 (`brew install gtk+3`) and pkg-config (`brew install pkg-config`) if you don't have installed.
+3. Build impress terminal from source (see [impress terminal page](https://github.com/codeation/it)):
+
+```
+git clone https://github.com/codeation/it.git
+cd it
+make
+cd ..
+```
+
+4. Then run example:
+
+```
+git clone https://github.com/codeation/impress.git
+cd impress
+IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 ```
 
 ## GUI driver
