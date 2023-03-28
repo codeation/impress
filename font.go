@@ -37,9 +37,10 @@ func (f *Font) Close() {
 	f.fonter = nil // TODO notice when the font is closed
 }
 
-// Split breaks the text into lines that fit in the specified width
-func (f *Font) Split(text string, edge int) []string {
-	return f.fonter.Split(text, edge)
+// Split breaks the text into lines that fit in the specified width;
+// indent is a width to indent first line
+func (f *Font) Split(text string, edge int, indent int) []string {
+	return f.fonter.Split(text, edge, indent)
 }
 
 // Size returns the width and height of the drawing area

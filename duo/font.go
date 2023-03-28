@@ -101,7 +101,7 @@ func (f *fontface) Ascent() int   { return f.ascent }
 func (f *fontface) Baseline() int { return f.baseline }
 func (f *fontface) Descent() int  { return f.descent }
 
-func (f *fontface) Split(text string, edge int) []string {
+func (f *fontface) Split(text string, edge int, indent int) []string {
 	if len(text) == 0 {
 		return nil
 	}
@@ -109,7 +109,7 @@ func (f *fontface) Split(text string, edge int) []string {
 	f.driver.syncPipe.
 		Int16s(&lengths).
 		Call(
-			'P', f.id, edge, text)
+			'P', f.id, edge, indent, text)
 	output := make([]string, len(lengths))
 	pos := 0
 	for i := 0; i < len(lengths); i++ {

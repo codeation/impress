@@ -49,7 +49,7 @@ type Fonter interface {
 	Ascent() int
 	Descent() int
 	Close()
-	Split(text string, edge int) []string
+	Split(text string, edge int, indent int) []string
 	Size(text string) image.Point
 }
 
