@@ -123,9 +123,10 @@ func (d *duo) Done() {
 }
 
 func (d *duo) done() error {
+	var dummyString string
+	d.syncPipe.String(&dummyString).Call(
+		'X')
 	d.onExit = true
-	d.streamPipe.Call('X')
-	d.streamPipe.Flush()
 	if err := d.fileRequest.Close(); err != nil {
 		return fmt.Errorf("fileRequest.Close: %w", err)
 	}
