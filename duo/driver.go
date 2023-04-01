@@ -123,10 +123,10 @@ func (d *duo) Done() {
 }
 
 func (d *duo) done() error {
+	d.onExit = true
 	var dummyString string
 	d.syncPipe.String(&dummyString).Call(
 		'X')
-	d.onExit = true
 	if err := d.fileRequest.Close(); err != nil {
 		return fmt.Errorf("fileRequest.Close: %w", err)
 	}

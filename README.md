@@ -15,7 +15,7 @@ Some usage examples are located in [examples folder](https://github.com/codeatio
 - Simple and clean application code.
 - Limited use of other libraries (graphic, low-level or native).
 - Creating a GUI application without form designer or hard-coded widgets.
-- Minimal library API to stay within the Go-way.
+- Minimal library API to follow the Go-way.
 
 The basic idea is to avoid the event-driven programming paradigm. See
 ["Whats wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
@@ -138,22 +138,39 @@ go run ./examples/simple/
 
 ## Project State
 
-Notes:
+### Notes
 
-- The project in a beta stage.
+- The project in a beta stage. It's suitable for developing in-house applications.
 - The project tested on Debian 11.6 and macOS Big Sur.
 - The library may contain bugs.
+- The API is generally stable, but the details are subject to change.
 
-A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the value of the library.
+In fact, Go is the most suitable language for developing GUI applications. It's fast enough to spin an interactive application. It is multi-tasking to handle the states of separate windows. It is compact so that the application starts instantly. It is high level to develop complex application.
+
+A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the underlying principles of the library.
+
+Stay tuned for more.
+
+### Short term roadmap
+
+- Recommended Event Propagation module.
+- Additional library with a set of widgets (text input, dialog, etc).
+- Developer version of the library with debugging and profiling.
+
+### Long term roadmap
+
+- WebAssembly driver for turning a browser into a client terminal.
+- Two or more cooperate drivers for the same GUI application.
+- GTK-4 driver version when Debian will contain GTK-4 apps.
+- Apple Silicon native driver for macOS.
+- iOS app used as GUI app remote client.
 
 ## Contributing
 
 First of all, welcome:
 
-- any clue of the project importance (stars, etc)
-- bug report, open [issue](https://github.com/codeation/impress/issues)
-- any advice on the library design and principles
-- help to correct grammatical and writing errors (PR or issue)
-- any contribution to project, project wiki, examples
-
-Stay tuned for more.
+- Any clue of the project importance (star, post, etc).
+- Any advice on the library design and principles.
+- Contribution to project, project wiki, examples.
+- Bug report, open [issue](https://github.com/codeation/impress/issues).
+- Or any help to correct grammatical or writing errors (PR or issue).
