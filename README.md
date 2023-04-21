@@ -7,7 +7,7 @@
 See [project wiki](https://github.com/codeation/impress/wiki) 
 for [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
 
-Some usage examples are located in [examples folder](https://github.com/codeation/impress/tree/master/examples).
+Some usage examples are in the [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
 ## Basic Principles of Library Design
 
@@ -18,7 +18,7 @@ Some usage examples are located in [examples folder](https://github.com/codeatio
 - Minimal library API to follow the Go-way.
 
 The basic idea is to avoid the event-driven programming paradigm. See
-["Whats wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
+["What's wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
 page.
 
 ## Hello World Example
@@ -87,8 +87,8 @@ go run ./examples/simple/
 
 ### To run this example on macOS:
 
-1. Install [Homebrew](https://brew.sh/) if you don't have installed.
-2. Install GTK+ 3 (`brew install gtk+3`) and pkg-config (`brew install pkg-config`) if you don't have installed.
+1. Install [Homebrew](https://brew.sh/) if you don't have it installed.
+2. Install GTK+ 3 (`brew install gtk+3`) and pkg-config (`brew install pkg-config`) if you don't have it installed.
 3. Build impress terminal from source (see [impress terminal page](https://github.com/codeation/it)):
 
 ```
@@ -140,10 +140,10 @@ go run ./examples/simple/
 
 ### Notes
 
-- The project in a beta stage. It's suitable for developing in-house applications.
+- The project is in a beta stage. It's suitable for developing in-house applications.
 - The project tested on Debian 11.6 and macOS Big Sur.
 - The library may contain bugs.
-- The API is generally stable, but the details are subject to change.
+- The API is stable, but the details are subject to change.
 
 In fact, Go is the most suitable language for developing GUI applications. It's fast enough to spin an interactive application. It is multi-tasking to handle the states of separate windows. It is compact so that the application starts instantly. It is high level to develop complex application.
 
@@ -154,7 +154,7 @@ Stay tuned for more.
 ### Short term roadmap
 
 - Recommended Event Propagation module.
-- Additional library with a set of widgets (text input, dialog, etc).
+- Additional library with a set of widgets (text input, dialog, etc.).
 - Developer version of the library with debugging and profiling.
 
 ### Long term roadmap
@@ -167,9 +167,9 @@ Stay tuned for more.
 
 ## Contributing
 
-First of all, welcome:
+First, welcome:
 
-- Any clue of the project importance (star, post, etc).
+- Any clue of the project's importance (star, post, etc.).
 - Any advice on the library design and principles.
 - Contribution to project, project wiki, examples.
 - Bug report, open [issue](https://github.com/codeation/impress/issues).

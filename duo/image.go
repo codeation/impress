@@ -32,6 +32,12 @@ func (d *duo) NewImage(img image.Image) driver.Imager {
 		width:  img.Bounds().Size().X,
 		height: img.Bounds().Size().Y,
 	}
+	if len(pix.Pix) > 67108863 {
+		log.Printf("image size is too large")
+		pix = image.NewNRGBA(image.Rect(0, 0, 1, 1))
+		b.width = 1
+		b.height = 1
+	}
 	b.driver.streamPipe.Call(
 		'B', b.id, b.width, b.height, pix.Pix)
 	return b
