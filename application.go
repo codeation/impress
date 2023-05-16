@@ -22,7 +22,7 @@ func NewApplication(rect image.Rectangle, title string) *Application {
 	d.Size(rect)
 	d.Title(title)
 	return &Application{
-		frame: &Frame{framer: d.NewFrame(rect)},
+		frame: &Frame{framer: d.NewFrame(image.Rect(0, 0, rect.Dx(), rect.Dy()))},
 	}
 }
 

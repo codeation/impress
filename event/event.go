@@ -152,6 +152,7 @@ type Scroll struct {
 	DeltaY    int
 }
 
+// Scroll direction type
 const (
 	ScrollUp     = 0
 	ScrollDown   = 1
