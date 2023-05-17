@@ -1,7 +1,5 @@
 # impress. Go GUI cross-platform library
 
-## Getting Started
-
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
 See [project wiki](https://github.com/codeation/impress/wiki) 
@@ -25,7 +23,7 @@ page.
 
 Let's say hello:
 
-!["Hello, world!" screenshot](https://codeation.github.io/pages/images/helloworld.png)
+!["Hello, world!" screenshot](https://codeation.github.io/images/hello_world.png)
 
 ```
 package main
@@ -106,7 +104,7 @@ cd impress
 IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 ```
 
-## GUI driver
+## GTK-3 driver
 
 The library uses [a separate application](https://github.com/codeation/it) for drawing
 instead of binding low-level library to a Golang.
@@ -159,7 +157,7 @@ Stay tuned for more.
 
 ### Long term roadmap
 
-- WebAssembly driver for turning a browser into a client terminal.
+- [WebAssembly driver](https://github.com/codeation/canvas) for turning a browser into a client terminal.
 - Two or more cooperate drivers for the same GUI application.
 - GTK-4 driver version when Debian will contain GTK-4 apps.
 - Apple Silicon native driver for macOS.
