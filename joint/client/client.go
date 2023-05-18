@@ -6,7 +6,7 @@ import (
 	"github.com/codeation/impress/joint/rpc"
 )
 
-type Client struct {
+type client struct {
 	callbacks  iface.CallbackSet
 	onExit     bool
 	eventPipe  *rpc.Pipe
@@ -14,8 +14,8 @@ type Client struct {
 	syncPipe   *rpc.Pipe
 }
 
-func NewClient(callbacks iface.CallbackSet, eventPipe, streamPipe, syncPipe *rpc.Pipe) *Client {
-	c := &Client{
+func New(callbacks iface.CallbackSet, eventPipe, streamPipe, syncPipe *rpc.Pipe) *client {
+	c := &client{
 		callbacks:  callbacks,
 		eventPipe:  eventPipe,
 		streamPipe: streamPipe,
@@ -25,6 +25,6 @@ func NewClient(callbacks iface.CallbackSet, eventPipe, streamPipe, syncPipe *rpc
 	return c
 }
 
-func (c *Client) Sync() {
+func (c *client) Sync() {
 	c.streamPipe.Flush()
 }

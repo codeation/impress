@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type BufferSplit struct {
+type IOSplit struct {
 	c         chan []byte
 	tail      []byte
 	isData    bool
@@ -14,23 +14,23 @@ type BufferSplit struct {
 	isEternal bool
 }
 
-func NewBufferSplit() *BufferSplit {
-	return &BufferSplit{
+func NewIOSplit() *IOSplit {
+	return &IOSplit{
 		c: make(chan []byte, 16),
 	}
 }
 
-func (c *BufferSplit) WithTimeout() *BufferSplit {
+func (c *IOSplit) WithTimeout() *IOSplit {
 	c.isTimeout = true
 	return c
 }
 
-func (c *BufferSplit) WithEternal() *BufferSplit {
+func (c *IOSplit) WithEternal() *IOSplit {
 	c.isEternal = true
 	return c
 }
 
-func (c *BufferSplit) instantNext() error {
+func (c *IOSplit) instantNext() error {
 	select {
 	case c.tail = <-c.c:
 		return nil
@@ -40,7 +40,7 @@ func (c *BufferSplit) instantNext() error {
 	}
 }
 
-func (c *BufferSplit) timeoutNext() error {
+func (c *IOSplit) timeoutNext() error {
 	timer := time.NewTimer(30 * time.Second)
 	defer timer.Stop()
 	select {
@@ -52,7 +52,7 @@ func (c *BufferSplit) timeoutNext() error {
 	}
 }
 
-func (c *BufferSplit) eternalNext() error {
+func (c *IOSplit) eternalNext() error {
 	var ok bool
 	c.tail, ok = <-c.c
 	if !ok {
@@ -61,7 +61,7 @@ func (c *BufferSplit) eternalNext() error {
 	return nil
 }
 
-func (c *BufferSplit) Read(p []byte) (int, error) {
+func (c *IOSplit) Read(p []byte) (int, error) {
 	if len(c.tail) == 0 {
 		switch {
 		case c.isData:
@@ -88,7 +88,7 @@ func (c *BufferSplit) Read(p []byte) (int, error) {
 	return length, nil
 }
 
-func (c *BufferSplit) Write(p []byte) (int, error) {
+func (c *IOSplit) Write(p []byte) (int, error) {
 	if len(p) == 0 {
 		return 0, nil
 	}

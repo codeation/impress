@@ -26,8 +26,8 @@ func init() {
 	flag.Parse()
 	log.Printf("listening on %q...", *listen)
 
-	streamLink := iosplit.NewBufferSplit().WithTimeout()
-	requestLink := iosplit.NewBufferSplit().WithTimeout()
+	streamLink := iosplit.NewIOSplit().WithTimeout()
+	requestLink := iosplit.NewIOSplit().WithTimeout()
 	responseR, responseW := io.Pipe()
 	eventR, eventW := io.Pipe()
 
@@ -36,11 +36,11 @@ func init() {
 	syncPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(requestLink), responseR)
 
 	eventChan := eventchan.New()
-	client := client.NewClient(eventChan, eventPipe, streamPipe, syncPipe)
+	client := client.New(eventChan, eventPipe, streamPipe, syncPipe)
 	driver := domain.New(client, eventChan)
 	impress.Register(driver)
 
-	go LinkRun(streamLink, requestLink, responseW, eventW)
+	go linkRun(streamLink, requestLink, responseW, eventW)
 
 }
 
@@ -50,7 +50,7 @@ type dataStream struct {
 	writers  map[string]io.Reader
 }
 
-func NewDataIO(streamLink, requestLink io.Reader, responseLink, eventLink io.Writer) *dataStream {
+func newDataIO(streamLink, requestLink io.Reader, responseLink, eventLink io.Writer) *dataStream {
 	fileServer := http.FileServer(http.Dir(*dir))
 	s := &dataStream{
 		handlers: map[string]http.Handler{},
@@ -100,10 +100,10 @@ func (s *dataStream) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func LinkRun(streamLink, requestLink io.Reader, responseLink, eventLink io.Writer) error {
+func linkRun(streamLink, requestLink io.Reader, responseLink, eventLink io.Writer) error {
 	s := &http.Server{
 		Addr:           *listen,
-		Handler:        NewDataIO(streamLink, requestLink, responseLink, eventLink),
+		Handler:        newDataIO(streamLink, requestLink, responseLink, eventLink),
 		ReadTimeout:    120 * time.Second,
 		WriteTimeout:   120 * time.Second,
 		MaxHeaderBytes: 1 << 20,

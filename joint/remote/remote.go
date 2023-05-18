@@ -6,14 +6,14 @@ import (
 	"github.com/codeation/impress/joint/rpc"
 )
 
-type Server struct {
+type server struct {
 	calls      iface.CallSet
 	streamPipe *rpc.Pipe
 	syncPipe   *rpc.Pipe
 }
 
-func NewServer(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *Server {
-	s := &Server{
+func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *server {
+	s := &server{
 		calls:      calls,
 		streamPipe: streamPipe,
 		syncPipe:   syncPipe,

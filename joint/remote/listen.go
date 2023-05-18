@@ -6,7 +6,7 @@ import (
 	"github.com/codeation/impress/joint/iface"
 )
 
-func (s *Server) streamListen() {
+func (s *server) streamListen() {
 	for {
 		var command byte
 		if err := s.streamPipe.Byte(&command).CallErr(); err != nil {
@@ -211,7 +211,7 @@ func (s *Server) streamListen() {
 	}
 }
 
-func (s *Server) syncListen() {
+func (s *server) syncListen() {
 	for {
 		var command byte
 		if err := s.syncPipe.Byte(&command).CallErr(); err != nil {

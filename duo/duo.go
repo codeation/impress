@@ -41,17 +41,17 @@ type duo struct {
 }
 
 func init() {
-	impress.Register(New())
+	impress.Register(newDuo())
 }
 
-func New() *duo {
+func newDuo() *duo {
 	d := &duo{}
 	if err := d.connect(); err != nil {
 		log.Println(err)
 		return nil
 	}
 	eventChan := eventchan.New()
-	client := client.NewClient(eventChan, d.eventPipe, d.streamPipe, d.syncPipe)
+	client := client.New(eventChan, d.eventPipe, d.streamPipe, d.syncPipe)
 	d.Driver = domain.New(client, eventChan)
 	return d
 }

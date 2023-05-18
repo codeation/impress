@@ -6,7 +6,7 @@ import (
 	"github.com/codeation/impress/joint/iface"
 )
 
-func (c *Client) listen() {
+func (c *client) listen() {
 	for {
 		var command byte
 		if err := c.eventPipe.Byte(&command).CallErr(); err != nil {

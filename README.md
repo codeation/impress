@@ -76,7 +76,7 @@ See an explanation of the source code in [a library overview](https://github.com
 git clone https://github.com/codeation/impress.git
 cd impress
 
-wget https://github.com/codeation/it/releases/download/v0.2.6/it-linux.zip
+wget https://github.com/codeation/it/releases/latest/download/it-linux.zip
 unzip it-linux.zip
 rm it-linux.zip
 
