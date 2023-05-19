@@ -13,10 +13,6 @@ import (
 	_ "github.com/codeation/impress/duo"
 )
 
-var (
-	background = color.RGBA{255, 255, 255, 0}
-)
-
 func main() {
 	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Image Application")
 	defer app.Close()
@@ -35,7 +31,7 @@ func main() {
 	i := impress.NewImage(img)
 	defer i.Close()
 
-	w := app.NewWindow(image.Rect(0, 0, 640, 480), background)
+	w := app.NewWindow(image.Rect(0, 0, 640, 480), color.RGBA{255, 255, 255, 0})
 	defer w.Drop()
 
 	w.Image(image.Rect(100, 10, 100+i.Size.X, 10+i.Size.Y), i)
