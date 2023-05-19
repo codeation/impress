@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/codeation/impress"
-	"github.com/codeation/impress/joint/client"
 	"github.com/codeation/impress/joint/domain"
+	"github.com/codeation/impress/joint/drawsend"
 	"github.com/codeation/impress/joint/eventchan"
+	"github.com/codeation/impress/joint/eventrecv"
 	"github.com/codeation/impress/joint/iosplit"
 	"github.com/codeation/impress/joint/rpc"
 )
@@ -36,8 +37,9 @@ func init() {
 	syncPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(requestLink), responseR)
 
 	eventChan := eventchan.New()
-	client := client.New(eventChan, eventPipe, streamPipe, syncPipe)
-	driver := domain.New(client, eventChan)
+	_ = eventrecv.New(eventChan, eventPipe)
+	client := drawsend.New(streamPipe, syncPipe)
+	driver := domain.New(client, eventChan, streamPipe)
 	impress.Register(driver)
 
 	go linkRun(streamLink, requestLink, responseW, eventW)

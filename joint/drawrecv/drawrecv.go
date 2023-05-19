@@ -1,12 +1,31 @@
-package remote
+// Package implements an internal mechanism to communicate with an impress terminal.
+package drawrecv
 
 import (
 	"log"
 
 	"github.com/codeation/impress/joint/iface"
+	"github.com/codeation/impress/joint/rpc"
 )
 
-func (s *server) streamListen() {
+type drawRecv struct {
+	calls      iface.CallSet
+	streamPipe *rpc.Pipe
+	syncPipe   *rpc.Pipe
+}
+
+func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
+	s := &drawRecv{
+		calls:      calls,
+		streamPipe: streamPipe,
+		syncPipe:   syncPipe,
+	}
+	go s.streamListen()
+	go s.syncListen()
+	return s
+}
+
+func (s *drawRecv) streamListen() {
 	for {
 		var command byte
 		if err := s.streamPipe.Byte(&command).CallErr(); err != nil {
@@ -211,7 +230,7 @@ func (s *server) streamListen() {
 	}
 }
 
-func (s *server) syncListen() {
+func (s *drawRecv) syncListen() {
 	for {
 		var command byte
 		if err := s.syncPipe.Byte(&command).CallErr(); err != nil {

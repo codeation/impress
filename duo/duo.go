@@ -14,9 +14,10 @@ import (
 
 	"github.com/codeation/impress"
 	"github.com/codeation/impress/driver"
-	"github.com/codeation/impress/joint/client"
 	"github.com/codeation/impress/joint/domain"
+	"github.com/codeation/impress/joint/drawsend"
 	"github.com/codeation/impress/joint/eventchan"
+	"github.com/codeation/impress/joint/eventrecv"
 	"github.com/codeation/impress/joint/rpc"
 )
 
@@ -27,8 +28,13 @@ const (
 	fifoEventPath  = "/tmp/it_fifo_event_"
 )
 
+type doner interface {
+	Done()
+}
+
 type duo struct {
 	driver.Driver
+	eventRecv    doner
 	cmd          *exec.Cmd
 	fileSuffix   string
 	fileStream   *os.File
@@ -51,12 +57,14 @@ func newDuo() *duo {
 		return nil
 	}
 	eventChan := eventchan.New()
-	client := client.New(eventChan, d.eventPipe, d.streamPipe, d.syncPipe)
-	d.Driver = domain.New(client, eventChan)
+	d.eventRecv = eventrecv.New(eventChan, d.eventPipe)
+	drawSend := drawsend.New(d.streamPipe, d.syncPipe)
+	d.Driver = domain.New(drawSend, eventChan, d.streamPipe)
 	return d
 }
 
 func (d *duo) Done() {
+	d.eventRecv.Done()
 	d.Driver.Done()
 	if err := d.disconnect(); err != nil {
 		log.Println(err)

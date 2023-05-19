@@ -1,12 +1,32 @@
-package client
+package eventrecv
 
 import (
 	"log"
 
 	"github.com/codeation/impress/joint/iface"
+	"github.com/codeation/impress/joint/rpc"
 )
 
-func (c *client) listen() {
+type eventRecv struct {
+	callbacks iface.CallbackSet
+	onExit    bool
+	eventPipe *rpc.Pipe
+}
+
+func New(callbacks iface.CallbackSet, eventPipe *rpc.Pipe) *eventRecv {
+	c := &eventRecv{
+		callbacks: callbacks,
+		eventPipe: eventPipe,
+	}
+	go c.listen()
+	return c
+}
+
+func (c *eventRecv) Done() {
+	c.onExit = true
+}
+
+func (c *eventRecv) listen() {
 	for {
 		var command byte
 		if err := c.eventPipe.Byte(&command).CallErr(); err != nil {
