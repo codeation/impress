@@ -2,9 +2,9 @@
 package rpc
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 )
 
 type mutexer interface {
@@ -17,15 +17,11 @@ type flushWriter interface {
 	Flush() error
 }
 
-type parameter interface {
-	set(reader io.Reader) error
-}
-
 type Pipe struct {
 	mutex  mutexer
 	writer flushWriter
 	reader io.Reader
-	queue  []parameter
+	err    error
 }
 
 func NewPipe(mutex mutexer, writer flushWriter, reader io.Reader) *Pipe {
@@ -36,125 +32,83 @@ func NewPipe(mutex mutexer, writer flushWriter, reader io.Reader) *Pipe {
 	}
 }
 
-func (p *Pipe) clone() *Pipe {
-	if len(p.queue) == 0 {
-		return &Pipe{
-			mutex:  p.mutex,
-			writer: p.writer,
-			reader: p.reader,
-			queue:  make([]parameter, 0, 8),
+func (p *Pipe) Lock() *Pipe {
+	p.err = nil
+	p.mutex.Lock()
+	return p
+}
+
+func (p *Pipe) Unlock() *Pipe {
+	p.mutex.Unlock()
+	return p
+}
+
+func (p *Pipe) Flush() *Pipe {
+	if p.err != nil {
+		return p
+	}
+	p.err = p.writer.Flush()
+	return p
+}
+
+func (p *Pipe) Err() error {
+	return p.err
+}
+
+func (p *Pipe) Get(variables ...interface{}) *Pipe {
+	for _, v := range variables {
+		if p.err != nil {
+			return p
+		}
+		switch variable := v.(type) {
+		case *byte:
+			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+		case *[]byte:
+			p.err = p.getBytes(variable)
+		case *bool:
+			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+		case *int:
+			p.err = p.getInt(variable)
+		case *[]int:
+			p.err = p.getInts(variable)
+		case *uint16:
+			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+		case *uint32:
+			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+		case *string:
+			p.err = p.getString(variable)
+		default:
+			p.err = fmt.Errorf("unknown type: %T", v)
 		}
 	}
 	return p
 }
 
-func (p *Pipe) add(variable parameter) *Pipe {
-	output := p.clone()
-	output.queue = append(output.queue, variable)
-	return output
-}
-
-func (p *Pipe) Byte(variable *byte) *Pipe {
-	return p.add(&parameterByte{ptr: variable})
-}
-
-func (p *Pipe) Bytes(variable *[]byte) *Pipe {
-	return p.add(&parameterBytes{ptr: variable})
-}
-
-func (p *Pipe) Bool(variable *bool) *Pipe {
-	return p.add(&parameterBool{ptr: variable})
-}
-
-func (p *Pipe) Int(variable *int) *Pipe {
-	return p.add(&parameterInt{ptr: variable})
-}
-
-func (p *Pipe) Ints(variable *[]int) *Pipe {
-	return p.add(&parameterInts{ptr: variable})
-}
-
-func (p *Pipe) UInt16(variable *uint16) *Pipe {
-	return p.add(&parameterUInt16{ptr: variable})
-}
-
-func (p *Pipe) UInt32(variable *uint32) *Pipe {
-	return p.add(&parameterUInt32{ptr: variable})
-}
-
-func (p *Pipe) String(variable *string) *Pipe {
-	return p.add(&parameterString{ptr: variable})
-}
-
-func (p *Pipe) CallErr(values ...interface{}) error {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
-
+func (p *Pipe) Put(values ...interface{}) *Pipe {
 	for _, v := range values {
+		if p.err != nil {
+			return p
+		}
 		switch value := v.(type) {
 		case byte:
-			if err := putByte(p.writer, value); err != nil {
-				return err
-			}
+			p.err = binary.Write(p.writer, binary.LittleEndian, value)
 		case []byte:
-			if err := putBytes(p.writer, value); err != nil {
-				return err
-			}
+			p.err = p.putBytes(value)
 		case bool:
-			if err := putBool(p.writer, value); err != nil {
-				return err
-			}
+			p.err = binary.Write(p.writer, binary.LittleEndian, value)
 		case int:
-			if err := putInt(p.writer, value); err != nil {
-				return err
-			}
+			p.err = p.putInt(value)
 		case []int:
-			if err := putInts(p.writer, value); err != nil {
-				return err
-			}
+			p.err = p.putInts(value)
 		case uint16:
-			if err := putUInt16(p.writer, value); err != nil {
-				return err
-			}
+			p.err = binary.Write(p.writer, binary.LittleEndian, value)
 		case uint32:
-			if err := putUInt32(p.writer, value); err != nil {
-				return err
-			}
+			p.err = binary.Write(p.writer, binary.LittleEndian, value)
 		case string:
-			if err := putString(p.writer, value); err != nil {
-				return err
-			}
+			p.err = p.putString(value)
 		default:
-			return fmt.Errorf("unknown type: %T", v)
+			p.err = fmt.Errorf("unknown type: %T", v)
 		}
 	}
-
-	if len(values) != 0 && len(p.queue) != 0 {
-		if err := p.writer.Flush(); err != nil {
-			return fmt.Errorf("flush: %w", err)
-		}
-	}
-
-	for _, v := range p.queue {
-		if err := v.set(p.reader); err != nil {
-			return fmt.Errorf("set: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (p *Pipe) Call(values ...interface{}) {
-	if err := p.CallErr(values...); err != nil {
-		log.Printf("call: %v", err)
-	}
-}
-
-func (p *Pipe) Flush() {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
-
-	if err := p.writer.Flush(); err != nil {
-		log.Printf("flush: %v", err)
-	}
+	return p
 }

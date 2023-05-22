@@ -3,6 +3,7 @@ package domain
 
 import (
 	"image"
+	"log"
 	"sync"
 
 	"github.com/codeation/impress/event"
@@ -14,7 +15,7 @@ type chaner interface {
 }
 
 type flusher interface {
-	Flush()
+	Flush() error
 }
 
 type application struct {
@@ -72,7 +73,12 @@ func (a *application) nextMenuID() int {
 	return a.lastMenuID
 }
 
-func (a *application) Init() {}
+func (a *application) Init() {
+	driverVersion := a.caller.ApplicationVersion()
+	if driverVersion != version {
+		log.Fatalf("Unexpected driver version: %s", driverVersion)
+	}
+}
 
 func (a *application) Done() {
 	a.caller.ApplicationExit()

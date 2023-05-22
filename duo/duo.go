@@ -1,3 +1,4 @@
+// Package to connect to GTK driver
 package next
 
 import (
@@ -32,18 +33,23 @@ type doner interface {
 	Done()
 }
 
+type flusher interface {
+	Flush() error
+}
+
 type duo struct {
 	driver.Driver
-	eventRecv    doner
-	cmd          *exec.Cmd
-	fileSuffix   string
-	fileStream   *os.File
-	fileRequest  *os.File
-	fileResponse *os.File
-	fileEvent    *os.File
-	streamPipe   *rpc.Pipe
-	syncPipe     *rpc.Pipe
-	eventPipe    *rpc.Pipe
+	eventRecv      doner
+	streamBuffered flusher
+	cmd            *exec.Cmd
+	fileSuffix     string
+	streamFile     *os.File
+	requestFile    *os.File
+	responseFile   *os.File
+	eventFile      *os.File
+	streamPipe     *rpc.Pipe
+	syncPipe       *rpc.Pipe
+	eventPipe      *rpc.Pipe
 }
 
 func init() {
@@ -59,7 +65,7 @@ func newDuo() *duo {
 	eventChan := eventchan.New()
 	d.eventRecv = eventrecv.New(eventChan, d.eventPipe)
 	drawSend := drawsend.New(d.streamPipe, d.syncPipe)
-	d.Driver = domain.New(drawSend, eventChan, d.streamPipe)
+	d.Driver = domain.New(drawSend, eventChan, d.streamBuffered)
 	return d
 }
 
@@ -97,31 +103,34 @@ func (d *duo) connect() error {
 	d.cmd = cmd
 
 	var err error
-	if d.fileResponse, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
+	if d.responseFile, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		return fmt.Errorf("os.OpenFile(o): %w", err)
 	}
-	if d.fileEvent, err = os.OpenFile(fifoEventPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
+	if d.eventFile, err = os.OpenFile(fifoEventPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		return fmt.Errorf("os.OpenFile(e): %w", err)
 	}
-	if d.fileRequest, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
+	if d.requestFile, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
 		return fmt.Errorf("os.OpenFile(i): %w", err)
 	}
-	if d.fileStream, err = os.OpenFile(fifoStreamPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
+	if d.streamFile, err = os.OpenFile(fifoStreamPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
 		return fmt.Errorf("os.OpenFile(s): %w", err)
 	}
 
-	d.streamPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(d.fileStream), nil)
-	d.syncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(d.fileRequest), bufio.NewReader(d.fileResponse))
-	d.eventPipe = rpc.NewPipe(rpc.WithoutMutex(), nil, bufio.NewReader(d.fileEvent))
+	streamBuffered := bufio.NewWriter(d.streamFile)
+	d.streamBuffered = streamBuffered
+
+	d.streamPipe = rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)
+	d.syncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(d.requestFile), bufio.NewReader(d.responseFile))
+	d.eventPipe = rpc.NewPipe(rpc.WithoutMutex(), nil, bufio.NewReader(d.eventFile))
 
 	return nil
 }
 
 func (d *duo) disconnect() error {
-	if err := d.fileRequest.Close(); err != nil {
+	if err := d.requestFile.Close(); err != nil {
 		return fmt.Errorf("fileRequest.Close: %w", err)
 	}
-	if err := d.fileStream.Close(); err != nil {
+	if err := d.streamFile.Close(); err != nil {
 		return fmt.Errorf("fileStream.Close: %w", err)
 	}
 
@@ -129,10 +138,10 @@ func (d *duo) disconnect() error {
 		return fmt.Errorf("cmd.Wait: %w", err)
 	}
 
-	if err := d.fileResponse.Close(); err != nil {
+	if err := d.responseFile.Close(); err != nil {
 		return fmt.Errorf("fileResponse.Close: %w", err)
 	}
-	if err := d.fileEvent.Close(); err != nil {
+	if err := d.eventFile.Close(); err != nil {
 		return fmt.Errorf("fileEvent.Close: %w", err)
 	}
 

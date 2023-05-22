@@ -1,21 +1,25 @@
+// Package to connect to WebAssembly driver
 package canvas
 
 import (
 	"bufio"
+	"context"
 	"flag"
-	"io"
-	"log"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
+	"golang.org/x/net/websocket"
+
 	"github.com/codeation/impress"
+	"github.com/codeation/impress/driver"
 	"github.com/codeation/impress/joint/domain"
 	"github.com/codeation/impress/joint/drawsend"
 	"github.com/codeation/impress/joint/eventchan"
 	"github.com/codeation/impress/joint/eventrecv"
-	"github.com/codeation/impress/joint/iosplit"
 	"github.com/codeation/impress/joint/rpc"
+	"github.com/codeation/impress/joint/serversocket"
 )
 
 var (
@@ -25,90 +29,77 @@ var (
 
 func init() {
 	flag.Parse()
-	log.Printf("listening on %q...", *listen)
 
-	streamLink := iosplit.NewIOSplit().WithTimeout()
-	requestLink := iosplit.NewIOSplit().WithTimeout()
-	responseR, responseW := io.Pipe()
-	eventR, eventW := io.Pipe()
+	streamSocket := serversocket.New()
+	syncSocket := serversocket.New()
+	eventSocket := serversocket.New()
+	httpServer := newServer(streamSocket.Handler(), syncSocket.Handler(), eventSocket.Handler())
 
-	eventPipe := rpc.NewPipe(rpc.WithoutMutex(), nil, eventR)
-	streamPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(streamLink), nil)
-	syncPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(requestLink), responseR)
+	streamBuffered := bufio.NewWriter(streamSocket)
+
+	eventPipe := rpc.NewPipe(new(sync.Mutex), nil, eventSocket)
+	streamPipe := rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)
+	syncPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(syncSocket), syncSocket)
 
 	eventChan := eventchan.New()
 	_ = eventrecv.New(eventChan, eventPipe)
 	client := drawsend.New(streamPipe, syncPipe)
-	driver := domain.New(client, eventChan, streamPipe)
-	impress.Register(driver)
+	driver := domain.New(client, eventChan, streamBuffered)
 
-	go linkRun(streamLink, requestLink, responseW, eventW)
-
+	impress.Register(&httpDriver{
+		Driver:     driver,
+		httpServer: httpServer,
+	})
 }
 
-type dataStream struct {
+type httpDriver struct {
+	driver.Driver
+	httpServer *http.Server
+}
+
+func (h *httpDriver) Done() {
+	h.Driver.Done()
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
+	defer cancelFunc()
+	h.httpServer.Shutdown(ctx)
+}
+
+func newServer(streamSocket, syncSocket, eventSocket websocket.Handler) *http.Server {
+	s := &http.Server{
+		Addr:           *listen,
+		Handler:        newHandlers(streamSocket, syncSocket, eventSocket),
+		ReadTimeout:    120 * time.Second,
+		WriteTimeout:   120 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	fmt.Println("listening on", *listen)
+	go s.ListenAndServe()
+	return s
+}
+
+type handlers struct {
 	handlers map[string]http.Handler
-	readers  map[string]io.Writer
-	writers  map[string]io.Reader
 }
 
-func newDataIO(streamLink, requestLink io.Reader, responseLink, eventLink io.Writer) *dataStream {
+func newHandlers(streamSocket, syncSocket, eventSocket websocket.Handler) *handlers {
 	fileServer := http.FileServer(http.Dir(*dir))
-	s := &dataStream{
+	s := &handlers{
 		handlers: map[string]http.Handler{},
-		readers:  map[string]io.Writer{},
-		writers:  map[string]io.Reader{},
 	}
 	for _, path := range []string{"/", "/index.html", "/main.wasm", "/wasm_exec.js"} {
 		s.handlers[path] = fileServer
 	}
-	s.AddWriter("/stream", streamLink)
-	s.AddWriter("/request", requestLink)
-	s.AddReader("/response", responseLink)
-	s.AddReader("/event", eventLink)
+	s.handlers["/stream"] = streamSocket
+	s.handlers["/sync"] = syncSocket
+	s.handlers["/event"] = eventSocket
 	return s
 }
 
-func (s *dataStream) AddReader(path string, r io.Writer) {
-	s.readers[path] = r
-}
-
-func (s *dataStream) AddWriter(path string, w io.Reader) {
-	s.writers[path] = w
-}
-
-func (s *dataStream) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (s *handlers) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if handler, ok := s.handlers[req.URL.Path]; ok {
 		handler.ServeHTTP(w, req)
 		return
 	}
 
-	if writer, ok := s.writers[req.URL.Path]; ok {
-		w.Header().Add("Content-Type", "application/binary")
-		if _, err := io.Copy(w, writer); err != nil {
-			log.Printf("io.Copy: %v", err)
-		}
-		return
-	}
-
-	if reader, ok := s.readers[req.URL.Path]; ok {
-		if _, err := io.Copy(reader, req.Body); err != nil {
-			log.Printf("io.Copy: %v", err)
-		}
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
 	w.WriteHeader(http.StatusNotFound)
-}
-
-func linkRun(streamLink, requestLink io.Reader, responseLink, eventLink io.Writer) error {
-	s := &http.Server{
-		Addr:           *listen,
-		Handler:        newDataIO(streamLink, requestLink, responseLink, eventLink),
-		ReadTimeout:    120 * time.Second,
-		WriteTimeout:   120 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
-	return s.ListenAndServe()
 }
