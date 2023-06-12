@@ -164,7 +164,12 @@ func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stret
 	return lineheight, baseline, ascent, descent
 }
 
-func (c *drawSend) FontDrop(fontID int) {}
+func (c *drawSend) FontDrop(fontID int) {
+	c.streamPipe.
+		Lock().
+		Put(iface.FontDropCode, fontID).
+		Unlock()
+}
 
 func (c *drawSend) FontSplit(fontID int, text string, edge, indent int) []int {
 	var lengths []int

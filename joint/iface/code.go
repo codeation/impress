@@ -23,7 +23,7 @@ const (
 	WindowImageCode byte = 'I'
 
 	FontNewCode   byte = 'N'
-	FontDropCode  byte = '_' // TODO
+	FontDropCode  byte = 'K'
 	FontSplitCode byte = 'P'
 	FontSizeCode  byte = 'R'
 
