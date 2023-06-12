@@ -14,7 +14,8 @@ import (
 )
 
 func main() {
-	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Image Application")
+	rect := image.Rect(0, 0, 640, 480)
+	app := impress.NewApplication(rect, "Image Application")
 	defer app.Close()
 
 	f, err := os.Open("test_image.png")
@@ -23,23 +24,34 @@ func main() {
 		return
 	}
 	defer f.Close()
-	img, err := png.Decode(f)
+	i, err := png.Decode(f)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	i := impress.NewImage(img)
-	defer i.Close()
+	img := impress.NewImage(i)
+	defer img.Close()
 
-	w := app.NewWindow(image.Rect(0, 0, 640, 480), color.RGBA{255, 255, 255, 0})
+	w := app.NewWindow(image.Rectangle{Max: rect.Size()}, color.RGBA{255, 255, 255, 0})
 	defer w.Drop()
 
-	w.Image(image.Rect(100, 10, 100+i.Size.X, 10+i.Size.Y), i)
-	w.Show()
-	app.Sync()
-
+	var size image.Point
+	newSize := rect.Size()
 	for {
+		if size != newSize {
+			size = newSize
+			w.Size(image.Rectangle{Max: size})
+			w.Clear()
+			offset := size.Sub(img.Size).Div(2)
+			w.Image(image.Rectangle{Min: offset, Max: offset.Add(img.Size)}, img)
+			w.Show()
+			app.Sync()
+		}
+
 		action := <-app.Chan()
+		if ev, ok := action.(event.Configure); ok {
+			newSize = ev.InnerSize
+		}
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break
 		}

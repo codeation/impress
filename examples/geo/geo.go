@@ -32,20 +32,20 @@ func main() {
 			w.Size(windowRect)
 			w.Clear()
 
-			w.Line(image.Pt(windowRect.Min.X, windowRect.Min.Y), image.Pt(windowRect.Max.X-1, windowRect.Min.Y), blue)     // up
-			w.Line(image.Pt(windowRect.Min.X, windowRect.Min.Y), image.Pt(windowRect.Min.X, windowRect.Max.Y-1), blue)     // left
-			w.Line(image.Pt(windowRect.Max.X-1, windowRect.Min.Y), image.Pt(windowRect.Max.X-1, windowRect.Max.Y-1), blue) // right
-			w.Line(image.Pt(windowRect.Min.X, windowRect.Max.Y-1), image.Pt(windowRect.Max.X-1, windowRect.Max.Y-1), blue) // down
+			w.Line(image.Pt(windowRect.Min.X, windowRect.Min.Y), image.Pt(windowRect.Max.X, windowRect.Min.Y), blue)     // up
+			w.Line(image.Pt(windowRect.Min.X, windowRect.Min.Y), image.Pt(windowRect.Min.X, windowRect.Max.Y), blue)     // left
+			w.Line(image.Pt(windowRect.Max.X-1, windowRect.Min.Y), image.Pt(windowRect.Max.X-1, windowRect.Max.Y), blue) // right
+			w.Line(image.Pt(windowRect.Min.X, windowRect.Max.Y-1), image.Pt(windowRect.Max.X, windowRect.Max.Y-1), blue) // down
 
-			w.Line(image.Pt(windowRect.Min.X, windowRect.Min.Y), image.Pt(windowRect.Max.X-1, windowRect.Max.Y-1), blue)
-			w.Line(image.Pt(windowRect.Max.X-1, windowRect.Min.Y), image.Pt(windowRect.Min.X, windowRect.Max.Y-1), blue)
+			w.Line(image.Pt(windowRect.Min.X, windowRect.Min.Y), image.Pt(windowRect.Max.X, windowRect.Max.Y), blue)
+			w.Line(image.Pt(windowRect.Max.X, windowRect.Min.Y), image.Pt(windowRect.Min.X, windowRect.Max.Y), blue)
 
 			w.Fill(image.Rect(100, 100, 200, 200), red)
 
-			w.Line(image.Pt(100, 100-2), image.Pt(199, 100-2), red) // up
-			w.Line(image.Pt(100-2, 100), image.Pt(100-2, 199), red) // left
-			w.Line(image.Pt(200+1, 100), image.Pt(199+2, 199), red) // right
-			w.Line(image.Pt(100, 199+2), image.Pt(199, 199+2), red) // down
+			w.Line(image.Pt(100, 100-2), image.Pt(200, 100-2), red) // up
+			w.Line(image.Pt(100-2, 100), image.Pt(100-2, 200), red) // left
+			w.Line(image.Pt(199+2, 100), image.Pt(199+2, 200), red) // right
+			w.Line(image.Pt(100, 199+2), image.Pt(200, 199+2), red) // down
 
 			w.Show()
 			app.Sync()

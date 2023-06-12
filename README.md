@@ -10,14 +10,17 @@ Some usage examples are in the [examples folder](https://github.com/codeation/im
 ## Basic Principles of Library Design
 
 - Performance of the application as well as native applications.
+- Facade pattern for masking complex components behind an API.
 - Simple and clean application code.
+- Minimal library API to follow the Go-way.
 - Limited use of other libraries (graphic, low-level or native).
 - Creating a GUI application without form designer or hard-coded widgets.
-- Minimal library API to follow the Go-way.
 
 The basic idea is to avoid the event-driven programming paradigm. See
 ["What's wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
 page.
+
+Go is a perfect language for developing desktop GUI applications. Compiled language is fast enough to spin an interactive application. Goroutines are helpful to handle the state of separate windows. The small runtime means that the application starts instantly. Go implement high level abstractions to complex application development.
 
 ## Hello World Example
 
@@ -60,7 +63,6 @@ func main() {
 		}
 	}
 }
-
 ```
 
 See an explanation of the source code in [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
@@ -134,21 +136,21 @@ go run ./examples/simple/
 ### Notes
 
 - The project is in a beta stage. It's suitable for developing in-house applications.
-- The project tested on Debian 11.6 and macOS Big Sur.
-- The library may contain bugs.
+- The project tested on Debian 11.7 and 12.0.
 - The API is stable, but the details are subject to change.
-
-In fact, Go is the most suitable language for developing GUI applications. It's fast enough to spin an interactive application. It is multi-tasking to handle the states of separate windows. It is compact so that the application starts instantly. It is high level to develop complex application.
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the underlying principles of the library.
 
-Stay tuned for more.
+*Window coordinate issues detected on Debian with Wayland and GTK-3. Please, uncomment `WaylandEnable=false` in `/etc/gdm3/daemon.conf` file in case you get wrong mouse or window coordinates. Fix is expected.*
+
+*The latest releases aren't tested on Apple machines. The earlier version tested on both Intel and Silicon platform and worked well. Please, use earlier release or open [issue](https://github.com/codeation/impress/issues) if some bugs have raised. PRs and MRs are welcome too.*
 
 ### Short term roadmap
 
 - Recommended Event Propagation module.
 - Additional library with a set of widgets (text input, dialog, etc.).
 - Developer version of the library with debugging and profiling.
+- Distribution tool to pack the GUI application into Debian package.
 
 ### Long term roadmap
 
@@ -158,12 +160,14 @@ Stay tuned for more.
 - Apple Silicon native driver for macOS.
 - iOS app used as GUI app remote client.
 
+Stay tuned for more.
+
 ## Contributing
 
 First, welcome:
 
-- Any clue of the project's importance (star, post, etc.).
-- Any advice on the library design and principles.
+- Any like to the project (star, post, link, etc.).
+- Any recommendations about library design principles.
 - Contribution to project, project wiki, examples.
 - Bug report, open [issue](https://github.com/codeation/impress/issues).
-- Or any help to correct grammatical or writing errors (PR or issue).
+- Or any help to fix grammatical or writing errors (PR or issue).
