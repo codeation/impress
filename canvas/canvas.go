@@ -27,6 +27,10 @@ var (
 	dir    = flag.String("dir", ".", "directory to serve")
 )
 
+type doner interface {
+	Done()
+}
+
 func init() {
 	flag.Parse()
 
@@ -42,22 +46,25 @@ func init() {
 	syncPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(syncSocket), syncSocket)
 
 	eventChan := eventchan.New()
-	_ = eventrecv.New(eventChan, eventPipe)
+	eventRecv := eventrecv.New(eventChan, eventPipe)
 	client := drawsend.New(streamPipe, syncPipe)
-	driver := domain.New(client, eventChan, streamBuffered)
+	driver := domain.New(client, eventChan, streamPipe)
 
 	impress.Register(&httpDriver{
 		Driver:     driver,
 		httpServer: httpServer,
+		eventRecv:  eventRecv,
 	})
 }
 
 type httpDriver struct {
 	driver.Driver
 	httpServer *http.Server
+	eventRecv  doner
 }
 
 func (h *httpDriver) Done() {
+	h.eventRecv.Done()
 	h.Driver.Done()
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 	defer cancelFunc()

@@ -34,22 +34,21 @@ type doner interface {
 }
 
 type flusher interface {
-	Flush() error
+	Sync() error
 }
 
 type duo struct {
 	driver.Driver
-	eventRecv      doner
-	streamBuffered flusher
-	cmd            *exec.Cmd
-	fileSuffix     string
-	streamFile     *os.File
-	requestFile    *os.File
-	responseFile   *os.File
-	eventFile      *os.File
-	streamPipe     *rpc.Pipe
-	syncPipe       *rpc.Pipe
-	eventPipe      *rpc.Pipe
+	eventRecv    doner
+	cmd          *exec.Cmd
+	fileSuffix   string
+	streamFile   *os.File
+	requestFile  *os.File
+	responseFile *os.File
+	eventFile    *os.File
+	streamPipe   *rpc.Pipe
+	syncPipe     *rpc.Pipe
+	eventPipe    *rpc.Pipe
 }
 
 func init() {
@@ -65,7 +64,7 @@ func newDuo() *duo {
 	eventChan := eventchan.New()
 	d.eventRecv = eventrecv.New(eventChan, d.eventPipe)
 	drawSend := drawsend.New(d.streamPipe, d.syncPipe)
-	d.Driver = domain.New(drawSend, eventChan, d.streamBuffered)
+	d.Driver = domain.New(drawSend, eventChan, d.streamPipe)
 	return d
 }
 
@@ -117,7 +116,6 @@ func (d *duo) connect() error {
 	}
 
 	streamBuffered := bufio.NewWriter(d.streamFile)
-	d.streamBuffered = streamBuffered
 
 	d.streamPipe = rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)
 	d.syncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(d.requestFile), bufio.NewReader(d.responseFile))

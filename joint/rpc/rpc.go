@@ -33,8 +33,8 @@ func NewPipe(mutex mutexer, writer flushWriter, reader io.Reader) *Pipe {
 }
 
 func (p *Pipe) Lock() *Pipe {
-	p.err = nil
 	p.mutex.Lock()
+	p.err = nil
 	return p
 }
 
@@ -111,4 +111,10 @@ func (p *Pipe) Put(values ...interface{}) *Pipe {
 		}
 	}
 	return p
+}
+
+func (p *Pipe) Sync() error {
+	p.Lock()
+	defer p.Unlock()
+	return p.Flush().Err()
 }

@@ -14,14 +14,14 @@ type chaner interface {
 	Chan() <-chan event.Eventer
 }
 
-type flusher interface {
-	Flush() error
+type syncer interface {
+	Sync() error
 }
 
 type application struct {
 	caller       iface.CallSet
 	chaner       chaner
-	flusher      flusher
+	syncer       syncer
 	lastFrameID  int
 	lastWindowID int
 	lastFontID   int
@@ -30,11 +30,11 @@ type application struct {
 	mutex        sync.Mutex
 }
 
-func New(caller iface.CallSet, ch chaner, flusher flusher) *application {
+func New(caller iface.CallSet, ch chaner, syncer syncer) *application {
 	return &application{
-		caller:  caller,
-		chaner:  ch,
-		flusher: flusher,
+		caller: caller,
+		chaner: ch,
+		syncer: syncer,
 	}
 }
 
@@ -98,5 +98,5 @@ func (a *application) Chan() <-chan event.Eventer {
 }
 
 func (a *application) Sync() {
-	a.flusher.Flush()
+	go a.syncer.Sync()
 }
