@@ -206,8 +206,8 @@ func (s *drawRecv) syncListen() {
 			var style, variant, weight, stretch int
 			var family string
 			s.syncPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family)
-			baseline, ascent, descent := s.calls.FontNew(fontID, height, style, variant, weight, stretch, family)
-			s.syncPipe.Put(baseline, ascent, descent).Flush()
+			lineheight, baseline, ascent, descent := s.calls.FontNew(fontID, height, style, variant, weight, stretch, family)
+			s.syncPipe.Put(lineheight, baseline, ascent, descent).Flush()
 
 		case iface.FontSplitCode:
 			var fontID int

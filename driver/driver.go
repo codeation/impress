@@ -45,6 +45,7 @@ type Framer interface {
 
 // Fonter is a internal interface to a font functions
 type Fonter interface {
+	LineHeight() int
 	Baseline() int
 	Ascent() int
 	Descent() int

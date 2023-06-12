@@ -153,15 +153,15 @@ func (c *drawSend) WindowImage(windowID int, x, y, width, height int, imageID in
 		Unlock()
 }
 
-func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int) {
-	var baseline, ascent, descent int
+func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int, int) {
+	var lineheight, baseline, ascent, descent int
 	c.syncPipe.
 		Lock().
 		Put(iface.FontNewCode, fontID, height, style, variant, weight, stretch, family).
 		Flush().
-		Get(&baseline, &ascent, &descent).
+		Get(&lineheight, &baseline, &ascent, &descent).
 		Unlock()
-	return baseline, ascent, descent
+	return lineheight, baseline, ascent, descent
 }
 
 func (c *drawSend) FontDrop(fontID int) {}

@@ -7,12 +7,13 @@ import (
 )
 
 type font struct {
-	app      *application
-	id       int
-	height   int
-	baseline int
-	ascent   int
-	descent  int
+	app        *application
+	id         int
+	height     int
+	lineheight int
+	baseline   int
+	ascent     int
+	descent    int
 }
 
 // Values for "style" atribute
@@ -89,15 +90,20 @@ func (app *application) NewFont(height int, attributes map[string]string) driver
 	}
 	family := attributes["family"]
 
-	baseline, ascent, descent := app.caller.FontNew(id, height, style, variant, weight, stretch, family)
+	lineheight, baseline, ascent, descent := app.caller.FontNew(id, height, style, variant, weight, stretch, family)
 	return &font{
-		app:      app,
-		id:       id,
-		height:   height,
-		baseline: baseline,
-		ascent:   ascent,
-		descent:  descent,
+		app:        app,
+		id:         id,
+		height:     height,
+		lineheight: lineheight,
+		baseline:   baseline,
+		ascent:     ascent,
+		descent:    descent,
 	}
+}
+
+func (f *font) LineHeight() int {
+	return f.lineheight
 }
 
 func (f *font) Baseline() int {

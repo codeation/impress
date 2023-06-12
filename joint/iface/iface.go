@@ -20,7 +20,7 @@ type CallSet interface {
 	WindowLine(windowID int, x0, y0, x1, y1 int, r, g, b uint16)
 	WindowText(windowID int, x, y int, r, g, b uint16, fontID int, height int, text string)
 	WindowImage(windowID int, x, y, width, height int, imageID int)
-	FontNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int)
+	FontNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int, int)
 	FontDrop(fontID int)
 	FontSplit(fontID int, text string, edge, indent int) []int
 	FontSize(fontID int, text string) (int, int)

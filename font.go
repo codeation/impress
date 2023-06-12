@@ -10,6 +10,7 @@ import (
 type Font struct {
 	fonter     driver.Fonter
 	Height     int
+	LineHeight int
 	Baseline   int
 	Ascent     int
 	Descent    int
@@ -24,6 +25,7 @@ func NewFont(height int, attributes map[string]string) *Font {
 	return &Font{
 		fonter:     fonter,
 		Height:     height,
+		LineHeight: fonter.LineHeight(),
 		Baseline:   fonter.Baseline(),
 		Ascent:     fonter.Ascent(),
 		Descent:    fonter.Descent(),
