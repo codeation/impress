@@ -100,6 +100,7 @@ git clone https://github.com/codeation/impress.git
 cd impress
 IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 ```
+*The latest releases aren't tested on Apple machines. The earlier version tested on both Intel and Silicon platform and worked well. Please, use earlier release or open [issue](https://github.com/codeation/impress/issues) if some bugs have raised. PRs and MRs are welcome too.*
 
 ## GTK-3 driver
 
@@ -141,9 +142,7 @@ go run ./examples/simple/
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the underlying principles of the library.
 
-*Window coordinate issues detected on Debian with Wayland and GTK-3. Please, uncomment `WaylandEnable=false` in `/etc/gdm3/daemon.conf` file in case you get wrong mouse or window coordinates. Fix is expected.*
-
-*The latest releases aren't tested on Apple machines. The earlier version tested on both Intel and Silicon platform and worked well. Please, use earlier release or open [issue](https://github.com/codeation/impress/issues) if some bugs have raised. PRs and MRs are welcome too.*
+*Window coordinate issues detected on Debian with Wayland and GTK-3. Please, set environment variable `GDK_BACKEND=x11` in case you get wrong mouse or window coordinates. Fix is expected.*
 
 ### Short term roadmap
 
