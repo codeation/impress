@@ -69,22 +69,14 @@ See an explanation of the source code in [a library overview](https://github.com
 
 ### To run this example on Debian/ Ubuntu:
 
+1. Install GTK+ 3 libraries, `pkg-config` and some libraries if you don't have them installed:
+
 ```
-git clone https://github.com/codeation/impress.git
-cd impress
-
-wget https://github.com/codeation/it/releases/latest/download/it-linux.zip
-unzip it-linux.zip
-rm it-linux.zip
-
-go run ./examples/simple/
+sudo apt-get install libgtk-3-dev
+sudo apt-get install pkg-config libsystemd-dev libwebp-dev
 ```
 
-### To run this example on macOS:
-
-1. Install [Homebrew](https://brew.sh/) if you don't have it installed.
-2. Install GTK+ 3 (`brew install gtk+3`) and pkg-config (`brew install pkg-config`) if you don't have it installed.
-3. Build impress terminal from source (see [impress terminal page](https://github.com/codeation/it)):
+2. Build impress terminal from source (see [impress terminal page](https://github.com/codeation/it)):
 
 ```
 git clone https://github.com/codeation/it.git
@@ -93,13 +85,35 @@ make
 cd ..
 ```
 
-4. Then run example:
+3. Then run example:
 
 ```
 git clone https://github.com/codeation/impress.git
 cd impress
 IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 ```
+
+### To run this example on macOS:
+
+0. Install [Homebrew](https://brew.sh/) if you don't have it installed.
+1. Install GTK+ 3 (`brew install gtk+3`) and pkg-config (`brew install pkg-config`) if you don't have them installed.
+2. Build impress terminal from source (see [impress terminal page](https://github.com/codeation/it)):
+
+```
+git clone https://github.com/codeation/it.git
+cd it
+make
+cd ..
+```
+
+3. Then run example:
+
+```
+git clone https://github.com/codeation/impress.git
+cd impress
+IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
+```
+
 *The latest releases aren't tested on Apple machines. The earlier version tested on both Intel and Silicon platform and worked well. Please, use earlier release or open [issue](https://github.com/codeation/impress/issues) if some bugs have raised. PRs and MRs are welcome too.*
 
 ## GTK-3 driver
@@ -132,23 +146,24 @@ or just copy the downloaded GUI driver to the working directory and run example:
 go run ./examples/simple/
 ```
 
+*On Debian 12, `libharfbuzz-gobject` should be installed. If you are getting `error while loading shared libraries: libharfbuzz-gobject.so.0: cannot open shared object file: No such file or directory`, run `sudo apt-get install libharfbuzz-gobject0`.*
+
 ## Project State
 
 ### Notes
 
 - The project is in a beta stage. It's suitable for developing in-house applications.
-- The project tested on Debian 11.7 and 12.0.
+- The project tested on Debian 12.0.
 - The API is stable, but the details are subject to change.
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the underlying principles of the library.
-
-*Window coordinate issues detected on Debian with Wayland and GTK-3. Please, set environment variable `GDK_BACKEND=x11` in case you get wrong mouse or window coordinates. Fix is expected.*
 
 ### Short term roadmap
 
 - Recommended Event Propagation module.
 - Additional library with a set of widgets (text input, dialog, etc.).
 - Developer version of the library with debugging and profiling.
+- Auto build GTK-3 driver for a fixed set of Linux distributions.
 - Distribution tool to pack the GUI application into Debian package.
 
 ### Long term roadmap
