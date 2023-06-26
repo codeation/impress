@@ -1,3 +1,3 @@
 package domain
 
-const version = "0.3.5"
+const version = "0.3.6"

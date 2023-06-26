@@ -11,17 +11,17 @@ import (
 )
 
 func main() {
-	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Hello World Application")
+	app := impress.NewApplication(image.Rect(0, 0, 480, 240), "Hello World Application")
 	defer app.Close()
 
 	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
-	w := app.NewWindow(image.Rect(0, 0, 640, 480), color.RGBA{240, 240, 240, 0})
+	w := app.NewWindow(image.Rect(0, 0, 480, 240), color.RGBA{240, 240, 240, 255})
 	defer w.Drop()
 
-	w.Text("Hello, world!", font, image.Pt(280, 210), color.RGBA{0, 0, 0, 0})
-	w.Line(image.Pt(270, 230), image.Pt(380, 230), color.RGBA{255, 0, 0, 0})
+	w.Text("Hello, world!", font, image.Pt(200, 100), color.RGBA{0, 0, 0, 255})
+	w.Line(image.Pt(200, 120), image.Pt(300, 120), color.RGBA{255, 0, 0, 255})
 	w.Show()
 	app.Sync()
 

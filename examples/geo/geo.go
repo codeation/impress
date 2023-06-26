@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	background = color.RGBA{255, 255, 255, 0}
-	red        = color.RGBA{255, 0, 0, 0}
-	blue       = color.RGBA{0, 0, 255, 0}
+	background = color.RGBA{255, 255, 255, 255}
+	red        = color.RGBA{255, 0, 0, 127}
+	blue       = color.RGBA{0, 0, 255, 255}
 )
 
 func main() {

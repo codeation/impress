@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	white  = color.RGBA{255, 255, 255, 0}
-	black  = color.RGBA{0, 0, 0, 0}
-	silver = color.RGBA{224, 224, 224, 0}
-	red    = color.RGBA{255, 0, 0, 0}
+	white  = color.RGBA{255, 255, 255, 255}
+	black  = color.RGBA{0, 0, 0, 255}
+	silver = color.RGBA{224, 224, 224, 255}
+	red    = color.RGBA{255, 0, 0, 255}
 
 	appRect   = image.Rect(0, 0, 640, 480)
 	leftRect  = image.Rect(0, 0, 340, 480)

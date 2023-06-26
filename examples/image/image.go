@@ -32,7 +32,7 @@ func main() {
 	img := impress.NewImage(i)
 	defer img.Close()
 
-	w := app.NewWindow(image.Rectangle{Max: rect.Size()}, color.RGBA{255, 255, 255, 0})
+	w := app.NewWindow(image.Rectangle{Max: rect.Size()}, color.RGBA{255, 255, 255, 255})
 	defer w.Drop()
 
 	var size image.Point

@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	background = color.RGBA{255, 255, 255, 0}
-	foreground = color.RGBA{0, 0, 0, 0}
-	underline  = color.RGBA{255, 0, 0, 0}
+	background = color.RGBA{255, 255, 255, 255}
+	foreground = color.RGBA{0, 0, 0, 255}
+	underline  = color.RGBA{255, 0, 0, 255}
 )
 
 func main() {

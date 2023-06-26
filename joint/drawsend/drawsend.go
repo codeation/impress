@@ -125,24 +125,24 @@ func (c *drawSend) WindowSize(windowID int, x, y, width, height int) {
 		Unlock()
 }
 
-func (c *drawSend) WindowFill(windowID int, x, y, width, height int, r, g, b uint16) {
+func (c *drawSend) WindowFill(windowID int, x, y, width, height int, r, g, b, a uint16) {
 	c.streamPipe.
 		Lock().
-		Put(iface.WindowFillCode, windowID, x, y, width, height, r, g, b).
+		Put(iface.WindowFillCode, windowID, x, y, width, height, r, g, b, a).
 		Unlock()
 }
 
-func (c *drawSend) WindowLine(windowID int, x0, y0, x1, y1 int, r, g, b uint16) {
+func (c *drawSend) WindowLine(windowID int, x0, y0, x1, y1 int, r, g, b, a uint16) {
 	c.streamPipe.
 		Lock().
-		Put(iface.WindowLineCode, windowID, x0, y0, x1, y1, r, g, b).
+		Put(iface.WindowLineCode, windowID, x0, y0, x1, y1, r, g, b, a).
 		Unlock()
 }
 
-func (c *drawSend) WindowText(windowID int, x, y int, r, g, b uint16, fontID int, height int, text string) {
+func (c *drawSend) WindowText(windowID int, x, y int, r, g, b, a uint16, fontID int, height int, text string) {
 	c.streamPipe.
 		Lock().
-		Put(iface.WindowTextCode, windowID, x, y, r, g, b, fontID, height, text).
+		Put(iface.WindowTextCode, windowID, x, y, r, g, b, a, fontID, height, text).
 		Unlock()
 }
 

@@ -26,42 +26,42 @@ Go is a perfect language for developing desktop GUI applications. Compiled langu
 
 Let's say hello:
 
-!["Hello, world!" screenshot](https://codeation.github.io/images/hello_world.png)
+<img src="https://codeation.github.io/images/hello_small.png" width="545" height="350" />
 
 ```
 package main
 
 import (
-	"image"
-	"image/color"
+    "image"
+    "image/color"
 
-	"github.com/codeation/impress"
-	"github.com/codeation/impress/event"
+    "github.com/codeation/impress"
+    "github.com/codeation/impress/event"
 
-	_ "github.com/codeation/impress/duo"
+    _ "github.com/codeation/impress/duo"
 )
 
 func main() {
-	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Hello World Application")
-	defer app.Close()
+    app := impress.NewApplication(image.Rect(0, 0, 480, 240), "Hello World Application")
+    defer app.Close()
 
-	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
-	defer font.Close()
+    font := impress.NewFont(15, map[string]string{"family": "Verdana"})
+    defer font.Close()
 
-	w := app.NewWindow(image.Rect(0, 0, 640, 480), color.RGBA{255, 255, 255, 0})
-	defer w.Drop()
+    w := app.NewWindow(image.Rect(0, 0, 480, 240), color.RGBA{255, 255, 255, 255})
+    defer w.Drop()
 
-	w.Text("Hello, world!", font, image.Pt(280, 210), color.RGBA{0, 0, 0, 0})
-	w.Line(image.Pt(270, 230), image.Pt(380, 230), color.RGBA{255, 0, 0, 0})
-	w.Show()
-	app.Sync()
+    w.Text("Hello, world!", font, image.Pt(200, 100), color.RGBA{0, 0, 0, 255})
+    w.Line(image.Pt(200, 120), image.Pt(300, 120), color.RGBA{255, 0, 0, 255})
+    w.Show()
+    app.Sync()
 
-	for {
-		action := <-app.Chan()
-		if action == event.DestroyEvent || action == event.KeyExit {
-			break
-		}
-	}
+    for {
+        action := <-app.Chan()
+        if action == event.DestroyEvent || action == event.KeyExit {
+            break
+        }
+    }
 }
 ```
 

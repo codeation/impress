@@ -33,10 +33,6 @@ type doner interface {
 	Done()
 }
 
-type flusher interface {
-	Sync() error
-}
-
 type duo struct {
 	driver.Driver
 	eventRecv    doner

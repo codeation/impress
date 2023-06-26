@@ -18,9 +18,9 @@ type window struct {
 func (f *frame) NewWindow(rect image.Rectangle, background color.Color) driver.Painter {
 	id := f.app.nextWindowID()
 	x, y, width, height := rectangle(rect)
-	r, g, b, _ := colors(background)
+	r, g, b, a := colors(background)
 	f.app.caller.WindowNew(id, f.id, x, y, width, height)
-	f.app.caller.WindowFill(id, 0, 0, width, height, r, g, b)
+	f.app.caller.WindowFill(id, 0, 0, width, height, r, g, b, a)
 	return &window{
 		app:        f.app,
 		id:         id,
@@ -45,9 +45,9 @@ func (w *window) Raise() {
 
 func (w *window) Clear() {
 	_, _, width, height := rectangle(w.rect)
-	r, g, b, _ := colors(w.background)
+	r, g, b, a := colors(w.background)
 	w.app.caller.WindowClear(w.id)
-	w.app.caller.WindowFill(w.id, 0, 0, width, height, r, g, b)
+	w.app.caller.WindowFill(w.id, 0, 0, width, height, r, g, b, a)
 }
 
 func (w *window) Show() {
@@ -56,19 +56,19 @@ func (w *window) Show() {
 
 func (w *window) Fill(rect image.Rectangle, foreground color.Color) {
 	x, y, width, height := rectangle(rect)
-	r, g, b, _ := colors(foreground)
-	w.app.caller.WindowFill(w.id, x, y, width, height, r, g, b)
+	r, g, b, a := colors(foreground)
+	w.app.caller.WindowFill(w.id, x, y, width, height, r, g, b, a)
 }
 
 func (w *window) Line(from image.Point, to image.Point, foreground color.Color) {
-	r, g, b, _ := colors(foreground)
-	w.app.caller.WindowLine(w.id, from.X, from.Y, to.X, to.Y, r, g, b)
+	r, g, b, a := colors(foreground)
+	w.app.caller.WindowLine(w.id, from.X, from.Y, to.X, to.Y, r, g, b, a)
 }
 
 func (w *window) Text(text string, fonter driver.Fonter, from image.Point, foreground color.Color) {
 	f := fonter.(*font)
-	r, g, b, _ := colors(foreground)
-	w.app.caller.WindowText(w.id, from.X, from.Y, r, g, b, f.id, f.height, text)
+	r, g, b, a := colors(foreground)
+	w.app.caller.WindowText(w.id, from.X, from.Y, r, g, b, a, f.id, f.height, text)
 }
 
 func (w *window) Image(rect image.Rectangle, img driver.Imager) {

@@ -115,26 +115,26 @@ func (s *drawRecv) streamListen() {
 		case iface.WindowFillCode:
 			var windowID int
 			var x, y, width, height int
-			var r, g, b uint16
-			s.streamPipe.Get(&windowID, &x, &y, &width, &height, &r, &g, &b)
-			s.calls.WindowFill(windowID, x, y, width, height, r, g, b)
+			var r, g, b, a uint16
+			s.streamPipe.Get(&windowID, &x, &y, &width, &height, &r, &g, &b, &a)
+			s.calls.WindowFill(windowID, x, y, width, height, r, g, b, a)
 
 		case iface.WindowLineCode:
 			var windowID int
 			var x0, y0, x1, y1 int
-			var r, g, b uint16
-			s.streamPipe.Get(&windowID, &x0, &y0, &x1, &y1, &r, &g, &b)
-			s.calls.WindowLine(windowID, x0, y0, x1, y1, r, g, b)
+			var r, g, b, a uint16
+			s.streamPipe.Get(&windowID, &x0, &y0, &x1, &y1, &r, &g, &b, &a)
+			s.calls.WindowLine(windowID, x0, y0, x1, y1, r, g, b, a)
 
 		case iface.WindowTextCode:
 			var windowID int
 			var x, y int
-			var r, g, b uint16
+			var r, g, b, a uint16
 			var fontID int
 			var height int
 			var text string
-			s.streamPipe.Get(&windowID, &x, &y, &r, &g, &b, &fontID, &height, &text)
-			s.calls.WindowText(windowID, x, y, r, g, b, fontID, height, text)
+			s.streamPipe.Get(&windowID, &x, &y, &r, &g, &b, &a, &fontID, &height, &text)
+			s.calls.WindowText(windowID, x, y, r, g, b, a, fontID, height, text)
 
 		case iface.WindowImageCode:
 			var windowID int
