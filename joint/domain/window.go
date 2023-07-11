@@ -66,17 +66,23 @@ func (w *window) Line(from image.Point, to image.Point, foreground color.Color) 
 }
 
 func (w *window) Text(text string, fonter driver.Fonter, from image.Point, foreground color.Color) {
-	f := fonter.(*font)
+	type ider interface{ ID() int }
+	f, ok := fonter.(ider)
+	if !ok {
+		log.Println("wrong fonter type")
+		return
+	}
 	r, g, b, a := colors(foreground)
-	w.app.caller.WindowText(w.id, from.X, from.Y, r, g, b, a, f.id, f.height, text)
+	w.app.caller.WindowText(w.id, from.X, from.Y, r, g, b, a, f.ID(), text)
 }
 
 func (w *window) Image(rect image.Rectangle, img driver.Imager) {
-	p, ok := img.(*picture)
+	type ider interface{ ID() int }
+	p, ok := img.(ider)
 	if !ok {
 		log.Println("wrong imager type")
 		return
 	}
 	x, y, width, height := rectangle(rect)
-	w.app.caller.WindowImage(w.id, x, y, width, height, p.id)
+	w.app.caller.WindowImage(w.id, x, y, width, height, p.ID())
 }

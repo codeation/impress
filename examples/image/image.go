@@ -35,11 +35,9 @@ func main() {
 	w := app.NewWindow(image.Rectangle{Max: rect.Size()}, color.RGBA{255, 255, 255, 255})
 	defer w.Drop()
 
-	var size image.Point
-	newSize := rect.Size()
+	size := rect.Size()
 	for {
-		if size != newSize {
-			size = newSize
+		if len(app.Chan()) == 0 {
 			w.Size(image.Rectangle{Max: size})
 			w.Clear()
 			offset := size.Sub(img.Size).Div(2)
@@ -49,11 +47,11 @@ func main() {
 		}
 
 		action := <-app.Chan()
-		if ev, ok := action.(event.Configure); ok {
-			newSize = ev.InnerSize
-		}
 		if action == event.DestroyEvent || action == event.KeyExit {
 			break
+		}
+		if ev, ok := action.(event.Configure); ok {
+			size = ev.InnerSize
 		}
 	}
 }

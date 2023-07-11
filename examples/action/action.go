@@ -47,8 +47,7 @@ func (sw *smallWindow) Redraw(isActive bool) {
 	sw.w.Clear()
 	sw.w.Text("Hello, world!", sw.font, image.Pt(105, sw.pos), black)
 	if isActive {
-		sw.w.Line(image.Pt(105, sw.pos+30), image.Pt(215, sw.pos+30), red)
-		sw.w.Raise()
+		sw.w.Line(image.Pt(105, sw.pos+24), image.Pt(215, sw.pos+24), red)
 	}
 	sw.w.Show()
 }
@@ -70,6 +69,7 @@ func (sw *smallWindow) Event(action event.Eventer) {
 
 func action(app *impress.Application, windows []*smallWindow) {
 	activeWindow := windows[0]
+	activeWindow.w.Raise()
 	for {
 		for _, w := range windows {
 			w.Redraw(w == activeWindow)
@@ -82,14 +82,17 @@ func action(app *impress.Application, windows []*smallWindow) {
 			return
 		case action == event.KeyLeft:
 			activeWindow = windows[0]
+			activeWindow.w.Raise()
 		case action == event.KeyRight:
 			activeWindow = windows[1]
+			activeWindow.w.Raise()
 		case action.Type() == event.ButtonType:
 			clickEvent, ok := action.(event.Button)
 			if ok && clickEvent.Action == event.ButtonActionPress && clickEvent.Button == event.ButtonLeft {
 				for _, w := range windows {
 					if clickEvent.Point.In(w.rect) && w != activeWindow {
 						activeWindow = w
+						activeWindow.w.Raise()
 						break
 					}
 				}

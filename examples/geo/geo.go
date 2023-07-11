@@ -23,12 +23,9 @@ func main() {
 	windowRect := image.Rect(0, 0, 640, 480)
 	w := app.NewWindow(windowRect, background)
 	defer w.Drop()
-	readyRect := image.Rectangle{}
 
 	for {
-		if windowRect != readyRect {
-			readyRect = windowRect
-
+		if len(app.Chan()) == 0 {
 			w.Size(windowRect)
 			w.Clear()
 
@@ -56,7 +53,7 @@ func main() {
 			break
 		}
 		if resizeEvent, ok := action.(event.Configure); ok {
-			windowRect = image.Rect(0, 0, resizeEvent.InnerSize.X, resizeEvent.InnerSize.Y)
+			windowRect.Max = resizeEvent.InnerSize
 		}
 	}
 }

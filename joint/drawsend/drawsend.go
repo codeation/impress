@@ -139,10 +139,10 @@ func (c *drawSend) WindowLine(windowID int, x0, y0, x1, y1 int, r, g, b, a uint1
 		Unlock()
 }
 
-func (c *drawSend) WindowText(windowID int, x, y int, r, g, b, a uint16, fontID int, height int, text string) {
+func (c *drawSend) WindowText(windowID int, x, y int, r, g, b, a uint16, fontID int, text string) {
 	c.streamPipe.
 		Lock().
-		Put(iface.WindowTextCode, windowID, x, y, r, g, b, a, fontID, height, text).
+		Put(iface.WindowTextCode, windowID, x, y, r, g, b, a, fontID, text).
 		Unlock()
 }
 

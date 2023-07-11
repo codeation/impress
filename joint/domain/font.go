@@ -102,6 +102,10 @@ func (app *application) NewFont(height int, attributes map[string]string) driver
 	}
 }
 
+func (f *font) ID() int {
+	return f.id
+}
+
 func (f *font) LineHeight() int {
 	return f.lineheight
 }

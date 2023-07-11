@@ -18,6 +18,7 @@ import (
 	"github.com/codeation/impress/joint/drawsend"
 	"github.com/codeation/impress/joint/eventchan"
 	"github.com/codeation/impress/joint/eventrecv"
+	"github.com/codeation/impress/joint/lazy"
 	"github.com/codeation/impress/joint/rpc"
 	"github.com/codeation/impress/joint/serversocket"
 )
@@ -49,9 +50,10 @@ func init() {
 	eventRecv := eventrecv.New(eventChan, eventPipe)
 	client := drawsend.New(streamPipe, syncPipe)
 	driver := domain.New(client, eventChan, streamPipe)
+	lazyDriver := lazy.New(driver)
 
 	impress.Register(&httpDriver{
-		Driver:     driver,
+		Driver:     lazyDriver,
 		httpServer: httpServer,
 		eventRecv:  eventRecv,
 	})

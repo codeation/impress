@@ -131,10 +131,9 @@ func (s *drawRecv) streamListen() {
 			var x, y int
 			var r, g, b, a uint16
 			var fontID int
-			var height int
 			var text string
-			s.streamPipe.Get(&windowID, &x, &y, &r, &g, &b, &a, &fontID, &height, &text)
-			s.calls.WindowText(windowID, x, y, r, g, b, a, fontID, height, text)
+			s.streamPipe.Get(&windowID, &x, &y, &r, &g, &b, &a, &fontID, &text)
+			s.calls.WindowText(windowID, x, y, r, g, b, a, fontID, text)
 
 		case iface.WindowImageCode:
 			var windowID int

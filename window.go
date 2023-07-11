@@ -53,12 +53,12 @@ func (w *Window) Line(from image.Point, to image.Point, foreground color.Color) 
 
 // ImageScale draws a image into specified rectangle
 func (w *Window) Image(rect image.Rectangle, img *Image) {
-	w.painter.Image(rect, img.imager)
+	w.painter.Image(rect, img.Imager)
 }
 
 // Text draws a text at specified location using a specified font and foreground color
 func (w *Window) Text(text string, font *Font, from image.Point, foreground color.Color) {
-	w.painter.Text(text, font.fonter, from, foreground)
+	w.painter.Text(text, font.Fonter, from, foreground)
 }
 
 // Show sends the contents of the window to the screen

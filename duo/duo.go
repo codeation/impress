@@ -19,6 +19,7 @@ import (
 	"github.com/codeation/impress/joint/drawsend"
 	"github.com/codeation/impress/joint/eventchan"
 	"github.com/codeation/impress/joint/eventrecv"
+	"github.com/codeation/impress/joint/lazy"
 	"github.com/codeation/impress/joint/rpc"
 )
 
@@ -60,7 +61,8 @@ func newDuo() *duo {
 	eventChan := eventchan.New()
 	d.eventRecv = eventrecv.New(eventChan, d.eventPipe)
 	drawSend := drawsend.New(d.streamPipe, d.syncPipe)
-	d.Driver = domain.New(drawSend, eventChan, d.streamPipe)
+	duoDriver := domain.New(drawSend, eventChan, d.streamPipe)
+	d.Driver = lazy.New(duoDriver)
 	return d
 }
 

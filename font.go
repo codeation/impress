@@ -8,7 +8,7 @@ import (
 
 // Font represents a font selection
 type Font struct {
-	fonter     driver.Fonter
+	driver.Fonter
 	Height     int
 	LineHeight int
 	Baseline   int
@@ -23,7 +23,7 @@ type Font struct {
 func NewFont(height int, attributes map[string]string) *Font {
 	fonter := d.NewFont(height, attributes)
 	return &Font{
-		fonter:     fonter,
+		Fonter:     fonter,
 		Height:     height,
 		LineHeight: fonter.LineHeight(),
 		Baseline:   fonter.Baseline(),
@@ -35,17 +35,17 @@ func NewFont(height int, attributes map[string]string) *Font {
 
 // Close destroys font selection
 func (f *Font) Close() {
-	f.fonter.Close()
-	f.fonter = nil // TODO notice when the font is closed
+	f.Fonter.Close()
+	f.Fonter = nil // TODO notice when the font is closed
 }
 
 // Split breaks the text into lines that fit in the specified width;
 // indent is a width to indent first line
 func (f *Font) Split(text string, edge int, indent int) []string {
-	return f.fonter.Split(text, edge, indent)
+	return f.Fonter.Split(text, edge, indent)
 }
 
 // Size returns the width and height of the drawing area
 func (f *Font) Size(text string) image.Point {
-	return f.fonter.Size(text)
+	return f.Fonter.Size(text)
 }

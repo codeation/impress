@@ -43,3 +43,7 @@ func (p *picture) Height() int { return p.height }
 func (p *picture) Close() {
 	p.app.caller.ImageDrop(p.id)
 }
+
+func (p *picture) ID() int {
+	return p.id
+}

@@ -8,21 +8,21 @@ import (
 
 // Image represents a draw-ready image
 type Image struct {
-	imager driver.Imager
-	Size   image.Point
+	driver.Imager
+	Size image.Point
 }
 
 // NewImage returns a image resources struct
 func NewImage(img image.Image) *Image {
 	imager := d.NewImage(img)
 	return &Image{
-		imager: imager,
+		Imager: imager,
 		Size:   img.Bounds().Size(),
 	}
 }
 
 // Close destroys image resources
 func (i *Image) Close() {
-	i.imager.Close()
-	i.imager = nil // TODO notice when the image is closed
+	i.Imager.Close()
+	i.Imager = nil // TODO notice when the image is closed
 }
