@@ -98,5 +98,5 @@ func (a *application) Chan() <-chan event.Eventer {
 }
 
 func (a *application) Sync() {
-	go a.syncer.Sync()
+	go a.syncer.Sync() // nolint:errcheck
 }

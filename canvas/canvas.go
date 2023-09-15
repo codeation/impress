@@ -6,6 +6,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -70,7 +71,9 @@ func (h *httpDriver) Done() {
 	h.Driver.Done()
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 	defer cancelFunc()
-	h.httpServer.Shutdown(ctx)
+	if err := h.httpServer.Shutdown(ctx); err != nil {
+		log.Println(err)
+	}
 }
 
 func newServer(streamSocket, syncSocket, eventSocket websocket.Handler) *http.Server {
@@ -82,7 +85,11 @@ func newServer(streamSocket, syncSocket, eventSocket websocket.Handler) *http.Se
 		MaxHeaderBytes: 1 << 20,
 	}
 	fmt.Println("listening on", *listen)
-	go s.ListenAndServe()
+	go func() {
+		if err := s.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
+	}()
 	return s
 }
 
