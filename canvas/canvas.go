@@ -24,6 +24,8 @@ import (
 	"github.com/codeation/impress/joint/serversocket"
 )
 
+const defaultBufferSize = 256 * 1024
+
 var (
 	listen = flag.String("listen", ":8080", "listen address")
 	dir    = flag.String("dir", ".", "directory to serve")
@@ -41,7 +43,7 @@ func init() {
 	eventSocket := serversocket.New()
 	httpServer := newServer(streamSocket.Handler(), syncSocket.Handler(), eventSocket.Handler())
 
-	streamBuffered := bufio.NewWriter(streamSocket)
+	streamBuffered := bufio.NewWriterSize(streamSocket, defaultBufferSize)
 
 	eventPipe := rpc.NewPipe(new(sync.Mutex), nil, eventSocket)
 	streamPipe := rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)

@@ -30,6 +30,8 @@ const (
 	fifoEventPath  = "/tmp/it_fifo_event_"
 )
 
+const defaultBufferSize = 256 * 1024
+
 type doner interface {
 	Done()
 }
@@ -113,7 +115,7 @@ func (d *duo) connect() error {
 		return fmt.Errorf("os.OpenFile(s): %w", err)
 	}
 
-	streamBuffered := bufio.NewWriter(d.streamFile)
+	streamBuffered := bufio.NewWriterSize(d.streamFile, defaultBufferSize)
 
 	d.streamPipe = rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)
 	d.syncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(d.requestFile), bufio.NewReader(d.responseFile))
@@ -124,10 +126,10 @@ func (d *duo) connect() error {
 
 func (d *duo) disconnect() error {
 	if err := d.requestFile.Close(); err != nil {
-		return fmt.Errorf("fileRequest.Close: %w", err)
+		return fmt.Errorf("requestFile.Close(): %w", err)
 	}
 	if err := d.streamFile.Close(); err != nil {
-		return fmt.Errorf("fileStream.Close: %w", err)
+		return fmt.Errorf("streamFile.Close: %w", err)
 	}
 
 	if err := d.cmd.Wait(); err != nil {
@@ -135,10 +137,10 @@ func (d *duo) disconnect() error {
 	}
 
 	if err := d.responseFile.Close(); err != nil {
-		return fmt.Errorf("fileResponse.Close: %w", err)
+		return fmt.Errorf("responseFile.Close: %w", err)
 	}
 	if err := d.eventFile.Close(); err != nil {
-		return fmt.Errorf("fileEvent.Close: %w", err)
+		return fmt.Errorf("eventFile.Close: %w", err)
 	}
 
 	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
