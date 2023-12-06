@@ -47,16 +47,16 @@ func main() {
 	app.Sync()
 
 	for {
-		action := <-app.Chan()
-		if action == event.DestroyEvent || action == event.KeyExit {
+		e := <-app.Chan()
+		if e == event.DestroyEvent || e == event.KeyExit {
 			break
 		}
-		if action.Type() == event.MenuType {
-			if menuAction, ok := action.(event.Menu); ok {
-				if menuAction.Action == "app.exit" {
+		if e.Type() == event.MenuType {
+			if ev, ok := e.(event.Menu); ok {
+				if ev.Action == "app.exit" {
 					break
 				}
-				fmt.Println("Menu", menuAction.Action)
+				fmt.Println("Menu", ev.Action)
 			}
 		}
 	}

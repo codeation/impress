@@ -46,11 +46,11 @@ func main() {
 			app.Sync()
 		}
 
-		action := <-app.Chan()
-		if action == event.DestroyEvent || action == event.KeyExit {
+		e := <-app.Chan()
+		if e == event.DestroyEvent || e == event.KeyExit {
 			break
 		}
-		if ev, ok := action.(event.Configure); ok {
+		if ev, ok := e.(event.Configure); ok {
 			size = ev.InnerSize
 		}
 	}

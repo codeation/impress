@@ -52,8 +52,8 @@ func (sw *smallWindow) Redraw(isActive bool) {
 	sw.w.Show()
 }
 
-func (sw *smallWindow) Event(action event.Eventer) {
-	switch action {
+func (sw *smallWindow) Event(e event.Eventer) {
+	switch e {
 	case event.KeyUp:
 		sw.pos -= 16
 		if sw.pos < 0 {
@@ -67,7 +67,7 @@ func (sw *smallWindow) Event(action event.Eventer) {
 	}
 }
 
-func action(app *impress.Application, windows []*smallWindow) {
+func run(app *impress.Application, windows []*smallWindow) {
 	activeWindow := windows[0]
 	activeWindow.w.Raise()
 	for {
@@ -76,18 +76,18 @@ func action(app *impress.Application, windows []*smallWindow) {
 		}
 		app.Sync()
 
-		action := <-app.Chan()
+		e := <-app.Chan()
 		switch {
-		case action == event.DestroyEvent || action == event.KeyExit:
+		case e == event.DestroyEvent || e == event.KeyExit:
 			return
-		case action == event.KeyLeft:
+		case e == event.KeyLeft:
 			activeWindow = windows[0]
 			activeWindow.w.Raise()
-		case action == event.KeyRight:
+		case e == event.KeyRight:
 			activeWindow = windows[1]
 			activeWindow.w.Raise()
-		case action.Type() == event.ButtonType:
-			clickEvent, ok := action.(event.Button)
+		case e.Type() == event.ButtonType:
+			clickEvent, ok := e.(event.Button)
 			if ok && clickEvent.Action == event.ButtonActionPress && clickEvent.Button == event.ButtonLeft {
 				for _, w := range windows {
 					if clickEvent.Point.In(w.rect) && w != activeWindow {
@@ -98,7 +98,7 @@ func action(app *impress.Application, windows []*smallWindow) {
 				}
 			}
 		default:
-			activeWindow.Event(action)
+			activeWindow.Event(e)
 		}
 	}
 }
@@ -115,5 +115,5 @@ func main() {
 	w2 := NewSmallWindow(app, rightRect, silver, font)
 	defer w2.Drop()
 
-	action(app, []*smallWindow{w1, w2})
+	run(app, []*smallWindow{w1, w2})
 }

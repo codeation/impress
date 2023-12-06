@@ -48,11 +48,11 @@ func main() {
 			app.Sync()
 		}
 
-		action := <-app.Chan()
-		if action == event.DestroyEvent || action == event.KeyExit {
+		e := <-app.Chan()
+		if e == event.DestroyEvent || e == event.KeyExit {
 			break
 		}
-		if resizeEvent, ok := action.(event.Configure); ok {
+		if resizeEvent, ok := e.(event.Configure); ok {
 			windowRect.Max = resizeEvent.InnerSize
 		}
 	}

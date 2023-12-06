@@ -34,8 +34,8 @@ func main() {
 	app.Sync()
 
 	for {
-		action := <-app.Chan()
-		if action == event.DestroyEvent || action == event.KeyExit {
+		e := <-app.Chan()
+		if e == event.DestroyEvent || e == event.KeyExit {
 			break
 		}
 	}
