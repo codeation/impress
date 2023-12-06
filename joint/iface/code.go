@@ -33,6 +33,9 @@ const (
 	MenuNewCode  byte = 'E'
 	MenuItemCode byte = 'G'
 
+	ClipboardGetCode byte = '1'
+	ClipboardPutCode byte = '2'
+
 	EventGeneralCode   byte = 'g'
 	EventKeyboardCode  byte = 'k'
 	EventConfigureCode byte = 'f'
@@ -40,4 +43,5 @@ const (
 	EventMotionCode    byte = 'm'
 	EventMenuCode      byte = 'u'
 	EventScrollCode    byte = 's'
+	EventClipboard     byte = 'c'
 )

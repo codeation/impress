@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/codeation/impress/clipboard"
 	"github.com/codeation/impress/event"
 )
 
@@ -17,6 +18,8 @@ type Driver interface {
 	NewFont(height int, attributes map[string]string) Fonter
 	NewImage(img image.Image) Imager
 	NewMenu(label string) Menuer
+	ClipboardGet(typeID int)
+	ClipboardPut(clipboard.Clipboarder)
 	Chan() <-chan event.Eventer
 	Sync()
 }

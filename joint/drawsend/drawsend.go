@@ -220,3 +220,17 @@ func (c *drawSend) MenuItem(menuID int, parentMenuID int, label string, action s
 		Put(iface.MenuItemCode, menuID, parentMenuID, label, action).
 		Unlock()
 }
+
+func (c *drawSend) ClipboardGet(typeID int) {
+	c.streamPipe.
+		Lock().
+		Put(iface.ClipboardGetCode, typeID).
+		Unlock()
+}
+
+func (c *drawSend) ClipboardPut(typeID int, data []byte) {
+	c.streamPipe.
+		Lock().
+		Put(iface.ClipboardPutCode, typeID, data).
+		Unlock()
+}

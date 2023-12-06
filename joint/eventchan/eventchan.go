@@ -4,6 +4,7 @@ package eventchan
 import (
 	"image"
 
+	"github.com/codeation/impress/clipboard"
 	"github.com/codeation/impress/event"
 )
 
@@ -74,5 +75,11 @@ func (e *eventChan) EventScroll(direction int, deltaX, deltaY int) {
 		Direction: direction,
 		DeltaX:    deltaX,
 		DeltaY:    deltaY,
+	}
+}
+
+func (e *eventChan) EventClipboard(typeID int, data []byte) {
+	e.events <- event.Clipboard{
+		Data: clipboard.Parse(typeID, data),
 	}
 }

@@ -3,6 +3,8 @@ package event
 import (
 	"image"
 	"unicode"
+
+	"github.com/codeation/impress/clipboard"
 )
 
 // Event types
@@ -15,6 +17,7 @@ const (
 	MenuType
 	ConfigureType
 	ScrollType
+	ClipboardType
 )
 
 // Eventer is the interface that groups GUI events
@@ -145,7 +148,7 @@ func (e Menu) Type() int {
 	return MenuType
 }
 
-// Scrool is scrool event
+// Scroll is scroll event
 type Scroll struct {
 	Direction int
 	DeltaX    int
@@ -164,4 +167,14 @@ const (
 // Type returns event type
 func (e Scroll) Type() int {
 	return ScrollType
+}
+
+// Clipboard is event with clipboard data
+type Clipboard struct {
+	Data clipboard.Clipboarder
+}
+
+// Type returns event type
+func (c Clipboard) Type() int {
+	return ClipboardType
 }

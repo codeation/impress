@@ -28,6 +28,8 @@ type CallSet interface {
 	ImageDrop(imageID int)
 	MenuNew(menuID int, parentMenuID int, label string)
 	MenuItem(menuID int, parentMenuID int, label string, action string)
+	ClipboardGet(typeID int)
+	ClipboardPut(typeID int, data []byte)
 }
 
 type CallbackSet interface {
@@ -38,4 +40,5 @@ type CallbackSet interface {
 	EventMotion(x, y int, shift, control, alt, meta bool)
 	EventMenu(action string)
 	EventScroll(direction int, deltaX, deltaY int)
+	EventClipboard(typeID int, data []byte)
 }

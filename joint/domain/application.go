@@ -6,6 +6,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/codeation/impress/clipboard"
 	"github.com/codeation/impress/event"
 	"github.com/codeation/impress/joint/iface"
 )
@@ -99,4 +100,12 @@ func (a *application) Chan() <-chan event.Eventer {
 
 func (a *application) Sync() {
 	go a.syncer.Sync() // nolint:errcheck
+}
+
+func (a *application) ClipboardGet(typeID int) {
+	a.caller.ClipboardGet(typeID)
+}
+
+func (a *application) ClipboardPut(c clipboard.Clipboarder) {
+	a.caller.ClipboardPut(c.Type(), c.Data())
 }

@@ -71,3 +71,11 @@ func (cb *eventSend) EventScroll(direction int, deltaX, deltaY int) {
 		Flush().
 		Unlock()
 }
+
+func (cb *eventSend) EventClipboard(typeID int, data []byte) {
+	cb.eventPipe.
+		Lock().
+		Put(iface.EventClipboard, typeID, data).
+		Flush().
+		Unlock()
+}

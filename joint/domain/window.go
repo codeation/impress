@@ -66,8 +66,7 @@ func (w *window) Line(from image.Point, to image.Point, foreground color.Color) 
 }
 
 func (w *window) Text(text string, fonter driver.Fonter, from image.Point, foreground color.Color) {
-	type ider interface{ ID() int }
-	f, ok := fonter.(ider)
+	f, ok := fonter.(interface{ ID() int })
 	if !ok {
 		log.Println("wrong fonter type")
 		return
@@ -77,8 +76,7 @@ func (w *window) Text(text string, fonter driver.Fonter, from image.Point, foreg
 }
 
 func (w *window) Image(rect image.Rectangle, img driver.Imager) {
-	type ider interface{ ID() int }
-	p, ok := img.(ider)
+	p, ok := img.(interface{ ID() int })
 	if !ok {
 		log.Println("wrong imager type")
 		return

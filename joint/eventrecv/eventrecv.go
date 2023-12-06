@@ -79,6 +79,12 @@ func (c *eventRecv) listen() {
 			c.eventPipe.Get(&direction, &deltaX, &deltaY)
 			c.callbacks.EventScroll(direction, deltaX, deltaY)
 
+		case iface.EventClipboard:
+			var typeID int
+			var data []byte
+			c.eventPipe.Get(&typeID, &data)
+			c.callbacks.EventClipboard(typeID, data)
+
 		default:
 			log.Printf("unknown event (client): %d", command)
 			return

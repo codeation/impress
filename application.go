@@ -4,6 +4,7 @@ import (
 	"image"
 	"log"
 
+	"github.com/codeation/impress/clipboard"
 	"github.com/codeation/impress/event"
 )
 
@@ -44,6 +45,16 @@ func (app *Application) Title(title string) {
 // Size sets application window size
 func (app *Application) Size(rect image.Rectangle) {
 	d.Size(rect)
+}
+
+// ClipboardGet requests event with clipboard content
+func (app *Application) ClipboardGet(typeID int) {
+	d.ClipboardGet(typeID)
+}
+
+// ClipboardPut set content to OS clipboard
+func (app *Application) ClipboardPut(c clipboard.Clipboarder) {
+	d.ClipboardPut(c)
 }
 
 // Chan returns event channel

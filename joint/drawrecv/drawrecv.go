@@ -173,6 +173,17 @@ func (s *drawRecv) streamListen() {
 			s.streamPipe.Get(&menuID, &parentMenuID, &label, &action)
 			s.calls.MenuItem(menuID, parentMenuID, label, action)
 
+		case iface.ClipboardGetCode:
+			var typeID int
+			s.streamPipe.Get(&typeID)
+			s.calls.ClipboardGet(typeID)
+
+		case iface.ClipboardPutCode:
+			var typeID int
+			var data []byte
+			s.streamPipe.Get(&typeID, data)
+			s.calls.ClipboardPut(typeID, data)
+
 		default:
 			log.Printf("unknown event: %d", command)
 			return

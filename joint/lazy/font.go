@@ -52,8 +52,7 @@ func (f *font) Size(text string) image.Point {
 }
 
 func (f *font) ID() int {
-	type ider interface{ ID() int }
-	if id, ok := f.Fonter.(ider); ok {
+	if id, ok := f.Fonter.(interface{ ID() int }); ok {
 		return id.ID()
 	}
 	return 0
