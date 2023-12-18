@@ -28,7 +28,7 @@ func (app *application) NewImage(img image.Image) driver.Imager {
 		height: img.Bounds().Dy(),
 	}
 	if len(pix.Pix) > 67108863 {
-		log.Printf("image size is too large")
+		log.Printf("image size is too large: %d", len(pix.Pix))
 		pix = image.NewNRGBA(image.Rect(0, 0, 1, 1))
 		p.width = 1
 		p.height = 1

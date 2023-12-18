@@ -3,8 +3,11 @@ package rpc
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"log"
+	"os"
 )
 
 type mutexer interface {
@@ -57,9 +60,6 @@ func (p *Pipe) Err() error {
 
 func (p *Pipe) Get(variables ...interface{}) *Pipe {
 	for _, v := range variables {
-		if p.err != nil {
-			return p
-		}
 		switch variable := v.(type) {
 		case *byte:
 			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
@@ -80,15 +80,16 @@ func (p *Pipe) Get(variables ...interface{}) *Pipe {
 		default:
 			p.err = fmt.Errorf("unknown type: %T", v)
 		}
+		if p.err != nil && !errors.Is(p.err, os.ErrClosed) && !errors.Is(p.err, io.EOF) {
+			log.Printf("get: %v", p.err)
+			return p
+		}
 	}
 	return p
 }
 
 func (p *Pipe) Put(values ...interface{}) *Pipe {
 	for _, v := range values {
-		if p.err != nil {
-			return p
-		}
 		switch value := v.(type) {
 		case byte:
 			p.err = binary.Write(p.writer, binary.LittleEndian, value)
@@ -108,6 +109,10 @@ func (p *Pipe) Put(values ...interface{}) *Pipe {
 			p.err = p.putString(value)
 		default:
 			p.err = fmt.Errorf("unknown type: %T", v)
+		}
+		if p.err != nil {
+			log.Printf("put: %v", p.err)
+			return p
 		}
 	}
 	return p

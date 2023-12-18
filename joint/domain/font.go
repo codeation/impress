@@ -2,6 +2,7 @@ package domain
 
 import (
 	"image"
+	"log"
 
 	"github.com/codeation/impress/driver"
 )
@@ -127,6 +128,10 @@ func (f *font) Close() {
 }
 
 func (f *font) Split(text string, edge int, indent int) []string {
+	if len(text) > 32767 {
+		log.Printf("split text is too large: %d", len(text))
+		text = ""
+	}
 	lengths := f.app.caller.FontSplit(f.id, text, edge, indent)
 	output := make([]string, 0, len(lengths))
 	for _, length := range lengths {

@@ -72,7 +72,7 @@ func (d *duo) Done() {
 	d.eventRecv.Done()
 	d.Driver.Done()
 	if err := d.disconnect(); err != nil {
-		log.Println(err)
+		log.Printf("done: %v", err)
 		return
 	}
 }
