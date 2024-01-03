@@ -18,6 +18,13 @@ func (a *app) NewFrame(rect image.Rectangle) driver.Framer {
 	}
 }
 
+func (f *frame) NewFrame(rect image.Rectangle) driver.Framer {
+	return &frame{
+		Framer: f.Framer.NewFrame(rect),
+		rect:   rect,
+	}
+}
+
 func (f *frame) Size(rect image.Rectangle) {
 	if f.rect == rect {
 		return
