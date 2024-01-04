@@ -2,8 +2,8 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
-See [project wiki](https://github.com/codeation/impress/wiki) 
-for [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
+See [project site](https://codeation.github.io/impress/index.html) 
+for [a library overview](https://codeation.github.io/impress/library-overview.html).
 
 Some usage examples are in the [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
@@ -17,7 +17,7 @@ Some usage examples are in the [examples folder](https://github.com/codeation/im
 - Creating a GUI application without form designer or hard-coded widgets.
 
 The basic idea is to avoid the event-driven programming paradigm. See
-["What's wrong with event-driven programming"](https://github.com/codeation/impress/wiki/Whats-wrong-with-event-driven-programming)
+["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html)
 page.
 
 Go is a perfect language for developing desktop GUI applications. Compiled language is fast enough to spin an interactive application. Goroutines are helpful to handle the state of separate windows. The small runtime means that the application starts instantly. Go implement high level abstractions to complex application development.
@@ -65,7 +65,7 @@ func main() {
 }
 ```
 
-See an explanation of the source code in [a library overview](https://github.com/codeation/impress/wiki/Library-overview).
+See an explanation of the source code in [a library overview](https://codeation.github.io/impress/library-overview.html).
 
 ### To run this example on Debian/ Ubuntu:
 
@@ -182,6 +182,6 @@ First, welcome:
 
 - Any like to the project (star, post, link, etc.).
 - Any recommendations about library design principles.
-- Contribution to project, project wiki, examples.
+- Contribution to project, documentation, examples.
 - Bug report, open [issue](https://github.com/codeation/impress/issues).
 - Or any help to fix grammatical or writing errors (PR or issue).
