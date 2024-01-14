@@ -2,25 +2,10 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
-See [project site](https://codeation.github.io/impress/index.html) 
-for [a library overview](https://codeation.github.io/impress/library-overview.html).
+See [project site](https://codeation.github.io/impress/) for a technical details
+and [a library overview](https://codeation.github.io/impress/library-overview.html).
 
 Some usage examples are in the [examples folder](https://github.com/codeation/impress/tree/master/examples).
-
-## Basic Principles of Library Design
-
-- Performance of the application as well as native applications.
-- Facade pattern for masking complex components behind an API.
-- Simple and clean application code.
-- Minimal library API to follow the Go-way.
-- Limited use of other libraries (graphic, low-level or native).
-- Creating a GUI application without form designer or hard-coded widgets.
-
-The basic idea is to avoid the event-driven programming paradigm. See
-["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html)
-page.
-
-Go is a perfect language for developing desktop GUI applications. Compiled language is fast enough to spin an interactive application. Goroutines are helpful to handle the state of separate windows. The small runtime means that the application starts instantly. Go implement high level abstractions to complex application development.
 
 ## Hello World Example
 
@@ -93,28 +78,7 @@ cd impress
 IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 ```
 
-### To run this example on macOS:
-
-0. Install [Homebrew](https://brew.sh/) if you don't have it installed.
-1. Install GTK+ 3 (`brew install gtk+3`) and pkg-config (`brew install pkg-config`) if you don't have them installed.
-2. Build impress terminal from source (see [impress terminal page](https://github.com/codeation/it)):
-
-```
-git clone https://github.com/codeation/it.git
-cd it
-make
-cd ..
-```
-
-3. Then run example:
-
-```
-git clone https://github.com/codeation/impress.git
-cd impress
-IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
-```
-
-*The latest releases aren't tested on Apple machines. The earlier version tested on both Intel and Silicon platform and worked well. Please, use earlier release or open [issue](https://github.com/codeation/impress/issues) if some bugs have raised. PRs and MRs are welcome too.*
+See commands [To run this example on macOS](https://codeation.github.io/impress/hello-world.html).
 
 ## GTK-3 driver
 
@@ -157,24 +121,6 @@ go run ./examples/simple/
 - The API is stable, but the details are subject to change.
 
 A cross-platform [mind-map application](https://github.com/codeation/lineation/) is being developed to prove the underlying principles of the library.
-
-### Short term roadmap
-
-- Recommended Event Propagation module.
-- Additional library with a set of widgets (text input, dialog, etc.).
-- Developer version of the library with debugging and profiling.
-- Auto build GTK-3 driver for a fixed set of Linux distributions.
-- Distribution tool to pack the GUI application into Debian package.
-
-### Long term roadmap
-
-- [WebAssembly driver](https://github.com/codeation/canvas) for turning a browser into a client terminal.
-- Two or more cooperate drivers for the same GUI application.
-- GTK-4 driver version when Debian will contain GTK-4 apps.
-- Apple Silicon native driver for macOS.
-- iOS app used as GUI app remote client.
-
-Stay tuned for more.
 
 ## Contributing
 
