@@ -14,7 +14,6 @@ type drawRecv struct {
 	streamPipe *rpc.Pipe
 	syncPipe   *rpc.Pipe
 	wg         sync.WaitGroup
-	onExit     bool
 }
 
 func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
@@ -23,7 +22,11 @@ func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
 		streamPipe: streamPipe,
 		syncPipe:   syncPipe,
 	}
-	go s.streamListen()
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		s.streamListen()
+	}()
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
@@ -40,14 +43,15 @@ func (s *drawRecv) streamListen() {
 	for {
 		var command byte
 		if err := s.streamPipe.Get(&command).Err(); err != nil {
-			if s.onExit {
-				return
-			}
 			log.Printf("readCommands: %v", err)
 			return
 		}
 
 		switch command {
+		case iface.ApplicationExitCode:
+			s.calls.ApplicationExit()
+			return
+
 		case iface.ApplicationSizeCode:
 			var x, y, width, height int
 			s.streamPipe.Get(&x, &y, &width, &height)
@@ -201,9 +205,7 @@ func (s *drawRecv) syncListen() {
 
 		switch command {
 		case iface.ApplicationExitCode:
-			output := s.calls.ApplicationExit()
-			s.syncPipe.Put(output).Flush()
-			s.onExit = true
+			s.calls.ApplicationExit()
 			return
 
 		case iface.ApplicationVersionCode:

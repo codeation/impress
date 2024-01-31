@@ -2,7 +2,7 @@
 package iface
 
 type CallSet interface {
-	ApplicationExit() string
+	ApplicationExit()
 	ApplicationVersion() string
 	ApplicationSize(x, y, width, height int)
 	ApplicationTitle(title string)

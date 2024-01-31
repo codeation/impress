@@ -125,15 +125,15 @@ func (d *duo) connect() error {
 }
 
 func (d *duo) disconnect() error {
+	if err := d.cmd.Wait(); err != nil {
+		return fmt.Errorf("cmd.Wait: %w", err)
+	}
+
 	if err := d.requestFile.Close(); err != nil {
 		return fmt.Errorf("requestFile.Close(): %w", err)
 	}
 	if err := d.streamFile.Close(); err != nil {
 		return fmt.Errorf("streamFile.Close: %w", err)
-	}
-
-	if err := d.cmd.Wait(); err != nil {
-		return fmt.Errorf("cmd.Wait: %w", err)
 	}
 
 	if err := d.responseFile.Close(); err != nil {

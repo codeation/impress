@@ -86,7 +86,7 @@ Steps 0-2 are needed to build a impress terminal binary. See [impress terminal p
 ### Notes
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
-- The project was tested on Debian 12.4 and macOS 14.2.1.
+- The project was tested on Debian 12.4 and macOS 14.3.
 - While the API remains stable, please note that the specific details may be subject to change.
 
 A cross-platform [mind-map application](https://codeation.github.io/lineation/) is being developed to showcase the core principles of the library.

@@ -33,15 +33,17 @@ func (c *drawSend) ApplicationTitle(title string) {
 		Unlock()
 }
 
-func (c *drawSend) ApplicationExit() string {
-	var output string
+func (c *drawSend) ApplicationExit() {
+	c.streamPipe.
+		Lock().
+		Put(iface.ApplicationExitCode).
+		Flush().
+		Unlock()
 	c.syncPipe.
 		Lock().
 		Put(iface.ApplicationExitCode).
 		Flush().
-		Get(&output).
 		Unlock()
-	return output
 }
 
 func (c *drawSend) ApplicationVersion() string {
