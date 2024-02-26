@@ -29,6 +29,7 @@ func NewApplication(rect image.Rectangle, title string) *Application {
 
 // Close destroys application resources
 func (app *Application) Close() {
+	app.frame.Drop()
 	d.Done()
 }
 
