@@ -9,10 +9,9 @@ import (
 )
 
 type picture struct {
-	app    *application
-	id     int
-	width  int
-	height int
+	app  *application
+	id   int
+	size image.Point
 }
 
 func (app *application) NewImage(img image.Image) driver.Imager {
@@ -22,23 +21,20 @@ func (app *application) NewImage(img image.Image) driver.Imager {
 		draw.Draw(pix, pix.Bounds(), img, image.Pt(0, 0), draw.Src)
 	}
 	p := &picture{
-		app:    app,
-		id:     app.nextImageID(),
-		width:  img.Bounds().Dx(),
-		height: img.Bounds().Dy(),
+		app:  app,
+		id:   app.nextImageID(),
+		size: img.Bounds().Size(),
 	}
 	if len(pix.Pix) > 67108863 {
 		log.Printf("image size is too large: %d", len(pix.Pix))
 		pix = image.NewNRGBA(image.Rect(0, 0, 1, 1))
-		p.width = 1
-		p.height = 1
+		p.size = image.Pt(1, 1)
 	}
-	app.caller.ImageNew(p.id, p.width, p.height, pix.Pix)
+	app.caller.ImageNew(p.id, p.size.X, p.size.Y, pix.Pix)
 	return p
 }
 
-func (p *picture) Width() int  { return p.width }
-func (p *picture) Height() int { return p.height }
+func (p *picture) Size() image.Point { return p.size }
 
 func (p *picture) Close() {
 	p.app.caller.ImageDrop(p.id)

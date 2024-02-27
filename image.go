@@ -17,7 +17,7 @@ func NewImage(img image.Image) *Image {
 	imager := d.NewImage(img)
 	return &Image{
 		Imager: imager,
-		Size:   img.Bounds().Size(),
+		Size:   imager.Size(),
 	}
 }
 

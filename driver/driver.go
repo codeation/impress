@@ -59,8 +59,7 @@ type Fonter interface {
 
 // Imager is a internal interface to a image functions
 type Imager interface {
-	Width() int
-	Height() int
+	Size() image.Point
 	Close()
 }
 
