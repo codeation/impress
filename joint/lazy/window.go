@@ -32,7 +32,7 @@ type textPaint struct {
 type window struct {
 	driver.Painter
 	history  []interface{}
-	readjust bool
+	reAdjust bool
 	position int
 	rect     image.Rectangle
 }
@@ -48,19 +48,20 @@ func (w *window) Size(rect image.Rectangle) {
 	if w.rect == rect {
 		return
 	}
+	w.reAdjust = true
 	w.rect = rect
 	w.Painter.Size(rect)
 }
 
 func (w *window) Clear() {
 	w.position = 0
-	w.readjust = false
 }
 
 func (w *window) Show() {
-	if !w.readjust && len(w.history) == w.position {
+	if !w.reAdjust && len(w.history) == w.position {
 		return
 	}
+	w.reAdjust = false
 	w.history = w.history[:w.position]
 	w.Painter.Clear()
 	for _, h := range w.history {
@@ -87,7 +88,7 @@ func (w *window) Fill(rect image.Rectangle, foreground color.Color) {
 		}
 		w.history = w.history[:w.position]
 	}
-	w.readjust = true
+	w.reAdjust = true
 	w.history = append(w.history, &fillPaint{
 		rect:       rect,
 		foreground: foreground,
@@ -104,7 +105,7 @@ func (w *window) Line(from image.Point, to image.Point, foreground color.Color) 
 		}
 		w.history = w.history[:w.position]
 	}
-	w.readjust = true
+	w.reAdjust = true
 	w.history = append(w.history, &linePaint{
 		from:       from,
 		to:         to,
@@ -122,7 +123,7 @@ func (w *window) Image(rect image.Rectangle, img driver.Imager) {
 		}
 		w.history = w.history[:w.position]
 	}
-	w.readjust = true
+	w.reAdjust = true
 	w.history = append(w.history, &imagePaint{
 		rect: rect,
 		img:  img,
@@ -139,7 +140,7 @@ func (w *window) Text(text string, font driver.Fonter, from image.Point, foregro
 		}
 		w.history = w.history[:w.position]
 	}
-	w.readjust = true
+	w.reAdjust = true
 	w.history = append(w.history, &textPaint{
 		text:       text,
 		font:       font,
