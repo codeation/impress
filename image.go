@@ -15,6 +15,7 @@ type Image struct {
 // NewImage returns a image resources struct
 func NewImage(img image.Image) *Image {
 	imager := d.NewImage(img)
+	d.Sync()
 	return &Image{
 		Imager: imager,
 		Size:   imager.Size(),

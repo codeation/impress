@@ -1,36 +1,21 @@
 // Package to connect to GTK driver
-package next
+package duo
 
 import (
-	"bufio"
-	"crypto/rand"
-	"encoding/hex"
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"sync"
-	"syscall"
 
 	"github.com/codeation/impress"
 	"github.com/codeation/impress/driver"
+	"github.com/codeation/impress/joint/bus"
 	"github.com/codeation/impress/joint/domain"
 	"github.com/codeation/impress/joint/drawsend"
 	"github.com/codeation/impress/joint/eventchan"
 	"github.com/codeation/impress/joint/eventrecv"
 	"github.com/codeation/impress/joint/lazy"
-	"github.com/codeation/impress/joint/rpc"
 )
-
-const (
-	fifoStreamPath = "/tmp/it_fifo_stream_"
-	fifoInputPath  = "/tmp/it_fifo_input_"
-	fifoOutputPath = "/tmp/it_fifo_output_"
-	fifoEventPath  = "/tmp/it_fifo_event_"
-)
-
-const defaultBufferSize = 256 * 1024
 
 type doner interface {
 	Done()
@@ -38,16 +23,9 @@ type doner interface {
 
 type duo struct {
 	driver.Driver
-	eventRecv    doner
-	cmd          *exec.Cmd
-	fileSuffix   string
-	streamFile   *os.File
-	requestFile  *os.File
-	responseFile *os.File
-	eventFile    *os.File
-	streamPipe   *rpc.Pipe
-	syncPipe     *rpc.Pipe
-	eventPipe    *rpc.Pipe
+	eventRecv doner
+	cmd       *exec.Cmd
+	server    *bus.ServerPipes
 }
 
 func init() {
@@ -61,9 +39,9 @@ func newDuo() *duo {
 		return nil
 	}
 	eventChan := eventchan.New()
-	d.eventRecv = eventrecv.New(eventChan, d.eventPipe)
-	drawSend := drawsend.New(d.streamPipe, d.syncPipe)
-	duoDriver := domain.New(drawSend, eventChan, d.streamPipe)
+	d.eventRecv = eventrecv.New(eventChan, d.server.EventPipe)
+	drawSend := drawsend.New(d.server.StreamPipe, d.server.SyncPipe)
+	duoDriver := domain.New(drawSend, eventChan, d.server.StreamPipe)
 	d.Driver = lazy.New(duoDriver)
 	return d
 }
@@ -78,22 +56,17 @@ func (d *duo) Done() {
 }
 
 func (d *duo) connect() error {
-	randBuffer := make([]byte, 8)
-	if _, err := rand.Reader.Read(randBuffer); err != nil {
-		return fmt.Errorf("rand.Reader.Read: %w", err)
-	}
-	d.fileSuffix = hex.EncodeToString(randBuffer)
-	for _, name := range []string{fifoInputPath, fifoStreamPath, fifoOutputPath, fifoEventPath} {
-		if err := syscall.Mkfifo(name+d.fileSuffix, 0644); err != nil {
-			return fmt.Errorf("syscall.Mkfifo: %w", err)
-		}
+	var err error
+	d.server, err = bus.NewServer()
+	if err != nil {
+		return fmt.Errorf("bus.NewServer: %w", err)
 	}
 
 	path := os.Getenv("IMPRESS_TERMINAL_PATH")
 	if path == "" {
 		path = "./it"
 	}
-	cmd := exec.Command(path, d.fileSuffix)
+	cmd := exec.Command(path, d.server.Suffix())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
@@ -101,25 +74,9 @@ func (d *duo) connect() error {
 	}
 	d.cmd = cmd
 
-	var err error
-	if d.responseFile, err = os.OpenFile(fifoOutputPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(o): %w", err)
+	if err := d.server.Connect(); err != nil {
+		return fmt.Errorf("server.Connect: %w", err)
 	}
-	if d.eventFile, err = os.OpenFile(fifoEventPath+d.fileSuffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(e): %w", err)
-	}
-	if d.requestFile, err = os.OpenFile(fifoInputPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(i): %w", err)
-	}
-	if d.streamFile, err = os.OpenFile(fifoStreamPath+d.fileSuffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(s): %w", err)
-	}
-
-	streamBuffered := bufio.NewWriterSize(d.streamFile, defaultBufferSize)
-
-	d.streamPipe = rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)
-	d.syncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(d.requestFile), bufio.NewReader(d.responseFile))
-	d.eventPipe = rpc.NewPipe(rpc.WithoutMutex(), nil, bufio.NewReader(d.eventFile))
 
 	return nil
 }
@@ -129,26 +86,9 @@ func (d *duo) disconnect() error {
 		return fmt.Errorf("cmd.Wait: %w", err)
 	}
 
-	if err := d.requestFile.Close(); err != nil {
-		return fmt.Errorf("requestFile.Close(): %w", err)
-	}
-	if err := d.streamFile.Close(); err != nil {
-		return fmt.Errorf("streamFile.Close: %w", err)
+	if err := d.server.Close(); err != nil {
+		return fmt.Errorf("server.Close: %w", err)
 	}
 
-	if err := d.responseFile.Close(); err != nil {
-		return fmt.Errorf("responseFile.Close: %w", err)
-	}
-	if err := d.eventFile.Close(); err != nil {
-		return fmt.Errorf("eventFile.Close: %w", err)
-	}
-
-	for _, name := range []string{fifoInputPath, fifoOutputPath, fifoEventPath} {
-		if _, err := os.Stat(name + d.fileSuffix); err == nil || !errors.Is(err, os.ErrNotExist) {
-			if err = os.Remove(name + d.fileSuffix); err != nil {
-				return fmt.Errorf("os.Remove: %w", err)
-			}
-		}
-	}
 	return nil
 }
