@@ -24,7 +24,7 @@ import (
 	"github.com/codeation/impress/joint/serversocket"
 )
 
-const defaultBufferSize = 256 * 1024
+const defaultBufferSize = 64 * 1024
 
 var (
 	listen = flag.String("listen", ":8080", "listen address")

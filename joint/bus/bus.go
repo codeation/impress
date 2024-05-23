@@ -14,7 +14,7 @@ const (
 	fifoEventPath  = "/tmp/it_fifo_event_"
 )
 
-const defaultBufferSize = 256 * 1024
+const defaultBufferSize = 64 * 1024
 
 type pipes struct {
 	suffix       string

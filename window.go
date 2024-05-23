@@ -24,7 +24,7 @@ func (f *Frame) NewWindow(rect image.Rectangle, background color.Color) *Window 
 	}
 }
 
-// Drop deletes window
+// Drop deletes window.
 // Note that a dropped window can no longer be used
 func (w *Window) Drop() {
 	w.painter.Drop()
@@ -51,7 +51,8 @@ func (w *Window) Line(from image.Point, to image.Point, foreground color.Color) 
 	w.painter.Line(from, to, foreground)
 }
 
-// ImageScale draws a image into specified rectangle
+// Image draws a image into specified rectangle.
+// Specify a different rectangle size to scale the image
 func (w *Window) Image(rect image.Rectangle, img *Image) {
 	w.painter.Image(rect, img.Imager)
 }
@@ -61,7 +62,7 @@ func (w *Window) Text(text string, font *Font, from image.Point, foreground colo
 	w.painter.Text(text, font.Fonter, from, foreground)
 }
 
-// Show sends the contents of the window to the screen
+// Show sends the contents of the window to the screen.
 // Note that a drawings are not visible until Show
 func (w *Window) Show() {
 	w.painter.Show()

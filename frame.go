@@ -22,7 +22,7 @@ func (f *Frame) NewFrame(rect image.Rectangle) *Frame {
 	}
 }
 
-// Drop deletes frame
+// Drop deletes frame.
 // Note that a dropped frame can no longer be used
 func (f *Frame) Drop() {
 	f.framer.Drop()
