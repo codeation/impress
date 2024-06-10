@@ -243,7 +243,7 @@ func (s *drawRecv) streamCommand() error {
 	case iface.ClipboardPutCode:
 		var typeID int
 		var data []byte
-		if err := s.streamPipe.Get(&typeID, data).Err(); err != nil {
+		if err := s.streamPipe.Get(&typeID, &data).Err(); err != nil {
 			return err
 		}
 		s.calls.ClipboardPut(typeID, data)
