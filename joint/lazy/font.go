@@ -16,16 +16,16 @@ type keySplit struct {
 
 type font struct {
 	driver.Fonter
-	cacheSplit *lru.Cache[keySplit, []string]
-	cacheSize  *lru.Cache[string, image.Point]
+	cacheSplit *lru.SyncLRU[keySplit, []string]
+	cacheSize  *lru.SyncLRU[string, image.Point]
 }
 
 func (a *app) NewFont(height int, attributes map[string]string) driver.Fonter {
 	f := &font{
 		Fonter: a.Driver.NewFont(height, attributes),
 	}
-	f.cacheSplit = lru.NewCache(128, f.splitByKey)
-	f.cacheSize = lru.NewCache(1024, f.sizeByString)
+	f.cacheSplit = lru.NewSyncLRU(128, f.splitByKey)
+	f.cacheSize = lru.NewSyncLRU(1024, f.sizeByString)
 	return f
 }
 

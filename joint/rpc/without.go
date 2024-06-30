@@ -1,6 +1,8 @@
 package rpc
 
-import "io"
+import (
+	"io"
+)
 
 type withoutMutex struct{}
 
