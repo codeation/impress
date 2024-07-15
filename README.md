@@ -81,24 +81,38 @@ IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 
 Steps 0-2 are needed to build a impress terminal binary. See [impress terminal page](https://codeation.github.io/impress/it-driver.html) for other options for downloading or building impress terminal app.
 
-## Project State
+# Technical details
 
-### Notes
+Basic Principles of Library Design:
+
+- Performance of the application as well as native applications.
+- Facade pattern for masking complex components behind an API.
+- Simple and clean application code.
+- Minimal library API to follow the Go-way.
+- Limited use of other libraries (graphic, low-level or native).
+- Creating a GUI application without form designer or hard-coded widgets.
+
+The main idea is to stay away from the event driven programming paradigm. See
+["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html)
+page.
+
+The library uses 
+[a separate application (GTK+ 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding low-level library to a Golang.
+
+# Project State
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
-- The project was tested on Debian 12.5 and macOS 14.5.
+- The project was tested on Debian 12.6 and macOS 14.5.
 - While the API remains stable, please note that the specific details may be subject to change.
+
+[The project roadmap](https://codeation.github.io/impress/roadmap.html)
+includes both short-term and long-term project stages. 
 
 A cross-platform [mind-map application](https://codeation.github.io/lineation/) is being developed to showcase the core principles of the library.
 
-### Key features
+Up to 2 ms from the moment you press the key, the mind-map application window is redrawn. Measured on a computer with an N200 processor without a video card.
 
-- The library uses [a separate application](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding low-level library to a Golang.
-- The library implements [lazy mode](https://codeation.github.io/impress/lazy-mode.html) drawing.
-
-See [project site](https://codeation.github.io/impress/) for a basic principles and details.
-
-## Contributing
+# Contributing
 
 First, welcome:
 
