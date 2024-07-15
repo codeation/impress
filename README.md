@@ -81,7 +81,7 @@ IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 
 Steps 0-2 are needed to build a impress terminal binary. See [impress terminal page](https://codeation.github.io/impress/it-driver.html) for other options for downloading or building impress terminal app.
 
-# Technical details
+## Technical details
 
 Basic Principles of Library Design:
 
@@ -99,7 +99,7 @@ page.
 The library uses 
 [a separate application (GTK+ 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding low-level library to a Golang.
 
-# Project State
+## Project State
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
 - The project was tested on Debian 12.6 and macOS 14.5.
@@ -112,7 +112,7 @@ A cross-platform [mind-map application](https://codeation.github.io/lineation/) 
 
 Up to 2 ms from the moment you press the key, the mind-map application window is redrawn. Measured on a computer with an N200 processor without a video card.
 
-# Contributing
+## Contributing
 
 First, welcome:
 
