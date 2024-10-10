@@ -21,7 +21,7 @@ func main() {
 	app := impress.NewApplication(image.Rect(0, 0, 640, 480), "Menu Demo Application")
 	defer app.Close()
 
-	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
+	font := app.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
 	menu1 := app.NewMenu("File")

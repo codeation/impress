@@ -2,63 +2,62 @@ package impress
 
 import (
 	"image"
-	"log"
 
 	"github.com/codeation/impress/clipboard"
+	"github.com/codeation/impress/driver"
 	"github.com/codeation/impress/event"
 )
 
 // Application represents application top level window
 type Application struct {
-	frame *Frame
+	driver driver.Driver
+	frame  *Frame
 }
 
-// NewApplication creates main application window
-func NewApplication(rect image.Rectangle, title string) *Application {
-	if d == nil {
-		log.Printf("GUI driver is not available")
-		return nil
+// MakeApplication creates a top application window for specified GUI driver
+func MakeApplication(d driver.Driver, rect image.Rectangle, title string) *Application {
+	app := &Application{
+		driver: d,
 	}
-	d.Init()
-	d.Size(rect)
-	d.Title(title)
-	return &Application{
-		frame: &Frame{framer: d.NewFrame(image.Rect(0, 0, rect.Dx(), rect.Dy()))},
-	}
+	app.driver.Init()
+	app.driver.Size(rect)
+	app.driver.Title(title)
+	app.frame = &Frame{framer: app.driver.NewFrame(image.Rect(0, 0, rect.Dx(), rect.Dy()))}
+	return app
 }
 
 // Close destroys application resources
 func (app *Application) Close() {
 	app.frame.Drop()
-	d.Done()
+	app.driver.Done()
 }
 
 // Sync flushes graphics content to screen driver
 func (app *Application) Sync() {
-	d.Sync()
+	app.driver.Sync()
 }
 
 // Title sets application window title
 func (app *Application) Title(title string) {
-	d.Title(title)
+	app.driver.Title(title)
 }
 
 // Size sets application window size
 func (app *Application) Size(rect image.Rectangle) {
-	d.Size(rect)
+	app.driver.Size(rect)
 }
 
 // ClipboardGet requests event with clipboard content
 func (app *Application) ClipboardGet(typeID int) {
-	d.ClipboardGet(typeID)
+	app.driver.ClipboardGet(typeID)
 }
 
 // ClipboardPut set content to OS clipboard
 func (app *Application) ClipboardPut(c clipboard.Clipboarder) {
-	d.ClipboardPut(c)
+	app.driver.ClipboardPut(c)
 }
 
 // Chan returns event channel
 func (app *Application) Chan() <-chan event.Eventer {
-	return d.Chan()
+	return app.driver.Chan()
 }

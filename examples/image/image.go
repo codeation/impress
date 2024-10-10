@@ -29,7 +29,7 @@ func main() {
 		log.Println(err)
 		return
 	}
-	img := impress.NewImage(i)
+	img := app.NewImage(i)
 	defer img.Close()
 
 	w := app.NewWindow(image.Rectangle{Max: rect.Size()}, color.RGBA{255, 255, 255, 255})

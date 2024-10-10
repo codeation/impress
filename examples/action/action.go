@@ -107,7 +107,7 @@ func main() {
 	app := impress.NewApplication(appRect, "Example")
 	defer app.Close()
 
-	font := impress.NewFont(15, map[string]string{"family": "Verdana"})
+	font := app.NewFont(15, map[string]string{"family": "Verdana"})
 	defer font.Close()
 
 	w1 := NewSmallWindow(app, leftRect, white, font)

@@ -13,7 +13,7 @@ type Menu struct {
 // NewMenu returns a new top-level menu node
 func (app *Application) NewMenu(label string) *Menu {
 	return &Menu{
-		menuer: d.NewMenu(label),
+		menuer: app.driver.NewMenu(label),
 	}
 }
 

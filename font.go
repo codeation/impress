@@ -20,8 +20,8 @@ type Font struct {
 // NewFont return a font selection struct.
 // Note than "family" and other attributes are driver specific.
 // Open duo/font.go for details.
-func NewFont(height int, attributes map[string]string) *Font {
-	fonter := d.NewFont(height, attributes)
+func (app *Application) NewFont(height int, attributes map[string]string) *Font {
+	fonter := app.driver.NewFont(height, attributes)
 	return &Font{
 		Fonter:     fonter,
 		Height:     height,

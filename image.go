@@ -13,8 +13,8 @@ type Image struct {
 }
 
 // NewImage returns a image resources struct
-func NewImage(img image.Image) *Image {
-	imager := d.NewImage(img)
+func (app *Application) NewImage(img image.Image) *Image {
+	imager := app.driver.NewImage(img)
 	return &Image{
 		Imager: imager,
 		Size:   imager.Size(),
