@@ -2,13 +2,17 @@ package impress
 
 import (
 	"image"
+	"log"
 
 	"github.com/codeation/impress/driver"
 )
 
 // NewApplication creates main application window for default GUI driver.
 // Consider using MakeApplication func instead
-var NewApplication func(rect image.Rectangle, title string) *Application
+var NewApplication = func(rect image.Rectangle, title string) *Application {
+	log.Fatalf("GUI driver must be registered. Add GTK driver to use by default:\nimport _ \"github.com/codeation/impress/duo\"")
+	return nil
+}
 
 // NewImage returns a image resources struct for default GUI driver.
 //

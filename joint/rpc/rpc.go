@@ -51,6 +51,9 @@ func (p *Pipe) Flush() *Pipe {
 		return p
 	}
 	p.err = p.writer.Flush()
+	if p.err != nil {
+		log.Printf("flush: %v", p.err)
+	}
 	return p
 }
 
