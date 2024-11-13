@@ -102,7 +102,7 @@ The library uses
 ## Project State
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
-- The project was tested on Debian 12.6 and macOS 14.5.
+- The project was tested on Debian 12.8 and macOS 15.1.
 - While the API remains stable, please note that the specific details may be subject to change.
 
 [The project roadmap](https://codeation.github.io/impress/roadmap.html)
