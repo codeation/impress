@@ -5,12 +5,12 @@ import (
 	"github.com/codeation/impress/joint/rpc"
 )
 
-type DrawCommand struct {
+type SyncCommand struct {
 	*drawRecv
 }
 
-func NewDrawCommand(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *DrawCommand {
-	return &DrawCommand{
+func NewSyncCommand(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *SyncCommand {
+	return &SyncCommand{
 		drawRecv: &drawRecv{
 			calls:      calls,
 			streamPipe: streamPipe,
@@ -19,5 +19,4 @@ func NewDrawCommand(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *DrawCo
 	}
 }
 
-func (d *DrawCommand) StreamCommand() error { return d.drawRecv.streamCommand() }
-func (d *DrawCommand) SyncCommand() error   { return d.drawRecv.syncCommand() }
+func (d *SyncCommand) SyncCommand() error { return d.drawRecv.syncCommand() }

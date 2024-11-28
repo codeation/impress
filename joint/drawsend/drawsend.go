@@ -199,7 +199,6 @@ func (c *drawSend) ImageNew(imageID int, width, height int, bitmap []byte) {
 	c.streamPipe.
 		Lock().
 		Put(iface.ImageNewCode, imageID, width, height, bitmap).
-		Flush().
 		Unlock()
 }
 
@@ -235,6 +234,5 @@ func (c *drawSend) ClipboardPut(typeID int, data []byte) {
 	c.streamPipe.
 		Lock().
 		Put(iface.ClipboardPutCode, typeID, data).
-		Flush().
 		Unlock()
 }

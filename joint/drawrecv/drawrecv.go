@@ -92,7 +92,9 @@ func (s *drawRecv) streamCommand() error {
 
 	case iface.FrameDropCode:
 		var frameID int
-		s.streamPipe.Get(&frameID)
+		if err := s.streamPipe.Get(&frameID).Err(); err != nil {
+			return err
+		}
 		s.calls.FrameDrop(frameID)
 
 	case iface.FrameSizeCode:

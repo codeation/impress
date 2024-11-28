@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"syscall"
 
 	"github.com/codeation/impress/joint/rpc"
 )
@@ -30,6 +31,10 @@ func (p *ClientPipes) Connect() error {
 	}
 	if p.streamFile, err = os.OpenFile(fifoStreamPath+p.suffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
 		return fmt.Errorf("os.OpenFile(s): %w", err)
+	}
+
+	if err = syscall.SetNonblock(int(p.streamFile.Fd()), true); err != nil {
+		return fmt.Errorf("syscall.SetNonblck: %w", err)
 	}
 
 	p.StreamPipe = rpc.NewPipe(new(sync.Mutex), nil, p.streamFile)
