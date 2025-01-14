@@ -3,9 +3,10 @@ package main
 import (
 	"image"
 	"image/color"
-	"image/png"
 	"log"
 	"os"
+
+	_ "image/png"
 
 	"github.com/codeation/impress"
 	"github.com/codeation/impress/event"
@@ -24,7 +25,7 @@ func main() {
 		return
 	}
 	defer f.Close()
-	i, err := png.Decode(f)
+	i, _, err := image.Decode(f)
 	if err != nil {
 		log.Println(err)
 		return
