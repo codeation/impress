@@ -2,6 +2,7 @@
 package duodriver
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -24,18 +25,17 @@ type duo struct {
 }
 
 // New returns a new GTK driver
-func New() *duo {
+func New() (*duo, error) {
 	d := &duo{}
 	if err := d.connect(); err != nil {
-		log.Println(err)
-		return nil
+		return nil, err
 	}
 	eventChan := eventchan.New()
 	d.eventRecv = eventrecv.New(eventChan, d.server.EventPipe)
 	drawSend := drawsend.New(d.server.StreamPipe, d.server.SyncPipe)
 	duoDriver := domain.New(drawSend, eventChan, d.server.StreamPipe)
 	d.Driver = lazy.New(duoDriver)
-	return d
+	return d, nil
 }
 
 func (d *duo) Done() {
@@ -54,9 +54,11 @@ func (d *duo) connect() error {
 		return fmt.Errorf("bus.NewServer: %w", err)
 	}
 
-	path := os.Getenv("IMPRESS_TERMINAL_PATH")
-	if path == "" {
-		path = "./it"
+	path, err := itPath()
+	if errors.Is(err, errITNotFound) {
+		log.Print("impress terminal not found")
+		log.Print("set IMPRESS_TERMINAL_PATH environment variable")
+		return fmt.Errorf("itPath: %w", err)
 	}
 	cmd := exec.Command(path, d.server.Suffix())
 	cmd.Stdout = os.Stdout

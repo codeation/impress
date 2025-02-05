@@ -37,7 +37,7 @@ type httpDriver struct {
 }
 
 // New returns a new WebAssembly driver
-func New() *httpDriver {
+func New() (*httpDriver, error) {
 	flag.Parse()
 
 	streamSocket := serversocket.New()
@@ -61,7 +61,7 @@ func New() *httpDriver {
 		Driver:     lazyDriver,
 		httpServer: httpServer,
 		eventRecv:  eventRecv,
-	}
+	}, nil
 }
 
 func (h *httpDriver) Done() {

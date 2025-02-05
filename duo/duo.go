@@ -2,10 +2,16 @@
 package duo
 
 import (
+	"log"
+
 	"github.com/codeation/impress"
 	"github.com/codeation/impress/duo/duodriver"
 )
 
 func init() {
-	impress.Register(duodriver.New())
+	driver, err := duodriver.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	impress.Register(driver)
 }

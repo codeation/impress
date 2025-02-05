@@ -76,8 +76,8 @@ func (a *application) nextMenuID() int {
 
 func (a *application) Init() {
 	driverVersion := a.caller.ApplicationVersion()
-	if driverVersion != version {
-		log.Fatalf("Unexpected driver version: %s", driverVersion)
+	if driverVersion != apiVersion {
+		log.Fatalf("Unexpected driver API version: %s", driverVersion)
 	}
 }
 

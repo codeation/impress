@@ -3,6 +3,7 @@ package main
 import (
 	"image"
 	"image/color"
+	"log"
 
 	"github.com/codeation/impress"
 	"github.com/codeation/impress/duo/duodriver"
@@ -10,7 +11,10 @@ import (
 )
 
 func main() {
-	d1 := duodriver.New()
+	d1, err := duodriver.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app1 := impress.MakeApplication(d1, image.Rect(0, 0, 480, 240), "Application 1")
 	defer app1.Close()
@@ -22,7 +26,10 @@ func main() {
 	w1.Show()
 	app1.Sync()
 
-	d2 := duodriver.New()
+	d2, err := duodriver.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app2 := impress.MakeApplication(d2, image.Rect(0, 0, 480, 240), "Application 2")
 	defer app2.Close()
