@@ -86,10 +86,7 @@ Steps 0-2 are needed to build a impress terminal binary. See [impress terminal p
 Basic Principles of Library Design:
 
 - Performance of the application as well as native applications.
-- Facade pattern for masking complex components behind an API.
 - Simple and clean application code.
-- Minimal library API to follow the Go-way.
-- Limited use of other libraries (graphic, low-level or native).
 - Creating a GUI application without form designer or hard-coded widgets.
 
 The main idea is to stay away from the event driven programming paradigm. See
@@ -116,7 +113,7 @@ Up to 2 ms from the moment you press the key, the mind-map application window is
 
 First, welcome:
 
-- Any like to the project (star, post, link, etc.).
+- Any clue to keep the project going (star, post, link, etc.).
 - Any recommendations about library design principles.
 - Contribution to project, documentation, examples.
 - Bug report, open [issue](https://github.com/codeation/impress/issues).
