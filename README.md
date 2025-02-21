@@ -2,8 +2,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/codeation/impress)](https://pkg.go.dev/github.com/codeation/impress)
 
-See [project site](https://codeation.github.io/impress/) for a technical details
-and [a library overview](https://codeation.github.io/impress/library-overview.html).
+See the [project site](https://codeation.github.io/impress/) for technical details and [a library overview](https://codeation.github.io/impress/library-overview.html).
 
 Some usage examples are in the [examples folder](https://github.com/codeation/impress/tree/master/examples).
 
@@ -52,7 +51,7 @@ func main() {
 
 See an explanation of the source code in [a library overview](https://codeation.github.io/impress/library-overview.html).
 
-### To run this example on Debian/ Ubuntu:
+### To run this example on Debian/Ubuntu:
 
 0. Install `gcc`, `make`, `pkg-config` if you don't have them installed.
 
@@ -71,7 +70,7 @@ make
 cd ..
 ```
 
-3. Then run example:
+3. Then run the example:
 
 ```
 git clone https://github.com/codeation/impress.git
@@ -79,7 +78,7 @@ cd impress
 IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
 ```
 
-Steps 0-2 are needed to build a impress terminal binary. See [impress terminal page](https://codeation.github.io/impress/it-driver.html) for other options for downloading or building impress terminal app.
+Steps 0-2 are needed to build an impress terminal binary. See the [impress terminal page](https://codeation.github.io/impress/it-driver.html) for other options for downloading or building the impress terminal.
 
 ## Technical details
 
@@ -89,12 +88,9 @@ Basic Principles of Library Design:
 - Simple and clean application code.
 - Creating a GUI application without form designer or hard-coded widgets.
 
-The main idea is to stay away from the event driven programming paradigm. See
-["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html)
-page.
+The main idea is to stay away from the event-driven programming paradigm. See the ["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html) page.
 
-The library uses 
-[a separate application (GTK+ 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding low-level library to a Golang.
+The library uses [a separate application (GTK+ 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
 
 ## Project State
 
@@ -102,8 +98,7 @@ The library uses
 - The project was tested on Debian 12.9 and macOS 15.3.
 - While the API remains stable, please note that the specific details may be subject to change.
 
-[The project roadmap](https://codeation.github.io/impress/roadmap.html)
-includes both short-term and long-term project stages. 
+[The project roadmap](https://codeation.github.io/impress/roadmap.html) includes both short-term and long-term project stages.
 
 A cross-platform [mind-map application](https://codeation.github.io/lineation/) is being developed to showcase the core principles of the library.
 
@@ -115,6 +110,6 @@ First, welcome:
 
 - Any clue to keep the project going (star, post, link, etc.).
 - Any recommendations about library design principles.
-- Contribution to project, documentation, examples.
-- Bug report, open [issue](https://github.com/codeation/impress/issues).
+- Contribution to the project, documentation, examples.
+- Bug report, open an [issue](https://github.com/codeation/impress/issues).
 - Or any help to fix grammatical or writing errors (PR or issue).
