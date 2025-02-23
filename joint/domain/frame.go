@@ -12,7 +12,7 @@ type frame struct {
 }
 
 func (app *application) NewFrame(rect image.Rectangle) driver.Framer {
-	id := app.nextFrameID()
+	id := app.frameID.Next()
 	x, y, width, height := rectangle(rect)
 	app.caller.FrameNew(id, 0, x, y, width, height)
 	return &frame{
@@ -23,6 +23,7 @@ func (app *application) NewFrame(rect image.Rectangle) driver.Framer {
 
 func (f *frame) Drop() {
 	f.app.caller.FrameDrop(f.id)
+	f.app.frameID.Back(f.id)
 }
 
 func (f *frame) Size(rect image.Rectangle) {
@@ -35,7 +36,7 @@ func (f *frame) Raise() {
 }
 
 func (f *frame) NewFrame(rect image.Rectangle) driver.Framer {
-	id := f.app.nextFrameID()
+	id := f.app.frameID.Next()
 	x, y, width, height := rectangle(rect)
 	f.app.caller.FrameNew(id, f.id, x, y, width, height)
 	return &frame{

@@ -71,7 +71,7 @@ var stretchValues = map[string]int{
 }
 
 func (app *application) NewFont(height int, attributes map[string]string) driver.Fonter {
-	id := app.nextFontID()
+	id := app.fontID.Next()
 
 	style := 0
 	if value, ok := styleValues[attributes["style"]]; ok {
@@ -125,6 +125,7 @@ func (f *font) Descent() int {
 
 func (f *font) Close() {
 	f.app.caller.FontDrop(f.id)
+	f.app.fontID.Back(f.id)
 }
 
 func (f *font) Split(text string, edge int, indent int) []string {

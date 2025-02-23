@@ -10,7 +10,7 @@ type menu struct {
 }
 
 func (app *application) NewMenu(label string) driver.Menuer {
-	id := app.nextMenuID()
+	id := app.menuID.Next()
 	app.caller.MenuNew(id, 0, label)
 	return &menu{
 		app: app,
@@ -19,7 +19,7 @@ func (app *application) NewMenu(label string) driver.Menuer {
 }
 
 func (m *menu) NewMenu(label string) driver.Menuer {
-	id := m.app.nextMenuID()
+	id := m.app.menuID.Next()
 	m.app.caller.MenuNew(id, m.id, label)
 	return &menu{
 		app: m.app,
@@ -28,6 +28,6 @@ func (m *menu) NewMenu(label string) driver.Menuer {
 }
 
 func (m *menu) NewItem(label string, action string) {
-	id := m.app.nextMenuID()
+	id := m.app.menuID.Next()
 	m.app.caller.MenuItem(id, m.id, label, action)
 }

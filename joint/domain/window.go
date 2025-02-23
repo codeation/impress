@@ -16,7 +16,7 @@ type window struct {
 }
 
 func (f *frame) NewWindow(rect image.Rectangle, background color.Color) driver.Painter {
-	id := f.app.nextWindowID()
+	id := f.app.windowID.Next()
 	x, y, width, height := rectangle(rect)
 	r, g, b, a := colors(background)
 	f.app.caller.WindowNew(id, f.id, x, y, width, height)
@@ -31,6 +31,7 @@ func (f *frame) NewWindow(rect image.Rectangle, background color.Color) driver.P
 
 func (w *window) Drop() {
 	w.app.caller.WindowDrop(w.id)
+	w.app.windowID.Back(w.id)
 }
 
 func (w *window) Size(rect image.Rectangle) {

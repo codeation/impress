@@ -22,7 +22,7 @@ func (app *application) NewImage(img image.Image) driver.Imager {
 	}
 	p := &picture{
 		app:  app,
-		id:   app.nextImageID(),
+		id:   app.imageID.Next(),
 		size: img.Bounds().Size(),
 	}
 	if len(pix.Pix) > 67108863 {
@@ -38,6 +38,7 @@ func (p *picture) Size() image.Point { return p.size }
 
 func (p *picture) Close() {
 	p.app.caller.ImageDrop(p.id)
+	p.app.imageID.Back(p.id)
 }
 
 func (p *picture) ID() int {

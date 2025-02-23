@@ -4,10 +4,10 @@ package domain
 import (
 	"image"
 	"log"
-	"sync"
 
 	"github.com/codeation/impress/clipboard"
 	"github.com/codeation/impress/event"
+	"github.com/codeation/impress/joint/idcycle"
 	"github.com/codeation/impress/joint/iface"
 )
 
@@ -20,58 +20,27 @@ type syncer interface {
 }
 
 type application struct {
-	caller       iface.CallSet
-	chaner       chaner
-	syncer       syncer
-	lastFrameID  int
-	lastWindowID int
-	lastFontID   int
-	lastImageID  int
-	lastMenuID   int
-	mutex        sync.Mutex
+	caller   iface.CallSet
+	chaner   chaner
+	syncer   syncer
+	frameID  *idcycle.ID
+	windowID *idcycle.ID
+	fontID   *idcycle.ID
+	imageID  *idcycle.ID
+	menuID   *idcycle.ID
 }
 
 func New(caller iface.CallSet, ch chaner, syncer syncer) *application {
 	return &application{
-		caller: caller,
-		chaner: ch,
-		syncer: syncer,
+		caller:   caller,
+		chaner:   ch,
+		syncer:   syncer,
+		frameID:  idcycle.New(),
+		windowID: idcycle.New(),
+		fontID:   idcycle.New(),
+		imageID:  idcycle.New(),
+		menuID:   idcycle.New(),
 	}
-}
-
-func (a *application) nextFrameID() int {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.lastFrameID++
-	return a.lastFrameID
-}
-
-func (a *application) nextWindowID() int {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.lastWindowID++
-	return a.lastWindowID
-}
-
-func (a *application) nextFontID() int {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.lastFontID++
-	return a.lastFontID
-}
-
-func (a *application) nextImageID() int {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.lastImageID++
-	return a.lastImageID
-}
-
-func (a *application) nextMenuID() int {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.lastMenuID++
-	return a.lastMenuID
 }
 
 func (a *application) Init() {
