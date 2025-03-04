@@ -86,9 +86,9 @@ Basic Principles of Library Design:
 
 - Performance of the application as well as native applications.
 - Simple and clean application code.
-- Creating a GUI application without form designer or hard-coded widgets.
+- Creating a GUI application without a form designer or hard-coded widgets.
 
-The main idea is to stay away from the event-driven programming paradigm. See the ["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html) page.
+The main idea is to stay away from the event-driven programming paradigm. See the ["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html) page for more details.
 
 The library uses [a separate application (GTK+ 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
 
@@ -102,14 +102,12 @@ The library uses [a separate application (GTK+ 3 terminal)](https://codeation.gi
 
 A cross-platform [mind-map application](https://codeation.github.io/lineation/) is being developed to showcase the core principles of the library.
 
-Up to 2 ms from the moment you press the key, the mind-map application window is redrawn. Measured on a computer with an N200 processor without a video card.
-
 ## Contributing
 
 First, welcome:
 
 - Any clue to keep the project going (star, post, link, etc.).
 - Any recommendations about library design principles.
-- Contribution to the project, documentation, examples.
+- Contributions to the project, documentation, examples.
 - Bug report, open an [issue](https://github.com/codeation/impress/issues).
 - Or any help to fix grammatical or writing errors (PR or issue).

@@ -1,37 +1,44 @@
 package clipboard
 
-// Clipboard content types
+// Clipboard content types.
 const (
-	UnknowType int = 0
-	TextType   int = 1
+	UnknowType int = 0 // UnknowType represents an unknown clipboard content type
+	TextType   int = 1 // TextType represents a text clipboard content type
 )
 
-// Clipboarder is the interface that groups clipboard contents
+// Clipboarder is the interface that groups clipboard contents.
 type Clipboarder interface {
-	Type() int
-	Data() []byte
+	Type() int    // Type returns the type of clipboard content
+	Data() []byte // Data returns the raw data of the clipboard content
 }
 
-// Text is text content of clipboard
+// Text represents the text content of the clipboard.
 type Text string
 
-// Type returns clipboard content type
+// Type returns the clipboard content type for text.
 func (c Text) Type() int {
 	return TextType
 }
 
-// Data returns clipboard raw data
+// Data returns the raw data of the text clipboard content.
 func (c Text) Data() []byte {
 	return []byte(c)
 }
 
-// unknown is unknown content type of clipboard
+// unknown represents an unknown content type of the clipboard.
 type unknown []byte
 
-func (c unknown) Type() int    { return UnknowType }
-func (c unknown) Data() []byte { return c }
+// Type returns the clipboard content type for unknown content.
+func (c unknown) Type() int {
+	return UnknowType
+}
 
-// Parse returns decoded clipboard struct
+// Data returns the raw data of the unknown clipboard content.
+func (c unknown) Data() []byte {
+	return c
+}
+
+// Parse decodes the clipboard content based on the typeID and returns the appropriate Clipboarder.
 func Parse(typeID int, data []byte) Clipboarder {
 	switch typeID {
 	case TextType:

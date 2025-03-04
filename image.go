@@ -6,13 +6,13 @@ import (
 	"github.com/codeation/impress/driver"
 )
 
-// Image represents a draw-ready image
+// Image represents a drawable image.
 type Image struct {
 	imager driver.Imager
 	Size   image.Point
 }
 
-// NewImage returns a image resources struct
+// NewImage returns an Image struct containing the image resources.
 func (app *Application) NewImage(img image.Image) *Image {
 	imager := app.driver.NewImage(img)
 	return &Image{
@@ -21,8 +21,9 @@ func (app *Application) NewImage(img image.Image) *Image {
 	}
 }
 
-// Close destroys image resources
+// Close destroys the image resources.
+// Note that a closed image can no longer be used.
 func (i *Image) Close() {
 	i.imager.Close()
-	i.imager = nil // TODO notice when the image is closed
+	i.imager = nil // TODO: Add notice when the image is closed.
 }

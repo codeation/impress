@@ -8,13 +8,13 @@ import (
 	"github.com/codeation/impress/event"
 )
 
-// Application represents application top level window
+// Application represents the top-level window of the application.
 type Application struct {
 	driver driver.Driver
 	frame  *Frame
 }
 
-// MakeApplication creates a top application window for specified GUI driver
+// MakeApplication creates the top application window for the specified GUI driver.
 func MakeApplication(d driver.Driver, rect image.Rectangle, title string) *Application {
 	app := &Application{
 		driver: d,
@@ -26,38 +26,38 @@ func MakeApplication(d driver.Driver, rect image.Rectangle, title string) *Appli
 	return app
 }
 
-// Close destroys application resources
+// Close destroys application resources.
 func (app *Application) Close() {
 	app.frame.Drop()
 	app.driver.Done()
 }
 
-// Sync flushes graphics content to screen driver
+// Sync flushes the graphics content to the screen driver.
 func (app *Application) Sync() {
 	app.driver.Sync()
 }
 
-// Title sets application window title
+// Title sets the application window title.
 func (app *Application) Title(title string) {
 	app.driver.Title(title)
 }
 
-// Size sets application window size
+// Size sets the application window size.
 func (app *Application) Size(rect image.Rectangle) {
 	app.driver.Size(rect)
 }
 
-// ClipboardGet requests event with clipboard content
+// ClipboardGet requests an event with the clipboard content.
 func (app *Application) ClipboardGet(typeID int) {
 	app.driver.ClipboardGet(typeID)
 }
 
-// ClipboardPut set content to OS clipboard
+// ClipboardPut sets the content to the OS clipboard.
 func (app *Application) ClipboardPut(c clipboard.Clipboarder) {
 	app.driver.ClipboardPut(c)
 }
 
-// Chan returns event channel
+// Chan returns the event channel.
 func (app *Application) Chan() <-chan event.Eventer {
 	return app.driver.Chan()
 }

@@ -7,21 +7,21 @@ import (
 	"github.com/codeation/impress/driver"
 )
 
-// NewApplication creates main application window for default GUI driver.
-// Consider using MakeApplication func instead
+// NewApplication creates the main application window for the default GUI driver.
+// Consider using the MakeApplication function instead.
 var NewApplication = func(rect image.Rectangle, title string) *Application {
 	log.Fatalf("GUI driver must be registered. Add GTK driver to use by default:\nimport _ \"github.com/codeation/impress/duo\"")
 	return nil
 }
 
-// NewImage returns a image resources struct for default GUI driver.
+// NewImage returns an Image struct containing the image resources for the default GUI driver.
 //
-// Deprecated: Use *Application.NewImage func instead.
+// Deprecated: Use the *Application.NewImage function instead.
 var NewImage func(img image.Image) *Image
 
-// NewFont return a font selection struct for default GUI driver.
+// NewFont returns a Font struct for the default GUI driver.
 //
-// Deprecated: Use *Application.NewFont func instead.
+// Deprecated: Use the *Application.NewFont function instead.
 var NewFont func(height int, attributes map[string]string) *Font
 
 // Register is an internal function that makes the GUI driver available.
