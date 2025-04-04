@@ -51,13 +51,11 @@ func main() {
 		if e == event.DestroyEvent || e == event.KeyExit {
 			break
 		}
-		if e.Type() == event.MenuType {
-			if ev, ok := e.(event.Menu); ok {
-				if ev.Action == "app.exit" {
-					break
-				}
-				fmt.Println("Menu", ev.Action)
+		if ev, ok := e.(event.Menu); ok {
+			if ev.Action == "app.exit" {
+				break
 			}
+			fmt.Println("Menu", ev.Action)
 		}
 	}
 }
