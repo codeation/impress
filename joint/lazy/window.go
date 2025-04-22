@@ -31,7 +31,7 @@ type textPaint struct {
 
 type window struct {
 	driver.Painter
-	history  []interface{}
+	history  []any
 	reAdjust bool
 	position int
 	rect     image.Rectangle

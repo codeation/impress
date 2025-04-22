@@ -61,7 +61,7 @@ func (p *Pipe) Err() error {
 	return p.err
 }
 
-func (p *Pipe) Get(variables ...interface{}) *Pipe {
+func (p *Pipe) Get(variables ...any) *Pipe {
 	for _, v := range variables {
 		switch variable := v.(type) {
 		case *byte:
@@ -91,7 +91,7 @@ func (p *Pipe) Get(variables ...interface{}) *Pipe {
 	return p
 }
 
-func (p *Pipe) Put(values ...interface{}) *Pipe {
+func (p *Pipe) Put(values ...any) *Pipe {
 	for _, v := range values {
 		switch value := v.(type) {
 		case byte:

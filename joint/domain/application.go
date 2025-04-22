@@ -68,7 +68,7 @@ func (a *application) Chan() <-chan event.Eventer {
 }
 
 func (a *application) Sync() {
-	go a.syncer.Sync() // nolint:errcheck
+	_ = a.syncer.Sync()
 }
 
 func (a *application) ClipboardGet(typeID int) {

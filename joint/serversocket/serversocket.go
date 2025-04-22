@@ -43,11 +43,16 @@ func (s *ServerSocket) Write(data []byte) (int, error) {
 	s.connectOnce.Do(s.waitConnect)
 	enc := base64.NewEncoder(base64.StdEncoding, s.conn)
 	length, err := enc.Write(data)
-	enc.Close()
 	if err != nil {
 		s.closeOnce.Do(s.close)
+		return length, err
 	}
-	return length, err
+	err = enc.Close()
+	if err != nil {
+		s.closeOnce.Do(s.close)
+		return 0, err
+	}
+	return length, nil
 }
 
 func (s *ServerSocket) Close() error {
@@ -69,5 +74,5 @@ func (s *ServerSocket) waitConnect() {
 
 func (s *ServerSocket) close() {
 	close(s.isClosed)
-	s.conn.Close()
+	_ = s.conn.Close()
 }

@@ -19,4 +19,4 @@ func NewSyncCommand(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *SyncCo
 	}
 }
 
-func (d *SyncCommand) SyncCommand() error { return d.drawRecv.syncCommand() }
+func (d *SyncCommand) SyncCommand() error { return d.syncCommand() }
