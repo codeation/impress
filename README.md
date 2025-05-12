@@ -55,7 +55,7 @@ See an explanation of the source code in [a library overview](https://codeation.
 
 0. Install `gcc`, `make`, `pkg-config` if you don't have them installed.
 
-1. Install GTK+ 3 libraries if you don't have them installed:
+1. Install GTK 3 libraries if you don't have them installed:
 
 ```
 sudo apt-get install libgtk-3-dev
@@ -90,12 +90,12 @@ Basic Principles of Library Design:
 
 The main idea is to stay away from the event-driven programming paradigm. See the ["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html) page for more details.
 
-The library uses [a separate application (GTK+ 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
+The library uses [a separate application (GTK 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
 
 ## Project State
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
-- The project was tested on Debian 12.9 and macOS 15.3.
+- The project was tested on Debian 12.10 and macOS 15.4.1.
 - While the API remains stable, please note that the specific details may be subject to change.
 
 [The project roadmap](https://codeation.github.io/impress/roadmap.html) includes both short-term and long-term project stages.
