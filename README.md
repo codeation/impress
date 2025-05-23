@@ -55,19 +55,19 @@ See an explanation of the source code in [a library overview](https://codeation.
 
 0. Install `gcc`, `make`, `pkg-config` if you don't have them installed.
 
-1. Install GTK 3 libraries if you don't have them installed:
+1. Install GTK 4 libraries if you don't have them installed:
 
 ```
-sudo apt-get install libgtk-3-dev
+sudo apt-get install libgtk-4-dev
 ```
 
 2. Build impress terminal from source:
 
 ```
 git clone https://github.com/codeation/it.git
-cd it
+cd it/four
 make
-cd ..
+cd ../..
 ```
 
 3. Then run the example:
@@ -75,10 +75,12 @@ cd ..
 ```
 git clone https://github.com/codeation/impress.git
 cd impress
-IMPRESS_TERMINAL_PATH=../it/it go run ./examples/simple/
+IMPRESS_TERMINAL_PATH=../it/four/it go run ./examples/simple/
 ```
 
 Steps 0-2 are needed to build an impress terminal binary. See the [impress terminal page](https://codeation.github.io/impress/it-driver.html) for other options for downloading or building the impress terminal.
+
+The environment variable `IMPRESS_TERMINAL_PATH` specifies the path to the built impress terminal.
 
 ## Technical details
 
@@ -90,7 +92,7 @@ Basic Principles of Library Design:
 
 The main idea is to stay away from the event-driven programming paradigm. See the ["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html) page for more details.
 
-The library uses [a separate application (GTK 3 terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
+The library uses [a separate application (GTK terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
 
 ## Project State
 
