@@ -26,9 +26,7 @@ func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
 		streamPipe: streamPipe,
 		syncPipe:   syncPipe,
 	}
-	s.wg.Add(1)
-	go func() {
-		defer s.wg.Done()
+	s.wg.Go(func() {
 		for {
 			if err := s.streamCommand(); err != nil {
 				if !errors.Is(err, ErrPipeClosing) {
@@ -37,10 +35,8 @@ func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
 				return
 			}
 		}
-	}()
-	s.wg.Add(1)
-	go func() {
-		defer s.wg.Done()
+	})
+	s.wg.Go(func() {
 		for {
 			if err := s.syncCommand(); err != nil {
 				if !errors.Is(err, ErrPipeClosing) {
@@ -49,7 +45,7 @@ func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
 				return
 			}
 		}
-	}()
+	})
 	return s
 }
 
