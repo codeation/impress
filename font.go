@@ -19,7 +19,7 @@ type Font struct {
 
 // NewFont returns a Font struct representing a font selection.
 // Note that "family" and other attributes are driver-specific.
-// Open joint/domain/font.go for details.
+// Open joint/fontspec/fontspec.go for details.
 func (app *Application) NewFont(height int, attributes map[string]string) *Font {
 	fonter := app.driver.NewFont(height, attributes)
 	return &Font{

@@ -51,9 +51,4 @@ func (f *font) Size(text string) image.Point {
 	return output
 }
 
-func (f *font) ID() int {
-	if id, ok := f.Fonter.(interface{ ID() int }); ok {
-		return id.ID()
-	}
-	return 0
-}
+func (f *font) Unwrap() driver.Fonter { return f.Fonter }

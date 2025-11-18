@@ -34,3 +34,5 @@ func (a *app) Title(title string) {
 	a.title = title
 	a.Driver.Title(title)
 }
+
+func (a *app) Unwrap() driver.Driver { return a.Driver }

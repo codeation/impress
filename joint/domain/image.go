@@ -41,6 +41,16 @@ func (p *picture) Close() {
 	p.app.imageID.Back(p.id)
 }
 
-func (p *picture) ID() int {
-	return p.id
+func getPictureID(f driver.Imager) int {
+	for {
+		wrappedImager, ok := f.(interface{ Unwrap() driver.Imager })
+		if !ok {
+			break
+		}
+		f = wrappedImager.Unwrap()
+	}
+	if localPicture, ok := f.(*picture); ok {
+		return localPicture.id
+	}
+	return 0
 }

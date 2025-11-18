@@ -32,3 +32,5 @@ func (f *frame) Size(rect image.Rectangle) {
 	f.rect = rect
 	f.Framer.Size(rect)
 }
+
+func (f *frame) Unwrap() driver.Framer { return f.Framer }

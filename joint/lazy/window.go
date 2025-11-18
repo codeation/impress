@@ -149,3 +149,5 @@ func (w *window) Text(text string, font driver.Fonter, from image.Point, foregro
 	})
 	w.position++
 }
+
+func (w *window) Unwrap() driver.Painter { return w.Painter }
