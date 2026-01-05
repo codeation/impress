@@ -1,3 +1,3 @@
 package domain
 
-const apiVersion = "api-6"
+const apiVersion = "api-7"

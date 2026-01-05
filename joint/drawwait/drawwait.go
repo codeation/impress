@@ -204,6 +204,16 @@ func (s *streamCommand) decodeCommand() error {
 			s.calls.WindowImage(windowID, x, y, width, height, imageID)
 		}
 
+	case iface.FontNewCode:
+		var fontID int
+		var height int
+		var style, variant, weight, stretch int
+		var family string
+		s.queue = newParameters(&fontID, &height, &style, &variant, &weight, &stretch, &family)
+		s.next = func() {
+			s.calls.FontNew(fontID, height, style, variant, weight, stretch, family)
+		}
+
 	case iface.FontDropCode:
 		var fontID int
 		s.queue = newParameters(&fontID)

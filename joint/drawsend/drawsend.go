@@ -155,7 +155,21 @@ func (c *drawSend) WindowImage(windowID int, x, y, width, height int, imageID in
 		Unlock()
 }
 
-func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int, int) {
+func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stretch int, family string) {
+	c.streamPipe.
+		Lock().
+		Put(iface.FontNewCode, fontID, height, style, variant, weight, stretch, family).
+		Unlock()
+}
+
+func (c *drawSend) FontDrop(fontID int) {
+	c.streamPipe.
+		Lock().
+		Put(iface.FontDropCode, fontID).
+		Unlock()
+}
+
+func (c *drawSend) FontMetricNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int, int) {
 	var lineheight, baseline, ascent, descent int
 	c.syncPipe.
 		Lock().
@@ -166,14 +180,15 @@ func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stret
 	return lineheight, baseline, ascent, descent
 }
 
-func (c *drawSend) FontDrop(fontID int) {
-	c.streamPipe.
+func (c *drawSend) FontMetricDrop(fontID int) {
+	c.syncPipe.
 		Lock().
 		Put(iface.FontDropCode, fontID).
+		Flush().
 		Unlock()
 }
 
-func (c *drawSend) FontSplit(fontID int, text string, edge, indent int) []int {
+func (c *drawSend) FontMetricSplit(fontID int, text string, edge, indent int) []int {
 	var lengths []int
 	c.syncPipe.
 		Lock().
@@ -184,7 +199,7 @@ func (c *drawSend) FontSplit(fontID int, text string, edge, indent int) []int {
 	return lengths
 }
 
-func (c *drawSend) FontSize(fontID int, text string) (int, int) {
+func (c *drawSend) FontMetricSize(fontID int, text string) (int, int) {
 	var x, y int
 	c.syncPipe.
 		Lock().

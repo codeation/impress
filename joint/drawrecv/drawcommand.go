@@ -9,7 +9,7 @@ type SyncCommand struct {
 	*drawRecv
 }
 
-func NewSyncCommand(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *SyncCommand {
+func NewSyncCommand(calls iface.CallSet, streamPipe *rpc.Pipe, syncPipe *rpc.Pipe) *SyncCommand {
 	return &SyncCommand{
 		drawRecv: &drawRecv{
 			calls:      calls,

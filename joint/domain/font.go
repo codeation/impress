@@ -21,7 +21,8 @@ type font struct {
 func (app *application) NewFont(height int, attributes map[string]string) driver.Fonter {
 	id := app.fontID.Next()
 	family, style, variant, weight, stretch := fontspec.Attributes(attributes)
-	lineheight, baseline, ascent, descent := app.caller.FontNew(id, height, style, variant, weight, stretch, family)
+	app.caller.FontNew(id, height, style, variant, weight, stretch, family)
+	lineheight, baseline, ascent, descent := app.caller.FontMetricNew(id, height, style, variant, weight, stretch, family)
 	return &font{
 		app:        app,
 		id:         id,
@@ -51,6 +52,7 @@ func (f *font) Descent() int {
 
 func (f *font) Close() {
 	f.app.caller.FontDrop(f.id)
+	f.app.caller.FontMetricDrop(f.id)
 	f.app.fontID.Back(f.id)
 }
 
@@ -59,12 +61,12 @@ func (f *font) Split(text string, edge int, indent int) []string {
 		log.Printf("split text is too large: %d", len(text))
 		text = ""
 	}
-	lengths := f.app.caller.FontSplit(f.id, text, edge, indent)
+	lengths := f.app.caller.FontMetricSplit(f.id, text, edge, indent)
 	return fontspec.SplitByLengths(text, lengths)
 }
 
 func (f *font) Size(text string) image.Point {
-	x, y := f.app.caller.FontSize(f.id, text)
+	x, y := f.app.caller.FontMetricSize(f.id, text)
 	return image.Pt(x, y)
 }
 

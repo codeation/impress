@@ -20,7 +20,7 @@ type drawRecv struct {
 	wg         sync.WaitGroup
 }
 
-func New(calls iface.CallSet, streamPipe, syncPipe *rpc.Pipe) *drawRecv {
+func New(calls iface.CallSet, streamPipe *rpc.Pipe, syncPipe *rpc.Pipe) *drawRecv {
 	s := &drawRecv{
 		calls:      calls,
 		streamPipe: streamPipe,
@@ -190,6 +190,16 @@ func (s *drawRecv) streamCommand() error {
 		}
 		s.calls.WindowImage(windowID, x, y, width, height, imageID)
 
+	case iface.FontNewCode:
+		var fontID int
+		var height int
+		var style, variant, weight, stretch int
+		var family string
+		if err := s.streamPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family).Err(); err != nil {
+			return err
+		}
+		s.calls.FontNew(fontID, height, style, variant, weight, stretch, family)
+
 	case iface.FontDropCode:
 		var fontID int
 		if err := s.streamPipe.Get(&fontID).Err(); err != nil {
@@ -278,10 +288,17 @@ func (s *drawRecv) syncCommand() error {
 		if err := s.syncPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family).Err(); err != nil {
 			return err
 		}
-		lineheight, baseline, ascent, descent := s.calls.FontNew(fontID, height, style, variant, weight, stretch, family)
+		lineheight, baseline, ascent, descent := s.calls.FontMetricNew(fontID, height, style, variant, weight, stretch, family)
 		if err := s.syncPipe.Put(lineheight, baseline, ascent, descent).Flush().Err(); err != nil {
 			return err
 		}
+
+	case iface.FontDropCode:
+		var fontID int
+		if err := s.syncPipe.Get(&fontID).Err(); err != nil {
+			return err
+		}
+		s.calls.FontMetricDrop(fontID)
 
 	case iface.FontSplitCode:
 		var fontID int
@@ -290,7 +307,7 @@ func (s *drawRecv) syncCommand() error {
 		if err := s.syncPipe.Get(&fontID, &edge, &indent, &text).Err(); err != nil {
 			return err
 		}
-		lengths := s.calls.FontSplit(fontID, text, edge, indent)
+		lengths := s.calls.FontMetricSplit(fontID, text, edge, indent)
 		if err := s.syncPipe.Put(lengths).Flush().Err(); err != nil {
 			return err
 		}
@@ -301,7 +318,7 @@ func (s *drawRecv) syncCommand() error {
 		if err := s.syncPipe.Get(&fontID, &text).Err(); err != nil {
 			return err
 		}
-		x, y := s.calls.FontSize(fontID, text)
+		x, y := s.calls.FontMetricSize(fontID, text)
 		if err := s.syncPipe.Put(x, y).Flush().Err(); err != nil {
 			return err
 		}
