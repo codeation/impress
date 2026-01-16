@@ -2,59 +2,66 @@
 package serversocket
 
 import (
-	"encoding/base64"
 	"io"
-	"time"
+	"net/http"
+	"sync"
 
 	"golang.org/x/net/websocket"
 )
 
 type ServerSocket struct {
 	conn        *websocket.Conn
-	reader      io.Reader
+	wg          sync.WaitGroup
 	waitOpening chan struct{}
-	waitClosing chan struct{}
+	pipeReader  *io.PipeReader
+	pipeWriter  *io.PipeWriter
 }
 
 func New() *ServerSocket {
-	s := &ServerSocket{
+	pipeReader, pipeWriter := io.Pipe()
+	return &ServerSocket{
 		waitOpening: make(chan struct{}),
-		waitClosing: make(chan struct{}),
+		pipeReader:  pipeReader,
+		pipeWriter:  pipeWriter,
 	}
-	return s
 }
 
-func (s *ServerSocket) Handler() websocket.Handler {
-	return websocket.Handler(s.handler)
+func (s *ServerSocket) Close() error {
+	s.pipeWriter.Close()
+	return s.conn.Close()
 }
 
-func (s *ServerSocket) handler(ws *websocket.Conn) {
+func (s *ServerSocket) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	websocket.Handler(s.server).ServeHTTP(w, req)
+}
+
+func (s *ServerSocket) server(ws *websocket.Conn) {
 	s.conn = ws
-	s.conn.SetDeadline(time.Now().Add(24 * time.Hour))
-	s.reader = base64.NewDecoder(base64.StdEncoding, s.conn)
 	close(s.waitOpening)
-	<-s.waitClosing
-}
-
-func (s *ServerSocket) Read(data []byte) (int, error) {
-	<-s.waitOpening
-	return s.reader.Read(data)
+	s.wg.Go(s.readAll)
+	s.wg.Wait()
 }
 
 func (s *ServerSocket) Write(data []byte) (int, error) {
 	<-s.waitOpening
-	enc := base64.NewEncoder(base64.StdEncoding, s.conn)
-	length, err := enc.Write(data)
-	if err != nil {
-		return length, err
-	}
-	if err = enc.Close(); err != nil {
-		return 0, err
-	}
-	return length, nil
+	err := websocket.Message.Send(s.conn, data)
+	return len(data), err
 }
 
-func (s *ServerSocket) Close() error {
-	defer close(s.waitClosing)
-	return s.conn.Close()
+func (s *ServerSocket) Read(data []byte) (int, error) {
+	return s.pipeReader.Read(data)
+}
+
+func (s *ServerSocket) readAll() {
+	for {
+		var buffer []byte
+		if err := websocket.Message.Receive(s.conn, &buffer); err != nil {
+			s.pipeWriter.CloseWithError(err)
+			return
+		}
+		if _, err := s.pipeWriter.Write(buffer); err != nil {
+			s.pipeWriter.CloseWithError(err)
+			return
+		}
+	}
 }

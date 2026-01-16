@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 )
 
@@ -52,6 +53,9 @@ func (p *Pipe) Flush() *Pipe {
 	}
 	p.err = p.writer.Flush()
 	if p.err != nil {
+		if errors.Is(p.err, net.ErrClosed) {
+			log.Fatalf("flush: %v", p.err)
+		}
 		log.Printf("flush: %v", p.err)
 	}
 	return p
@@ -83,8 +87,13 @@ func (p *Pipe) Get(variables ...any) *Pipe {
 		default:
 			p.err = fmt.Errorf("unknown type: %T", v)
 		}
-		if p.err != nil && !errors.Is(p.err, os.ErrClosed) && !errors.Is(p.err, io.EOF) {
-			log.Printf("get: %v", p.err)
+		if p.err != nil {
+			if errors.Is(p.err, net.ErrClosed) {
+				log.Fatalf("get: %v", p.err)
+			}
+			if !errors.Is(p.err, os.ErrClosed) && !errors.Is(p.err, io.EOF) {
+				log.Printf("get: %v", p.err)
+			}
 			return p
 		}
 	}
@@ -114,6 +123,9 @@ func (p *Pipe) Put(values ...any) *Pipe {
 			p.err = fmt.Errorf("unknown type: %T", v)
 		}
 		if p.err != nil {
+			if errors.Is(p.err, net.ErrClosed) {
+				log.Fatalf("put: %v", p.err)
+			}
 			log.Printf("put: %v", p.err)
 			return p
 		}

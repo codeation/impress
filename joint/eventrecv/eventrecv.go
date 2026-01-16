@@ -2,7 +2,10 @@
 package eventrecv
 
 import (
+	"errors"
 	"log"
+	"sync/atomic"
+	"syscall"
 
 	"github.com/codeation/impress/joint/iface"
 	"github.com/codeation/impress/joint/rpc"
@@ -10,7 +13,7 @@ import (
 
 type eventRecv struct {
 	callbacks iface.CallbackSet
-	onExit    bool
+	onExit    atomic.Bool
 	eventPipe *rpc.Pipe
 }
 
@@ -24,15 +27,18 @@ func New(callbacks iface.CallbackSet, eventPipe *rpc.Pipe) *eventRecv {
 }
 
 func (c *eventRecv) Done() {
-	c.onExit = true
+	c.onExit.Store(true)
 }
 
 func (c *eventRecv) listen() {
 	for {
 		var command byte
 		if err := c.eventPipe.Get(&command).Err(); err != nil {
-			if c.onExit {
+			if c.onExit.Load() {
 				return
+			}
+			if errors.Is(err, syscall.ECONNRESET) {
+				log.Fatalf("readEvents (client): %v", err)
 			}
 			log.Printf("readEvents (client): %v", err)
 			return
