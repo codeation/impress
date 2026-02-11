@@ -3,6 +3,7 @@ package serversocket
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"sync"
 
@@ -27,12 +28,25 @@ func New() *ServerSocket {
 }
 
 func (s *ServerSocket) Close() error {
-	s.pipeWriter.Close()
-	return s.conn.Close()
+	if err := s.conn.Close(); err != nil {
+		return err
+	}
+	if err := s.pipeWriter.Close(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *ServerSocket) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	websocket.Handler(s.server).ServeHTTP(w, req)
+	select {
+	case <-s.waitOpening:
+		if err := s.Close(); err != nil {
+			log.Printf("s.Close: %v", err)
+		}
+		http.NotFound(w, req)
+	default:
+		websocket.Handler(s.server).ServeHTTP(w, req)
+	}
 }
 
 func (s *ServerSocket) server(ws *websocket.Conn) {

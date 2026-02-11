@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sync"
 	"syscall"
 
 	"github.com/codeation/impress/joint/rpc"
@@ -37,9 +36,9 @@ func (p *ClientPipes) Connect() error {
 		return fmt.Errorf("syscall.SetNonblck: %w", err)
 	}
 
-	p.StreamPipe = rpc.NewPipe(new(sync.Mutex), nil, p.streamFile)
-	p.SyncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(p.responseFile), p.requestFile)
-	p.EventPipe = rpc.NewPipe(rpc.WithoutMutex(), bufio.NewWriter(p.eventFile), nil)
+	p.StreamPipe = rpc.NewPipe(nil, p.streamFile)
+	p.SyncPipe = rpc.NewPipe(bufio.NewWriter(p.responseFile), p.requestFile)
+	p.EventPipe = rpc.NewPipe(bufio.NewWriter(p.eventFile), nil)
 
 	return nil
 }

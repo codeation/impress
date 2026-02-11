@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"sync"
 	"syscall"
 
 	"github.com/codeation/impress/joint/rpc"
@@ -48,9 +47,9 @@ func (p *ServerPipes) Connect() error {
 
 	streamBuffered := bufio.NewWriterSize(p.streamFile, defaultBufferSize)
 
-	p.StreamPipe = rpc.NewPipe(new(sync.Mutex), streamBuffered, nil)
-	p.SyncPipe = rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(p.requestFile), bufio.NewReader(p.responseFile))
-	p.EventPipe = rpc.NewPipe(rpc.WithoutMutex(), nil, bufio.NewReader(p.eventFile))
+	p.StreamPipe = rpc.NewPipe(streamBuffered, nil)
+	p.SyncPipe = rpc.NewPipe(bufio.NewWriter(p.requestFile), bufio.NewReader(p.responseFile))
+	p.EventPipe = rpc.NewPipe(nil, bufio.NewReader(p.eventFile))
 
 	return nil
 }

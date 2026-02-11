@@ -2,7 +2,6 @@
 package canvasdriver
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"flag"
@@ -18,11 +17,7 @@ import (
 	"github.com/codeation/impress/joint/eventchan"
 	"github.com/codeation/impress/joint/eventrecv"
 	"github.com/codeation/impress/joint/lazy"
-	"github.com/codeation/impress/joint/rpc"
-	"github.com/codeation/impress/joint/serversocket"
 )
-
-const defaultBufferSize = 64 * 1024
 
 var (
 	listen = flag.String("listen", ":8080", "listen address")
@@ -31,6 +26,7 @@ var (
 
 type httpDriver struct {
 	driver.Driver
+	pipes      *socketPipes
 	httpServer *http.Server
 	eventRecv  interface{ Done() }
 	wg         sync.WaitGroup
@@ -40,12 +36,11 @@ type httpDriver struct {
 func New() (*httpDriver, error) {
 	flag.Parse()
 
-	asyncSocket := serversocket.New()
-	syncSocket := serversocket.New()
+	pipes := newSocketPipes(http.FileServer(http.Dir(*dir)))
 
-	eventPipe := rpc.NewPipe(new(sync.Mutex), nil, asyncSocket)
-	streamPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(asyncSocket), nil)
-	syncPipe := rpc.NewPipe(new(sync.Mutex), bufio.NewWriter(syncSocket), syncSocket)
+	eventPipe := pipes.newEventPipe()
+	streamPipe := pipes.newStreamPipe()
+	syncPipe := pipes.newSyncPipe()
 
 	eventChan := eventchan.New()
 	eventRecv := eventrecv.New(eventChan, eventPipe)
@@ -53,21 +48,20 @@ func New() (*httpDriver, error) {
 	driver := domain.New(client, eventChan, streamPipe)
 	lazyDriver := lazy.New(driver)
 
-	fmt.Println("listening on", *listen)
-	httpServer := &http.Server{
-		Addr:    *listen,
-		Handler: newHandlers(asyncSocket, syncSocket),
-	}
-
 	h := &httpDriver{
-		Driver:     lazyDriver,
-		httpServer: httpServer,
-		eventRecv:  eventRecv,
+		Driver: lazyDriver,
+		pipes:  pipes,
+		httpServer: &http.Server{
+			Addr:    *listen,
+			Handler: pipes,
+		},
+		eventRecv: eventRecv,
 	}
 	h.wg.Go(func() {
+		fmt.Println("listening on", h.httpServer.Addr)
 		if err := h.httpServer.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
-				log.Println(err)
+				log.Printf("httpServer.ListenAndServe: %v", err)
 			}
 		}
 	})
@@ -76,44 +70,14 @@ func New() (*httpDriver, error) {
 
 func (h *httpDriver) Done() {
 	h.eventRecv.Done()
+	h.pipes.done()
 	h.Driver.Done()
-	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelFunc()
 	h.wg.Go(func() {
 		if err := h.httpServer.Shutdown(ctx); err != nil {
-			log.Println(err)
+			log.Printf("httpServer.Shutdown: %v", err)
 		}
 	})
 	h.wg.Wait()
-}
-
-type handlers struct {
-	asyncSocket http.Handler
-	syncSocket  http.Handler
-	fileServer  http.Handler
-}
-
-func newHandlers(asyncSocket http.Handler, syncSocket http.Handler) *handlers {
-	return &handlers{
-		asyncSocket: asyncSocket,
-		syncSocket:  syncSocket,
-		fileServer:  http.FileServer(http.Dir(*dir)),
-	}
-}
-
-func (s *handlers) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	switch req.URL.Path {
-	case "/", "/index.html", "/main.wasm", "/wasm_exec.js":
-		s.fileServer.ServeHTTP(w, req)
-	case "/async":
-		h := s.asyncSocket
-		s.asyncSocket = http.NotFoundHandler()
-		h.ServeHTTP(w, req)
-	case "/sync":
-		h := s.syncSocket
-		s.syncSocket = http.NotFoundHandler()
-		h.ServeHTTP(w, req)
-	default:
-		http.NotFound(w, req)
-	}
 }

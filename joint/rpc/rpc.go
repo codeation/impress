@@ -9,12 +9,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 )
-
-type mutexer interface {
-	Lock()
-	Unlock()
-}
 
 type flushWriter interface {
 	io.Writer
@@ -22,119 +18,111 @@ type flushWriter interface {
 }
 
 type Pipe struct {
-	mutex  mutexer
+	mutex  sync.Mutex
 	writer flushWriter
 	reader io.Reader
-	err    error
 }
 
-func NewPipe(mutex mutexer, writer flushWriter, reader io.Reader) *Pipe {
+func NewPipe(writer flushWriter, reader io.Reader) *Pipe {
 	return &Pipe{
-		mutex:  mutex,
 		writer: writer,
 		reader: reader,
 	}
 }
 
-func (p *Pipe) Lock() *Pipe {
-	p.mutex.Lock()
-	p.err = nil
-	return p
-}
-
-func (p *Pipe) Unlock() *Pipe {
-	p.mutex.Unlock()
-	return p
-}
-
-func (p *Pipe) Flush() *Pipe {
-	if p.err != nil {
-		return p
-	}
-	p.err = p.writer.Flush()
-	if p.err != nil {
-		if errors.Is(p.err, net.ErrClosed) {
-			log.Fatalf("flush: %v", p.err)
-		}
-		log.Printf("flush: %v", p.err)
-	}
-	return p
-}
-
-func (p *Pipe) Err() error {
-	return p.err
-}
-
-func (p *Pipe) Get(variables ...any) *Pipe {
+func (p *Pipe) Get(variables ...any) error {
 	for _, v := range variables {
+		var err error
 		switch variable := v.(type) {
 		case *byte:
-			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+			err = binary.Read(p.reader, binary.LittleEndian, variable)
 		case *[]byte:
-			p.err = p.getBytes(variable)
+			err = p.getBytes(variable)
 		case *bool:
-			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+			err = binary.Read(p.reader, binary.LittleEndian, variable)
 		case *int:
-			p.err = p.getInt(variable)
+			err = p.getInt(variable)
 		case *[]int:
-			p.err = p.getInts(variable)
+			err = p.getInts(variable)
 		case *uint16:
-			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+			err = binary.Read(p.reader, binary.LittleEndian, variable)
 		case *uint32:
-			p.err = binary.Read(p.reader, binary.LittleEndian, variable)
+			err = binary.Read(p.reader, binary.LittleEndian, variable)
 		case *string:
-			p.err = p.getString(variable)
+			err = p.getString(variable)
 		default:
-			p.err = fmt.Errorf("unknown type: %T", v)
+			err = fmt.Errorf("unknown type: %T", v)
 		}
-		if p.err != nil {
-			if errors.Is(p.err, net.ErrClosed) {
-				log.Fatalf("get: %v", p.err)
+		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				log.Fatalf("get: %v", err)
 			}
-			if !errors.Is(p.err, os.ErrClosed) && !errors.Is(p.err, io.EOF) {
-				log.Printf("get: %v", p.err)
+			if !errors.Is(err, os.ErrClosed) && !errors.Is(err, io.EOF) {
+				log.Printf("get: %v", err)
 			}
-			return p
+			return err
 		}
 	}
-	return p
+	return nil
 }
 
-func (p *Pipe) Put(values ...any) *Pipe {
+func (p *Pipe) Put(values ...any) error {
 	for _, v := range values {
+		var err error
 		switch value := v.(type) {
 		case byte:
-			p.err = binary.Write(p.writer, binary.LittleEndian, value)
+			err = binary.Write(p.writer, binary.LittleEndian, value)
 		case []byte:
-			p.err = p.putBytes(value)
+			err = p.putBytes(value)
 		case bool:
-			p.err = binary.Write(p.writer, binary.LittleEndian, value)
+			err = binary.Write(p.writer, binary.LittleEndian, value)
 		case int:
-			p.err = p.putInt(value)
+			err = p.putInt(value)
 		case []int:
-			p.err = p.putInts(value)
+			err = p.putInts(value)
 		case uint16:
-			p.err = binary.Write(p.writer, binary.LittleEndian, value)
+			err = binary.Write(p.writer, binary.LittleEndian, value)
 		case uint32:
-			p.err = binary.Write(p.writer, binary.LittleEndian, value)
+			err = binary.Write(p.writer, binary.LittleEndian, value)
 		case string:
-			p.err = p.putString(value)
+			err = p.putString(value)
 		default:
-			p.err = fmt.Errorf("unknown type: %T", v)
+			err = fmt.Errorf("unknown type: %T", v)
 		}
-		if p.err != nil {
-			if errors.Is(p.err, net.ErrClosed) {
-				log.Fatalf("put: %v", p.err)
+		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				log.Fatalf("put: %v", err)
 			}
-			log.Printf("put: %v", p.err)
-			return p
+			log.Printf("put: %v", err)
+			return err
 		}
 	}
-	return p
+	return nil
+}
+
+func (p *Pipe) PutTx(values ...any) error {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	return p.Put(values...)
+}
+
+func (p *Pipe) IO(putValues []any, getValues []any) error {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	if err := p.Put(putValues...); err != nil {
+		return fmt.Errorf("put: %w", err)
+	}
+	if err := p.writer.Flush(); err != nil {
+		return fmt.Errorf("flush: %w", err)
+	}
+	if err := p.Get(getValues...); err != nil {
+		return fmt.Errorf("get: %w", err)
+	}
+	return nil
 }
 
 func (p *Pipe) Sync() error {
-	p.Lock()
-	defer p.Unlock()
-	return p.Flush().Err()
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	return p.writer.Flush()
 }

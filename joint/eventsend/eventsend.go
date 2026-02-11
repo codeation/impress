@@ -2,6 +2,8 @@
 package eventsend
 
 import (
+	"log"
+
 	"github.com/codeation/impress/joint/iface"
 	"github.com/codeation/impress/joint/rpc"
 )
@@ -17,65 +19,47 @@ func New(eventPipe *rpc.Pipe) *eventSend {
 }
 
 func (cb *eventSend) EventGeneral(eventID int) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventGeneralCode, uint32(eventID)).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventGeneralCode, uint32(eventID)))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventKeyboard(r rune, shift, control, alt, meta bool, name string) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventKeyboardCode, uint32(r), shift, control, alt, meta, name).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventKeyboardCode, uint32(r), shift, control, alt, meta, name))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventConfigure(width, height, innerWidth, innerHeight int) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventConfigureCode, width, height, innerWidth, innerHeight).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventConfigureCode, width, height, innerWidth, innerHeight))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventButton(action, button int, x, y int) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventButtonCode, byte(action), byte(button), x, y).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventButtonCode, byte(action), byte(button), x, y))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventMotion(x, y int, shift, control, alt, meta bool) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventMotionCode, x, y, shift, control, alt, meta).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventMotionCode, x, y, shift, control, alt, meta))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventMenu(action string) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventMenuCode, action).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventMenuCode, action))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventScroll(direction int, deltaX, deltaY int) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventScrollCode, direction, deltaX, deltaY).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventScrollCode, direction, deltaX, deltaY))
+	must(cb.eventPipe.Sync())
 }
 
 func (cb *eventSend) EventClipboard(typeID int, data []byte) {
-	cb.eventPipe.
-		Lock().
-		Put(iface.EventClipboard, typeID, data).
-		Flush().
-		Unlock()
+	must(cb.eventPipe.PutTx(iface.EventClipboard, typeID, data))
+	must(cb.eventPipe.Sync())
+}
+
+func must(err error) {
+	if err != nil {
+		log.Fatalf("eventsend.must: %v", err)
+	}
 }

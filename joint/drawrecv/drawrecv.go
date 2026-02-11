@@ -55,7 +55,7 @@ func (s *drawRecv) Wait() {
 
 func (s *drawRecv) streamCommand() error {
 	var command byte
-	if err := s.streamPipe.Get(&command).Err(); err != nil {
+	if err := s.streamPipe.Get(&command); err != nil {
 		return fmt.Errorf("get (command): %w", err)
 	}
 
@@ -66,14 +66,14 @@ func (s *drawRecv) streamCommand() error {
 
 	case iface.ApplicationSizeCode:
 		var x, y, width, height int
-		if err := s.streamPipe.Get(&x, &y, &width, &height).Err(); err != nil {
+		if err := s.streamPipe.Get(&x, &y, &width, &height); err != nil {
 			return err
 		}
 		s.calls.ApplicationSize(x, y, width, height)
 
 	case iface.ApplicationTitleCode:
 		var title string
-		if err := s.streamPipe.Get(&title).Err(); err != nil {
+		if err := s.streamPipe.Get(&title); err != nil {
 			return err
 		}
 		s.calls.ApplicationTitle(title)
@@ -81,14 +81,14 @@ func (s *drawRecv) streamCommand() error {
 	case iface.FrameNewCode:
 		var frameID, parentFrameID int
 		var x, y, width, height int
-		if err := s.streamPipe.Get(&frameID, &parentFrameID, &x, &y, &width, &height).Err(); err != nil {
+		if err := s.streamPipe.Get(&frameID, &parentFrameID, &x, &y, &width, &height); err != nil {
 			return err
 		}
 		s.calls.FrameNew(frameID, parentFrameID, x, y, width, height)
 
 	case iface.FrameDropCode:
 		var frameID int
-		if err := s.streamPipe.Get(&frameID).Err(); err != nil {
+		if err := s.streamPipe.Get(&frameID); err != nil {
 			return err
 		}
 		s.calls.FrameDrop(frameID)
@@ -96,14 +96,14 @@ func (s *drawRecv) streamCommand() error {
 	case iface.FrameSizeCode:
 		var frameID int
 		var x, y, width, height int
-		if err := s.streamPipe.Get(&frameID, &x, &y, &width, &height).Err(); err != nil {
+		if err := s.streamPipe.Get(&frameID, &x, &y, &width, &height); err != nil {
 			return err
 		}
 		s.calls.FrameSize(frameID, x, y, width, height)
 
 	case iface.FrameRaiseCode:
 		var frameID int
-		if err := s.streamPipe.Get(&frameID).Err(); err != nil {
+		if err := s.streamPipe.Get(&frameID); err != nil {
 			return err
 		}
 		s.calls.FrameRaise(frameID)
@@ -111,35 +111,35 @@ func (s *drawRecv) streamCommand() error {
 	case iface.WindowNewCode:
 		var windowID, frameID int
 		var x, y, width, height int
-		if err := s.streamPipe.Get(&windowID, &frameID, &x, &y, &width, &height).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID, &frameID, &x, &y, &width, &height); err != nil {
 			return err
 		}
 		s.calls.WindowNew(windowID, frameID, x, y, width, height)
 
 	case iface.WindowDropCode:
 		var windowID int
-		if err := s.streamPipe.Get(&windowID).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID); err != nil {
 			return err
 		}
 		s.calls.WindowDrop(windowID)
 
 	case iface.WindowRaiseCode:
 		var windowID int
-		if err := s.streamPipe.Get(&windowID).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID); err != nil {
 			return err
 		}
 		s.calls.WindowRaise(windowID)
 
 	case iface.WindowClearCode:
 		var windowID int
-		if err := s.streamPipe.Get(&windowID).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID); err != nil {
 			return err
 		}
 		s.calls.WindowClear(windowID)
 
 	case iface.WindowShowCode:
 		var windowID int
-		if err := s.streamPipe.Get(&windowID).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID); err != nil {
 			return err
 		}
 		s.calls.WindowShow(windowID)
@@ -147,7 +147,7 @@ func (s *drawRecv) streamCommand() error {
 	case iface.WindowSizeCode:
 		var windowID int
 		var x, y, width, height int
-		if err := s.streamPipe.Get(&windowID, &x, &y, &width, &height).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID, &x, &y, &width, &height); err != nil {
 			return err
 		}
 		s.calls.WindowSize(windowID, x, y, width, height)
@@ -156,7 +156,7 @@ func (s *drawRecv) streamCommand() error {
 		var windowID int
 		var x, y, width, height int
 		var r, g, b, a uint16
-		if err := s.streamPipe.Get(&windowID, &x, &y, &width, &height, &r, &g, &b, &a).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID, &x, &y, &width, &height, &r, &g, &b, &a); err != nil {
 			return err
 		}
 		s.calls.WindowFill(windowID, x, y, width, height, r, g, b, a)
@@ -165,7 +165,7 @@ func (s *drawRecv) streamCommand() error {
 		var windowID int
 		var x0, y0, x1, y1 int
 		var r, g, b, a uint16
-		if err := s.streamPipe.Get(&windowID, &x0, &y0, &x1, &y1, &r, &g, &b, &a).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID, &x0, &y0, &x1, &y1, &r, &g, &b, &a); err != nil {
 			return err
 		}
 		s.calls.WindowLine(windowID, x0, y0, x1, y1, r, g, b, a)
@@ -176,7 +176,7 @@ func (s *drawRecv) streamCommand() error {
 		var r, g, b, a uint16
 		var fontID int
 		var text string
-		if err := s.streamPipe.Get(&windowID, &x, &y, &r, &g, &b, &a, &fontID, &text).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID, &x, &y, &r, &g, &b, &a, &fontID, &text); err != nil {
 			return err
 		}
 		s.calls.WindowText(windowID, x, y, r, g, b, a, fontID, text)
@@ -185,7 +185,7 @@ func (s *drawRecv) streamCommand() error {
 		var windowID int
 		var x, y, width, height int
 		var imageID int
-		if err := s.streamPipe.Get(&windowID, &x, &y, &width, &height, &imageID).Err(); err != nil {
+		if err := s.streamPipe.Get(&windowID, &x, &y, &width, &height, &imageID); err != nil {
 			return err
 		}
 		s.calls.WindowImage(windowID, x, y, width, height, imageID)
@@ -195,14 +195,14 @@ func (s *drawRecv) streamCommand() error {
 		var height int
 		var style, variant, weight, stretch int
 		var family string
-		if err := s.streamPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family).Err(); err != nil {
+		if err := s.streamPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family); err != nil {
 			return err
 		}
 		s.calls.FontNew(fontID, height, style, variant, weight, stretch, family)
 
 	case iface.FontDropCode:
 		var fontID int
-		if err := s.streamPipe.Get(&fontID).Err(); err != nil {
+		if err := s.streamPipe.Get(&fontID); err != nil {
 			return err
 		}
 		s.calls.FontDrop(fontID)
@@ -211,14 +211,14 @@ func (s *drawRecv) streamCommand() error {
 		var imageID int
 		var width, height int
 		var bitmap []byte
-		if err := s.streamPipe.Get(&imageID, &width, &height, &bitmap).Err(); err != nil {
+		if err := s.streamPipe.Get(&imageID, &width, &height, &bitmap); err != nil {
 			return err
 		}
 		s.calls.ImageNew(imageID, width, height, bitmap)
 
 	case iface.ImageDropCode:
 		var imageID int
-		if err := s.streamPipe.Get(&imageID).Err(); err != nil {
+		if err := s.streamPipe.Get(&imageID); err != nil {
 			return err
 		}
 		s.calls.ImageDrop(imageID)
@@ -227,7 +227,7 @@ func (s *drawRecv) streamCommand() error {
 		var menuID int
 		var parentMenuID int
 		var label string
-		if err := s.streamPipe.Get(&menuID, &parentMenuID, &label).Err(); err != nil {
+		if err := s.streamPipe.Get(&menuID, &parentMenuID, &label); err != nil {
 			return err
 		}
 		s.calls.MenuNew(menuID, parentMenuID, label)
@@ -236,14 +236,14 @@ func (s *drawRecv) streamCommand() error {
 		var menuID int
 		var parentMenuID int
 		var label, action string
-		if err := s.streamPipe.Get(&menuID, &parentMenuID, &label, &action).Err(); err != nil {
+		if err := s.streamPipe.Get(&menuID, &parentMenuID, &label, &action); err != nil {
 			return err
 		}
 		s.calls.MenuItem(menuID, parentMenuID, label, action)
 
 	case iface.ClipboardGetCode:
 		var typeID int
-		if err := s.streamPipe.Get(&typeID).Err(); err != nil {
+		if err := s.streamPipe.Get(&typeID); err != nil {
 			return err
 		}
 		s.calls.ClipboardGet(typeID)
@@ -251,7 +251,7 @@ func (s *drawRecv) streamCommand() error {
 	case iface.ClipboardPutCode:
 		var typeID int
 		var data []byte
-		if err := s.streamPipe.Get(&typeID, &data).Err(); err != nil {
+		if err := s.streamPipe.Get(&typeID, &data); err != nil {
 			return err
 		}
 		s.calls.ClipboardPut(typeID, data)
@@ -265,7 +265,7 @@ func (s *drawRecv) streamCommand() error {
 
 func (s *drawRecv) syncCommand() error {
 	var command byte
-	if err := s.syncPipe.Get(&command).Err(); err != nil {
+	if err := s.syncPipe.Get(&command); err != nil {
 		return fmt.Errorf("get (command): %w", err)
 	}
 
@@ -276,7 +276,10 @@ func (s *drawRecv) syncCommand() error {
 
 	case iface.ApplicationVersionCode:
 		version := s.calls.ApplicationVersion()
-		if err := s.syncPipe.Put(version).Flush().Err(); err != nil {
+		if err := s.syncPipe.Put(version); err != nil {
+			return err
+		}
+		if err := s.syncPipe.Sync(); err != nil {
 			return err
 		}
 
@@ -285,17 +288,20 @@ func (s *drawRecv) syncCommand() error {
 		var height int
 		var style, variant, weight, stretch int
 		var family string
-		if err := s.syncPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family).Err(); err != nil {
+		if err := s.syncPipe.Get(&fontID, &height, &style, &variant, &weight, &stretch, &family); err != nil {
 			return err
 		}
 		lineheight, baseline, ascent, descent := s.calls.FontMetricNew(fontID, height, style, variant, weight, stretch, family)
-		if err := s.syncPipe.Put(lineheight, baseline, ascent, descent).Flush().Err(); err != nil {
+		if err := s.syncPipe.Put(lineheight, baseline, ascent, descent); err != nil {
+			return err
+		}
+		if err := s.syncPipe.Sync(); err != nil {
 			return err
 		}
 
 	case iface.FontDropCode:
 		var fontID int
-		if err := s.syncPipe.Get(&fontID).Err(); err != nil {
+		if err := s.syncPipe.Get(&fontID); err != nil {
 			return err
 		}
 		s.calls.FontMetricDrop(fontID)
@@ -304,22 +310,28 @@ func (s *drawRecv) syncCommand() error {
 		var fontID int
 		var edge, indent int
 		var text string
-		if err := s.syncPipe.Get(&fontID, &edge, &indent, &text).Err(); err != nil {
+		if err := s.syncPipe.Get(&fontID, &edge, &indent, &text); err != nil {
 			return err
 		}
 		lengths := s.calls.FontMetricSplit(fontID, text, edge, indent)
-		if err := s.syncPipe.Put(lengths).Flush().Err(); err != nil {
+		if err := s.syncPipe.Put(lengths); err != nil {
+			return err
+		}
+		if err := s.syncPipe.Sync(); err != nil {
 			return err
 		}
 
 	case iface.FontSizeCode:
 		var fontID int
 		var text string
-		if err := s.syncPipe.Get(&fontID, &text).Err(); err != nil {
+		if err := s.syncPipe.Get(&fontID, &text); err != nil {
 			return err
 		}
 		x, y := s.calls.FontMetricSize(fontID, text)
-		if err := s.syncPipe.Put(x, y).Flush().Err(); err != nil {
+		if err := s.syncPipe.Put(x, y); err != nil {
+			return err
+		}
+		if err := s.syncPipe.Sync(); err != nil {
 			return err
 		}
 

@@ -2,6 +2,8 @@
 package drawsend
 
 import (
+	"log"
+
 	"github.com/codeation/impress/joint/iface"
 	"github.com/codeation/impress/joint/rpc"
 )
@@ -20,234 +22,150 @@ func New(streamPipe, syncPipe *rpc.Pipe) *drawSend {
 }
 
 func (c *drawSend) ApplicationSize(x, y, width, height int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.ApplicationSizeCode, x, y, width, height).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ApplicationSizeCode, x, y, width, height))
 }
 
 func (c *drawSend) ApplicationTitle(title string) {
-	c.streamPipe.
-		Lock().
-		Put(iface.ApplicationTitleCode, title).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ApplicationTitleCode, title))
 }
 
 func (c *drawSend) ApplicationExit() {
-	c.streamPipe.
-		Lock().
-		Put(iface.ApplicationExitCode).
-		Flush().
-		Unlock()
-	c.syncPipe.
-		Lock().
-		Put(iface.ApplicationExitCode).
-		Flush().
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ApplicationExitCode))
+	must(c.streamPipe.Sync())
+	must(c.syncPipe.PutTx(iface.ApplicationExitCode))
+	must(c.syncPipe.Sync())
 }
 
 func (c *drawSend) ApplicationVersion() string {
 	var version string
-	c.syncPipe.
-		Lock().
-		Put(iface.ApplicationVersionCode).
-		Flush().
-		Get(&version).
-		Unlock()
+	must(c.syncPipe.IO(
+		[]any{iface.ApplicationVersionCode},
+		[]any{&version},
+	))
 	return version
 }
 
 func (c *drawSend) FrameNew(frameID int, parentFrameID int, x, y, width, height int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.FrameNewCode, frameID, parentFrameID, x, y, width, height).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.FrameNewCode, frameID, parentFrameID, x, y, width, height))
 }
 
 func (c *drawSend) FrameDrop(frameID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.FrameDropCode, frameID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.FrameDropCode, frameID))
 }
 
 func (c *drawSend) FrameSize(frameID int, x, y, width, height int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.FrameSizeCode, frameID, x, y, width, height).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.FrameSizeCode, frameID, x, y, width, height))
 }
 
 func (c *drawSend) FrameRaise(frameID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.FrameRaiseCode, frameID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.FrameRaiseCode, frameID))
 }
 
 func (c *drawSend) WindowNew(windowID int, frameID int, x, y, width, height int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowNewCode, windowID, frameID, x, y, width, height).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowNewCode, windowID, frameID, x, y, width, height))
 }
 
 func (c *drawSend) WindowDrop(windowID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowDropCode, windowID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowDropCode, windowID))
 }
 
 func (c *drawSend) WindowRaise(windowID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowRaiseCode, windowID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowRaiseCode, windowID))
 }
 
 func (c *drawSend) WindowClear(windowID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowClearCode, windowID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowClearCode, windowID))
 }
 
 func (c *drawSend) WindowShow(windowID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowShowCode, windowID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowShowCode, windowID))
 }
 
 func (c *drawSend) WindowSize(windowID int, x, y, width, height int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowSizeCode, windowID, x, y, width, height).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowSizeCode, windowID, x, y, width, height))
 }
 
 func (c *drawSend) WindowFill(windowID int, x, y, width, height int, r, g, b, a uint16) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowFillCode, windowID, x, y, width, height, r, g, b, a).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowFillCode, windowID, x, y, width, height, r, g, b, a))
 }
 
 func (c *drawSend) WindowLine(windowID int, x0, y0, x1, y1 int, r, g, b, a uint16) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowLineCode, windowID, x0, y0, x1, y1, r, g, b, a).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowLineCode, windowID, x0, y0, x1, y1, r, g, b, a))
 }
 
 func (c *drawSend) WindowText(windowID int, x, y int, r, g, b, a uint16, fontID int, text string) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowTextCode, windowID, x, y, r, g, b, a, fontID, text).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowTextCode, windowID, x, y, r, g, b, a, fontID, text))
 }
 
 func (c *drawSend) WindowImage(windowID int, x, y, width, height int, imageID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.WindowImageCode, windowID, x, y, width, height, imageID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.WindowImageCode, windowID, x, y, width, height, imageID))
 }
 
 func (c *drawSend) FontNew(fontID int, height int, style, variant, weight, stretch int, family string) {
-	c.streamPipe.
-		Lock().
-		Put(iface.FontNewCode, fontID, height, style, variant, weight, stretch, family).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.FontNewCode, fontID, height, style, variant, weight, stretch, family))
 }
 
 func (c *drawSend) FontDrop(fontID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.FontDropCode, fontID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.FontDropCode, fontID))
 }
 
 func (c *drawSend) FontMetricNew(fontID int, height int, style, variant, weight, stretch int, family string) (int, int, int, int) {
 	var lineheight, baseline, ascent, descent int
-	c.syncPipe.
-		Lock().
-		Put(iface.FontNewCode, fontID, height, style, variant, weight, stretch, family).
-		Flush().
-		Get(&lineheight, &baseline, &ascent, &descent).
-		Unlock()
+	must(c.syncPipe.IO(
+		[]any{iface.FontNewCode, fontID, height, style, variant, weight, stretch, family},
+		[]any{&lineheight, &baseline, &ascent, &descent},
+	))
 	return lineheight, baseline, ascent, descent
 }
 
 func (c *drawSend) FontMetricDrop(fontID int) {
-	c.syncPipe.
-		Lock().
-		Put(iface.FontDropCode, fontID).
-		Flush().
-		Unlock()
+	must(c.syncPipe.IO([]any{iface.FontDropCode, fontID}, nil))
 }
 
 func (c *drawSend) FontMetricSplit(fontID int, text string, edge, indent int) []int {
 	var lengths []int
-	c.syncPipe.
-		Lock().
-		Put(iface.FontSplitCode, fontID, edge, indent, text).
-		Flush().
-		Get(&lengths).
-		Unlock()
+	must(c.syncPipe.IO(
+		[]any{iface.FontSplitCode, fontID, edge, indent, text},
+		[]any{&lengths},
+	))
 	return lengths
 }
 
 func (c *drawSend) FontMetricSize(fontID int, text string) (int, int) {
 	var x, y int
-	c.syncPipe.
-		Lock().
-		Put(iface.FontSizeCode, fontID, text).
-		Flush().
-		Get(&x, &y).
-		Unlock()
+	must(c.syncPipe.IO(
+		[]any{iface.FontSizeCode, fontID, text},
+		[]any{&x, &y},
+	))
 	return x, y
 }
 
 func (c *drawSend) ImageNew(imageID int, width, height int, bitmap []byte) {
-	c.streamPipe.
-		Lock().
-		Put(iface.ImageNewCode, imageID, width, height, bitmap).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ImageNewCode, imageID, width, height, bitmap))
 }
 
 func (c *drawSend) ImageDrop(imageID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.ImageDropCode, imageID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ImageDropCode, imageID))
 }
 
 func (c *drawSend) MenuNew(menuID int, parentMenuID int, label string) {
-	c.streamPipe.
-		Lock().
-		Put(iface.MenuNewCode, menuID, parentMenuID, label).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.MenuNewCode, menuID, parentMenuID, label))
 }
 
 func (c *drawSend) MenuItem(menuID int, parentMenuID int, label string, action string) {
-	c.streamPipe.
-		Lock().
-		Put(iface.MenuItemCode, menuID, parentMenuID, label, action).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.MenuItemCode, menuID, parentMenuID, label, action))
 }
 
 func (c *drawSend) ClipboardGet(typeID int) {
-	c.streamPipe.
-		Lock().
-		Put(iface.ClipboardGetCode, typeID).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ClipboardGetCode, typeID))
 }
 
 func (c *drawSend) ClipboardPut(typeID int, data []byte) {
-	c.streamPipe.
-		Lock().
-		Put(iface.ClipboardPutCode, typeID, data).
-		Unlock()
+	must(c.streamPipe.PutTx(iface.ClipboardPutCode, typeID, data))
+}
+
+func must(err error) {
+	if err != nil {
+		log.Fatalf("drawsend.must: %v", err)
+	}
 }
