@@ -1,3 +1,4 @@
+// Package impress provides interface to GUI objects.
 package impress
 
 import (

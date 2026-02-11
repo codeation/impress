@@ -1,3 +1,4 @@
+// Package driver defines interfaces to be implemented by GUI drivers as used by package impress.
 package driver
 
 import (

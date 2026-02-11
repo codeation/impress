@@ -1,3 +1,4 @@
+// Package clipboard defines clipboard data structs.
 package clipboard
 
 // Clipboard content types.
