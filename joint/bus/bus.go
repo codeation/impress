@@ -3,8 +3,6 @@ package bus
 
 import (
 	"os"
-
-	"github.com/codeation/impress/joint/rpc"
 )
 
 const (
@@ -14,15 +12,9 @@ const (
 	fifoEventPath  = "/tmp/it_fifo_event_"
 )
 
-const defaultBufferSize = 64 * 1024
-
-type pipes struct {
-	suffix       string
+type files struct {
 	streamFile   *os.File
 	requestFile  *os.File
 	responseFile *os.File
 	eventFile    *os.File
-	StreamPipe   *rpc.Pipe
-	SyncPipe     *rpc.Pipe
-	EventPipe    *rpc.Pipe
 }

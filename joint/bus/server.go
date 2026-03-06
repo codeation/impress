@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"os"
 	"syscall"
@@ -12,71 +11,96 @@ import (
 	"github.com/codeation/impress/joint/rpc"
 )
 
-type ServerPipes pipes
+const streamBufferSize = 64 * 1024
 
-func NewServer() (*ServerPipes, error) {
-	randBuffer := make([]byte, 8)
-	if _, err := rand.Reader.Read(randBuffer); err != nil {
+type Runner interface {
+	Run(suffix string) error
+	Wait() error
+}
+
+type ServerPipes struct {
+	f      files
+	runner Runner
+}
+
+func NewServer(runner Runner) (*ServerPipes, error) {
+	var randBuffer [8]byte
+	if _, err := rand.Reader.Read(randBuffer[:]); err != nil {
 		return nil, fmt.Errorf("rand.Reader.Read: %w", err)
 	}
-	suffix := hex.EncodeToString(randBuffer)
+	suffix := hex.EncodeToString(randBuffer[:])
+
 	for _, name := range []string{fifoInputPath, fifoStreamPath, fifoOutputPath, fifoEventPath} {
 		if err := syscall.Mkfifo(name+suffix, 0600); err != nil {
 			return nil, fmt.Errorf("syscall.Mkfifo: %w", err)
 		}
+		defer os.Remove(name + suffix)
 	}
+
+	if err := runner.Run(suffix); err != nil {
+		return nil, fmt.Errorf("runner.Run: %w", err)
+	}
+
+	// opening sequence is the same as for client
+	responseFile, err := os.OpenFile(fifoOutputPath+suffix, os.O_RDONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(o): %w", err)
+	}
+	eventFile, err := os.OpenFile(fifoEventPath+suffix, os.O_RDONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(e): %w", err)
+	}
+	requestFile, err := os.OpenFile(fifoInputPath+suffix, os.O_WRONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(i): %w", err)
+	}
+	streamFile, err := os.OpenFile(fifoStreamPath+suffix, os.O_WRONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(s): %w", err)
+	}
+
 	return &ServerPipes{
-		suffix: suffix,
+		f: files{
+			streamFile:   streamFile,
+			requestFile:  requestFile,
+			responseFile: responseFile,
+			eventFile:    eventFile,
+		},
+		runner: runner,
 	}, nil
 }
 
-func (p *ServerPipes) Connect() error {
-	var err error
-	if p.responseFile, err = os.OpenFile(fifoOutputPath+p.suffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(o): %w", err)
-	}
-	if p.eventFile, err = os.OpenFile(fifoEventPath+p.suffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(e): %w", err)
-	}
-	if p.requestFile, err = os.OpenFile(fifoInputPath+p.suffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(i): %w", err)
-	}
-	if p.streamFile, err = os.OpenFile(fifoStreamPath+p.suffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(s): %w", err)
-	}
+func (p *ServerPipes) NewEventPipe() *rpc.Pipe {
+	return rpc.NewPipe(nil, bufio.NewReader(p.f.eventFile))
+}
 
-	streamBuffered := bufio.NewWriterSize(p.streamFile, defaultBufferSize)
+func (p *ServerPipes) NewStreamPipe() *rpc.Pipe {
+	streamBuffered := bufio.NewWriterSize(p.f.streamFile, streamBufferSize)
+	return rpc.NewPipe(streamBuffered, nil)
+}
 
-	p.StreamPipe = rpc.NewPipe(streamBuffered, nil)
-	p.SyncPipe = rpc.NewPipe(bufio.NewWriter(p.requestFile), bufio.NewReader(p.responseFile))
-	p.EventPipe = rpc.NewPipe(nil, bufio.NewReader(p.eventFile))
-
-	return nil
+func (p *ServerPipes) NewSyncPipe() *rpc.Pipe {
+	return rpc.NewPipe(bufio.NewWriter(p.f.requestFile), bufio.NewReader(p.f.responseFile))
 }
 
 func (p *ServerPipes) Close() error {
-	if err := p.requestFile.Close(); err != nil {
+	if err := p.runner.Wait(); err != nil {
+		return fmt.Errorf("runner.Wait: %w", err)
+	}
+
+	if err := p.f.requestFile.Close(); err != nil {
 		return fmt.Errorf("requestFile.Close(): %w", err)
 	}
-	if err := p.streamFile.Close(); err != nil {
+	if err := p.f.streamFile.Close(); err != nil {
 		return fmt.Errorf("streamFile.Close: %w", err)
 	}
 
-	if err := p.responseFile.Close(); err != nil {
+	if err := p.f.responseFile.Close(); err != nil {
 		return fmt.Errorf("responseFile.Close: %w", err)
 	}
-	if err := p.eventFile.Close(); err != nil {
+	if err := p.f.eventFile.Close(); err != nil {
 		return fmt.Errorf("eventFile.Close: %w", err)
 	}
 
-	for _, name := range []string{fifoInputPath, fifoStreamPath, fifoOutputPath, fifoEventPath} {
-		if _, err := os.Stat(name + p.suffix); err == nil || !errors.Is(err, os.ErrNotExist) {
-			if err = os.Remove(name + p.suffix); err != nil {
-				return fmt.Errorf("os.Remove: %w", err)
-			}
-		}
-	}
 	return nil
 }
-
-func (p *ServerPipes) Suffix() string { return p.suffix }

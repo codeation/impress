@@ -2,21 +2,14 @@
 package canvasdriver
 
 import (
-	"context"
-	"errors"
 	"flag"
-	"fmt"
-	"log"
-	"net/http"
-	"sync"
-	"time"
+	"os"
 
 	"github.com/codeation/impress/driver"
-	"github.com/codeation/impress/joint/domain"
-	"github.com/codeation/impress/joint/drawsend"
-	"github.com/codeation/impress/joint/eventchan"
-	"github.com/codeation/impress/joint/eventrecv"
 	"github.com/codeation/impress/joint/lazy"
+	"github.com/codeation/impress/joint/pipedriver"
+	"github.com/codeation/impress/joint/serversocket"
+	"github.com/codeation/impress/joint/socketpipes"
 )
 
 var (
@@ -24,60 +17,12 @@ var (
 	dir    = flag.String("dir", ".", "directory to serve")
 )
 
-type httpDriver struct {
-	driver.Driver
-	pipes      *socketPipes
-	httpServer *http.Server
-	eventRecv  interface{ Done() }
-	wg         sync.WaitGroup
-}
-
-// New returns a new WebAssembly driver
-func New() (*httpDriver, error) {
+func New() driver.Driver {
 	flag.Parse()
-
-	pipes := newSocketPipes(http.FileServer(http.Dir(*dir)))
-
-	eventPipe := pipes.newEventPipe()
-	streamPipe := pipes.newStreamPipe()
-	syncPipe := pipes.newSyncPipe()
-
-	eventChan := eventchan.New()
-	eventRecv := eventrecv.New(eventChan, eventPipe)
-	client := drawsend.New(streamPipe, syncPipe)
-	driver := domain.New(client, eventChan, streamPipe)
-	lazyDriver := lazy.New(driver)
-
-	h := &httpDriver{
-		Driver: lazyDriver,
-		pipes:  pipes,
-		httpServer: &http.Server{
-			Addr:    *listen,
-			Handler: pipes,
-		},
-		eventRecv: eventRecv,
-	}
-	h.wg.Go(func() {
-		fmt.Println("listening on", h.httpServer.Addr)
-		if err := h.httpServer.ListenAndServe(); err != nil {
-			if !errors.Is(err, http.ErrServerClosed) {
-				log.Printf("httpServer.ListenAndServe: %v", err)
-			}
-		}
+	pipeCreator := socketpipes.NewSocketPipes(&socketpipes.Config{
+		Listen:      *listen,
+		FS:          os.DirFS(*dir),
+		NewSocketFn: func() socketpipes.SocketHandler { return serversocket.New() },
 	})
-	return h, nil
-}
-
-func (h *httpDriver) Done() {
-	h.eventRecv.Done()
-	h.pipes.done()
-	h.Driver.Done()
-	ctx, cancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancelFunc()
-	h.wg.Go(func() {
-		if err := h.httpServer.Shutdown(ctx); err != nil {
-			log.Printf("httpServer.Shutdown: %v", err)
-		}
-	})
-	h.wg.Wait()
+	return lazy.New(pipedriver.New(pipeCreator))
 }

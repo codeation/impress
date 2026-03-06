@@ -9,38 +9,48 @@ import (
 	"github.com/codeation/impress/joint/rpc"
 )
 
-type ClientPipes pipes
+type ClientPipes files
 
 func NewClient(suffix string) (*ClientPipes, error) {
+	responseFile, err := os.OpenFile(fifoOutputPath+suffix, os.O_WRONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(o): %w", err)
+	}
+	eventFile, err := os.OpenFile(fifoEventPath+suffix, os.O_WRONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(e): %w", err)
+	}
+	requestFile, err := os.OpenFile(fifoInputPath+suffix, os.O_RDONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(i): %w", err)
+	}
+	streamFile, err := os.OpenFile(fifoStreamPath+suffix, os.O_RDONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("os.OpenFile(s): %w", err)
+	}
+
+	if err := syscall.SetNonblock(int(streamFile.Fd()), true); err != nil {
+		return nil, fmt.Errorf("syscall.SetNonblck: %w", err)
+	}
+
 	return &ClientPipes{
-		suffix: suffix,
+		streamFile:   streamFile,
+		requestFile:  requestFile,
+		responseFile: responseFile,
+		eventFile:    eventFile,
 	}, nil
 }
 
-func (p *ClientPipes) Connect() error {
-	var err error
-	if p.responseFile, err = os.OpenFile(fifoOutputPath+p.suffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(o): %w", err)
-	}
-	if p.eventFile, err = os.OpenFile(fifoEventPath+p.suffix, os.O_WRONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(e): %w", err)
-	}
-	if p.requestFile, err = os.OpenFile(fifoInputPath+p.suffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(i): %w", err)
-	}
-	if p.streamFile, err = os.OpenFile(fifoStreamPath+p.suffix, os.O_RDONLY, os.ModeNamedPipe); err != nil {
-		return fmt.Errorf("os.OpenFile(s): %w", err)
-	}
+func (p *ClientPipes) NewEventPipe() *rpc.Pipe {
+	return rpc.NewPipe(bufio.NewWriter(p.eventFile), nil)
+}
 
-	if err = syscall.SetNonblock(int(p.streamFile.Fd()), true); err != nil {
-		return fmt.Errorf("syscall.SetNonblck: %w", err)
-	}
+func (p *ClientPipes) NewStreamPipe() *rpc.Pipe {
+	return rpc.NewPipe(nil, p.streamFile)
+}
 
-	p.StreamPipe = rpc.NewPipe(nil, p.streamFile)
-	p.SyncPipe = rpc.NewPipe(bufio.NewWriter(p.responseFile), p.requestFile)
-	p.EventPipe = rpc.NewPipe(bufio.NewWriter(p.eventFile), nil)
-
-	return nil
+func (p *ClientPipes) NewSyncPipe() *rpc.Pipe {
+	return rpc.NewPipe(bufio.NewWriter(p.responseFile), p.requestFile)
 }
 
 func (p *ClientPipes) Close() error {
