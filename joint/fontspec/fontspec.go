@@ -2,77 +2,95 @@
 package fontspec
 
 // Values for "style" atribute
-var styleValues = map[string]int{
-	"":        0,
-	"normal":  0,
-	"oblique": 1,
-	"italic":  2,
+func styleValues(style string) int {
+	switch style {
+	case "normal":
+		return 0
+	case "oblique":
+		return 1
+	case "italic":
+		return 2
+	default:
+		return 0
+	}
 }
 
 // Values for "variant" atribute
-var variantValues = map[string]int{
-	"":           0,
-	"normal":     0,
-	"small_caps": 1,
-	"small caps": 1,
+func variantValues(variant string) int {
+	switch variant {
+	case "normal":
+		return 0
+	case "small_caps", "small caps":
+		return 1
+	default:
+		return 0
+	}
 }
 
 // Values for "weight" atribute
-var weightValues = map[string]int{
-	"thin":       100,
-	"ultralight": 200,
-	"light":      300,
-	"semilight":  350,
-	"book":       380,
-	"":           400,
-	"normal":     400,
-	"medium":     500,
-	"semibold":   600,
-	"bold":       700,
-	"ultrabold":  800,
-	"heavy":      900,
-	"ultraheavy": 1000,
+func weightValues(weight string) int {
+	switch weight {
+	case "thin":
+		return 100
+	case "ultralight":
+		return 200
+	case "light":
+		return 300
+	case "semilight":
+		return 350
+	case "book":
+		return 380
+	case "normal":
+		return 400
+	case "medium":
+		return 500
+	case "semibold":
+		return 600
+	case "bold":
+		return 700
+	case "ultrabold":
+		return 800
+	case "heavy":
+		return 900
+	case "ultraheavy":
+		return 1000
+	default:
+		return 400
+	}
 }
 
 // Values for "stretch" atribute
-var stretchValues = map[string]int{
-	"ultra_condensed": 0,
-	"ultra condensed": 0,
-	"extra_condensed": 1,
-	"extra condensed": 1,
-	"condensed":       2,
-	"semi_condensed":  3,
-	"semi condensed":  3,
-	"":                4,
-	"normal":          4,
-	"semi_expanded":   5,
-	"semi expanded":   5,
-	"expanded":        6,
-	"extra_expanded":  7,
-	"extra expanded":  7,
-	"ultra_expanded":  8,
-	"ultra expanded":  8,
+func stretchValues(stretch string) int {
+	switch stretch {
+	case "ultra_condensed", "ultra condensed":
+		return 0
+	case "extra_condensed", "extra condensed":
+		return 1
+	case "condensed":
+		return 2
+	case "semi_condensed", "semi condensed":
+		return 3
+	case "normal":
+		return 4
+	case "semi_expanded", "semi expanded":
+		return 5
+	case "expanded":
+		return 6
+	case "extra_expanded", "extra expanded":
+		return 7
+	case "ultra_expanded", "ultra expanded":
+		return 8
+	default:
+		return 4
+	}
 }
 
 func Attributes(attributes map[string]string) (string, int, int, int, int) {
-	family := attributes["family"]
-	style := 0
-	if value, ok := styleValues[attributes["style"]]; ok {
-		style = value
-	}
-	variant := 0
-	if value, ok := variantValues[attributes["variant"]]; ok {
-		variant = value
-	}
-	weight := 400
-	if value, ok := weightValues[attributes["weight"]]; ok {
-		weight = value
-	}
-	stretch := 4
-	if value, ok := stretchValues[attributes["stretch"]]; ok {
-		stretch = value
-	}
-	return family, style, variant, weight, stretch
+	return attributes["family"],
+		styleValues(attributes["style"]),
+		variantValues(attributes["variant"]),
+		weightValues(attributes["weight"]),
+		stretchValues(attributes["stretch"])
 }
 
 func SplitByLengths(text string, lengths []int) []string {
