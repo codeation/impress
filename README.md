@@ -84,17 +84,15 @@ The environment variable `IMPRESS_TERMINAL_PATH` specifies the path to the built
 
 ## Technical details
 
+The [Why Impress Library](https://codeation.github.io/impress/why-impress-library.html) page covers the key decisions that shaped the impress library.
+
 Basic Principles of Library Design:
 
 - Performance of the application as well as native applications.
 - Simple and clean application code.
-- Creating a GUI application without a form designer or hard-coded widgets.
+- Creating a GUI application without form designer or hard-coded widgets.
 
-The main idea is to stay away from the event-driven programming paradigm. See the ["What's wrong with event-driven programming"](https://codeation.github.io/impress/what-is-wrong-with-event-oriented-programming.html) page for more details.
-
-The library uses [a separate application (GTK terminal)](https://codeation.github.io/impress/it-driver.html) for drawing instead of binding a low-level library to Golang.
-
-## Project State
+Project State:
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
 - The project was tested on Debian 13.3 and macOS 26.3.
