@@ -77,18 +77,18 @@ func run(app *impress.Application, windows []*smallWindow) {
 		app.Sync()
 
 		e := <-app.Chan()
-		switch {
-		case e == event.DestroyEvent || e == event.KeyExit:
+		switch e {
+		case event.DestroyEvent, event.KeyExit:
 			return
-		case e == event.KeyLeft:
+		case event.KeyLeft:
 			activeWindow = windows[0]
 			activeWindow.w.Raise()
-		case e == event.KeyRight:
+		case event.KeyRight:
 			activeWindow = windows[1]
 			activeWindow.w.Raise()
-		case e.Type() == event.ButtonType:
-			clickEvent, ok := e.(event.Button)
-			if ok && clickEvent.Action == event.ButtonActionPress && clickEvent.Button == event.ButtonLeft {
+		default:
+			if clickEvent, ok := e.(event.Button); ok &&
+				clickEvent.Action == event.ButtonActionPress && clickEvent.Button == event.ButtonLeft {
 				for _, w := range windows {
 					if clickEvent.Point.In(w.rect) && w != activeWindow {
 						activeWindow = w
@@ -96,8 +96,8 @@ func run(app *impress.Application, windows []*smallWindow) {
 						break
 					}
 				}
+				continue
 			}
-		default:
 			activeWindow.Event(e)
 		}
 	}
