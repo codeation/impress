@@ -1,7 +1,9 @@
 // Package implements an internal mechanism to communicate with an impress terminal.
 package idcycle
 
-import "sync"
+import (
+	"sync"
+)
 
 type ID struct {
 	nextID  int
