@@ -10,7 +10,7 @@ Some usage examples are in the [examples folder](https://github.com/codeation/im
 
 Let's say hello:
 
-<img src="https://codeation.github.io/images/hello_small.png" width="545" height="350" />
+<p><img src="https://codeation.github.io/images/hello_small.png" width="545" height="350" /></p>
 
 ```
 package main
@@ -95,7 +95,7 @@ Basic Principles of Library Design:
 Project State:
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
-- The project was tested on Debian 13.3 and macOS 26.3.
+- The project was tested on Debian 13.6 and macOS 26.6.
 - While the API remains stable, please note that the specific details may be subject to change.
 
 [The project roadmap](https://codeation.github.io/impress/roadmap.html) includes both short-term and long-term project stages.
