@@ -54,10 +54,9 @@ func (p *Pipe) Get(variables ...any) error {
 			err = fmt.Errorf("unknown type: %T", v)
 		}
 		if err != nil {
-			if errors.Is(err, net.ErrClosed) {
-				log.Fatalf("get: %v", err)
-			}
-			if !errors.Is(err, os.ErrClosed) && !errors.Is(err, io.EOF) {
+			if !errors.Is(err, net.ErrClosed) &&
+				!errors.Is(err, os.ErrClosed) &&
+				!errors.Is(err, io.EOF) {
 				log.Printf("get: %v", err)
 			}
 			return err
@@ -90,9 +89,6 @@ func (p *Pipe) Put(values ...any) error {
 			err = fmt.Errorf("unknown type: %T", v)
 		}
 		if err != nil {
-			if errors.Is(err, net.ErrClosed) {
-				log.Fatalf("put: %v", err)
-			}
 			log.Printf("put: %v", err)
 			return err
 		}
