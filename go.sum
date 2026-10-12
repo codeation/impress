@@ -1,4 +1,4 @@
 github.com/codeation/lru v1.3.0 h1:BZlD5G4bt0bis9FHV5q3zyyDCAx21ue2CvvM1T8hQl4=
 github.com/codeation/lru v1.3.0/go.mod h1:1C9+zUoRETpelIbMxh6wj9APf2VnKh0tk9aRsrOQUsk=
-golang.org/x/net v0.58.0 h1:ynWG7rqYi4ccpTEuPZ2QGWHktVEM9DMCj9yzDE0Q7To=
-golang.org/x/net v0.58.0/go.mod h1:YwCddHnFlT7eLQqVprV19OnhLGtc5xOKgE0RyqgfWAU=
+golang.org/x/net v0.61.0 h1:RR+6j/BTBCrggOLugxa+66R8FvoN6MHlzDlZIbN9YFw=
+golang.org/x/net v0.61.0/go.mod h1:WgDCOTH8iwtB66T4/GfI94AHo/hhdb7Hah9NDseQfiI=

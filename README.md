@@ -95,7 +95,7 @@ Basic Principles of Library Design:
 Project State:
 
 - The project is currently in its beta stage. It is highly suitable for the development of in-house applications.
-- The project was tested on Debian 13.6 and macOS 26.6.
+- The project was tested on Debian 13.7 and macOS 27.0.1.
 - While the API remains stable, please note that the specific details may be subject to change.
 
 [The project roadmap](https://codeation.github.io/impress/roadmap.html) includes both short-term and long-term project stages.
